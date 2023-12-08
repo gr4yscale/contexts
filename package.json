@@ -1,0 +1,20 @@
+{
+  "name": "contexts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.mts",
+  "scripts": {
+    "build": "esbuild main.mts --bundle --platform=node --format=esm --packages=external --outfile=built.mjs"
+  },
+  "keywords": [],
+  "author": "gr4yscale",
+  "license": "Fair",
+  "devDependencies": {
+    "esbuild": "0.19.8",
+    "tsx": "^4.4.0",
+    "zx": "^7.2.3"
+  },
+  "dependencies": {
+    "clipboardy": "^4.0.0"
+  }
+}
