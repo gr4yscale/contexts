@@ -128,7 +128,7 @@ const deactivateContext = async (context: Context) => {
 
 export const handleCommand = async (command: string | undefined) => {
   if (!command) {
-    console.log("Error: You must specify the --command arg");
+    console.error("Error: You must specify a command.");
     return;
   }
 
@@ -169,6 +169,9 @@ export const handleCommand = async (command: string | undefined) => {
       // prompt user for deactivating contexts per dwmTag
       // store bookmarks, command snippets, etc for deactivated contexts
       break;
+    }
+    default: {
+      console.error("command not recognized");
     }
   }
 };

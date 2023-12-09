@@ -4,7 +4,8 @@
   "description": "",
   "main": "main.mts",
   "scripts": {
-    "build": "esbuild main.mts --bundle --platform=node --format=esm --packages=external --outfile=built.mjs"
+    "build-server": "esbuild main.mts --bundle --platform=node --format=esm --packages=external --outfile=server-built.mjs",
+    "build-client": "esbuild client.mts --bundle --platform=node --format=esm --packages=external --outfile=client-built.mjs"
   },
   "keywords": [],
   "author": "gr4yscale",
@@ -16,6 +17,7 @@
     "zx": "^7.2.3"
   },
   "dependencies": {
-    "clipboardy": "^4.0.0"
+    "clipboardy": "^4.0.0",
+    "nanoid": "^5.0.4"
   }
 }
