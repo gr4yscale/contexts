@@ -11,6 +11,7 @@ export const findEmptyWorkspace = () => {
       return i;
     }
   }
+  $`notify-send "Was unable to find an available dwm tag, using 0"`;
   return 0;
 };
 
