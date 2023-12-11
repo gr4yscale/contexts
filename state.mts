@@ -101,7 +101,6 @@ export const loadState = async () => {
 };
 
 export const storeState = () => {
-  return;
   const state: YamlDoc = {
     currentContextId: currentContext.contextId,
     contexts,
