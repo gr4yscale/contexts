@@ -63,6 +63,7 @@ export const sendWindowToAnotherContext = async () => {
     console.log(`sending window to ${context.dwmTag}: ${context.contextId}`);
     await $`dwmc tagex ${context.dwmTag}`;
   }
+  context.lastAccessed = new Date();
 };
 
 // link groups
