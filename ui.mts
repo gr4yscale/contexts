@@ -4,7 +4,7 @@ import { Context } from "./state.mts";
 export const rofiListSelect = async (list: string, prompt: string) => {
   $.verbose = false;
   const selection =
-    await $`echo ${list} | rofi -monitor -1 -normal-window -disable-history -dmenu -i -p ${prompt}`.nothrow();
+    await $`echo ${list} | rofi -monitor primary -normal-window -disable-history -dmenu -i -p ${prompt}`.nothrow();
   const sanitized = selection.stdout.trim().replace("*", "").split(" ") ?? [];
   if (sanitized[0]) {
     return sanitized[0];
