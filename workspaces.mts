@@ -6,8 +6,8 @@ export const findEmptyWorkspace = () => {
   const { dwmTags } = getState();
   for (let i = 1; i < dwmTags.length; i++) {
     console.log(`tag: ${i}, val: ${dwmTags[i]}`);
-    if (!dwmTags[i]) {
-      $`notify-send "Found empty dwm tag: ${i}"`;
+    if (!dwmTags[i] || dwmTags[i] === "available") {
+      $`notify-send "Found available dwm tag: ${i}"`;
       return i;
     }
   }
@@ -40,4 +40,28 @@ export const viewWorkspace = async (context: Context) => {
     return;
   }
   await $`dwmc viewex ${context.dwmTag}`;
+};
+
+export const activateWorkspace = async (context: Context) => {
+  //TOFIX: handle case of not finding an available dwm tag
+  if (context.dwmTag === undefined) {
+    assignEmptyWorkspace(context);
+  }
+
+  await viewWorkspace(context);
+  context.active = true;
+};
+
+export const deactivateWorkspace = async (context: Context) => {
+  // confirm ui?
+  await viewWorkspace(context);
+  // rename dwm tag to "unused" or empty
+  if (context.dwmTag) {
+    getState().dwmTags[context.dwmTag] = "available";
+    context.dwmTag = undefined;
+  }
+  context.active = false;
+  // last accessed?
+  // close clients?
+  // save contexts.yml
 };

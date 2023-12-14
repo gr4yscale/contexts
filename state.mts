@@ -13,25 +13,25 @@ export type Context = {
   scripts: string[];
   orgBookmarks: string[];
   tags: string[];
+  //sticky: boolean; use tag?
   parentContextId?: string;
   linkGroups: LinkGroup[];
 };
 
 export type Link = {
-  //id: string;
+  id: string;
   url: string;
-  //title: string;
-  //description: string;
-  //created: Date;
-  //accessed: Date;
+  title: string;
+  description?: string;
+  created: Date;
+  accessed: Date;
 };
 
 export type LinkGroup = {
   id: string;
-  name?: string; // datetime
-  //created: Date;
-  //accessed: Date;
-  //sticky: boolean;
+  description?: string; // default to created time, plus details of parent context?
+  created: Date;
+  accessed: Date;
   links: Link[];
 };
 
@@ -61,6 +61,7 @@ export const loadState = async () => {
     const file = fs.readFileSync("./contexts.yml", "utf8");
     const parsed = parse(file) as YamlDoc;
 
+    //TOFIX: map dates in linkGroups etc
     contexts = parsed.contexts.map((c) => {
       const {
         contextId,
@@ -82,7 +83,7 @@ export const loadState = async () => {
         scripts,
         orgBookmarks,
         tags,
-        linkGroups,
+        linkGroups: linkGroups ?? [],
       };
       return context;
     });
