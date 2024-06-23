@@ -9,19 +9,22 @@ import {
   ContextId,
 } from "../state.mts";
 
-import { activateWorkspace } from "../workspaces.mts";
+import { allocateWorkspace } from "../workspaces.mts";
 
 import { rofiListSelectRecentContexts } from "../ui.mts";
 
 // context switching
-export const switchContextRofi = async () => {
-  const selectedContextId = await selectRecentContextId("select context:");
+export const switchContext = async (prompt: string, prefilter?: string) => {
+  const selectedContextId = await selectRecentContextId(prompt, prefilter);
   if (selectedContextId) {
-    await switchContext(selectedContextId);
+    await activateContext(selectedContextId);
   }
 };
 
-export const switchContext = async (id: ContextId) => {
+// todo: overload this with contextId or Context
+export const activateContext = async (id: ContextId) => {
+  const previousContext = getState().currentContext;
+
   let context: Context | undefined;
   context = contextById(id);
   if (!context) {
@@ -30,11 +33,16 @@ export const switchContext = async (id: ContextId) => {
     $`notify-send "Created new context: ${id}"`;
   }
 
-  updateCurrentContext(context);
+  if(await allocateWorkspace(context)) {
+    // todo: indempotency
+    updateCurrentContext(context);
+    updatePreviousContext(previousContext);
+    context.lastAccessed = new Date();
+    console.log('activated ' + context.name)
+    $`notify-send -a context -t 500 "Activated context: ${context.name}; ws: ${context.dwmTag}"`;
+  }
+};
 
-  context.lastAccessed = new Date();
-
-  await activateWorkspace(context);
 };
 
 // windows
@@ -50,11 +58,12 @@ export const sendWindowToAnotherContext = async () => {
 // monitor selection
 
 // util
-const selectRecentContextId = async (prompt: string) => {
+const selectRecentContextId = async (prompt: string, prefilter?: string) => {
   const { contexts } = getState();
   return await rofiListSelectRecentContexts(
     contexts,
     prompt ?? "recent context: ",
+    prefilter
   );
 };
 
