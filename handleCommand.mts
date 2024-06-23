@@ -1,4 +1,11 @@
 import { getState, storeState } from "./state.mts";
+import { allocateWorkspace, deallocateWorkspace } from "./workspaces.mts";
+import {
+    activateContext,
+    switchContext,
+    swapContext,
+    sendWindowToAnotherContext
+} from "./commands/navigation.mts";
 export const handleCommand = async (command: string | undefined, args?: string) => {
     if (!command) {
         console.error("Error: You must specify a command.");
@@ -9,6 +16,45 @@ export const handleCommand = async (command: string | undefined, args?: string) 
     const currentContext = getState().currentContext;
 
     switch (command) {
+        // navigation
+        case "switchContext": {
+            await switchContext("all");
+            storeState();
+            break;
+        }
+        case "switchContextActive": {
+            await switchContext("active", "* ");
+            storeState();
+            break;
+        }
+        case "switchContextSticky": {
+            await switchContext(" ", "sticky ");
+            storeState();
+            break;
+        }
+        case "swapContext": {
+            await swapContext();
+            storeState();
+            break;
+        }
+        case "sendWindowToAnotherContext": {
+            await sendWindowToAnotherContext();
+            break;
+        }
+        case "activateContext": {
+            if (args) {
+                await activateContext(args);
+                storeState();
+            }
+            break;
+        }
+        // current context operations
+        case "initContext": {
+            await allocateWorkspace(currentContext);
+            await initContext(currentContext);
+            storeState();
+            break;
+        }
         case "deactivateWorkspace": {
             //TOFIX: confirmation
             await deallocateWorkspace(currentContext);
