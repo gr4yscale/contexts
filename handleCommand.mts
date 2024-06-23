@@ -8,7 +8,9 @@ import {
 } from "./commands/navigation.mts";
 import { linkGroupStore, stickyLinkStore } from "./commands/links.mts";
 import { saveEmacsWindowBookmark } from "./commands/emacs.mts";
-import { buildMenuCurrentContext, buildMenuLinks, buildMenuLinkGroups, buildMenuEmacsBookmarks, buildMenuLaunchItems } from "./commands.mts";
+import { buildMenuCurrentContext, buildMenuLinks, buildMenuLinkGroups, buildMenuEmacsBookmarks, buildMenuLaunchItems } from "./menuBuilders.mjs";
+import { initContext } from "./initContext.mts";
+
 export const handleCommand = async (command: string | undefined, args?: string) => {
     if (!command) {
         console.error("Error: You must specify a command.");
@@ -89,6 +91,23 @@ export const handleCommand = async (command: string | undefined, args?: string) 
         // menus
         case "menuCurrentContext": {
             await buildMenuCurrentContext();
+            break;
+        }
+        case "menuLinks": {
+            await buildMenuLinks();
+            break;
+        }
+        case "menuLinkGroups": {
+            await buildMenuLinkGroups();
+            break;
+        }
+        case "menuEmacsBookmarks": {
+            await buildMenuEmacsBookmarks();
+            break;
+        }
+        // launchItems
+        case "menuLaunchItems": {
+            await buildMenuLaunchItems();
             break;
         }
         default: {
