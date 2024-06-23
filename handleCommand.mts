@@ -6,6 +6,8 @@ import {
     swapContext,
     sendWindowToAnotherContext
 } from "./commands/navigation.mts";
+import { linkGroupStore, stickyLinkStore } from "./commands/links.mts";
+import { saveEmacsWindowBookmark } from "./commands/emacs.mts";
 export const handleCommand = async (command: string | undefined, args?: string) => {
     if (!command) {
         console.error("Error: You must specify a command.");
