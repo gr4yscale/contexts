@@ -4,9 +4,10 @@ import { formatDistanceToNow } from "date-fns";
 
 export const rofiListSelect = async (list: string, prompt: string, prefilter?: string) => {
   $.verbose = false;
-  const selection =
-    await $`echo ${list} | rofi -monitor -1 -disable-history -dmenu -i -p ${prompt}`.nothrow();
-  const sanitized = selection.stdout.trim().replace("*", "").split(" ") ?? [];
+  //const selection =
+  //  await $`echo ${list} | fzf `.nothrow();
+
+  //const filterFlag = prefilter ? `-filter ${prefilter} ` : undefined
 
   const args = ['-monitor',
     '-1','-normal-window','-disable-history', '-matching fuzzy', '-dmenu', '-no-fixed-num-lines', '-i' ]
@@ -22,6 +23,9 @@ export const rofiListSelect = async (list: string, prompt: string, prefilter?: s
   // TOFIX: -format flag
 
   const selection = await $`echo ${list} | rofi ${args}`.nothrow();
+
+  //await $`echo ${list} | rofi -monitor -1 -normal-window -disable-history -matching fuzzy ${filterFlag} -dmenu -i -p ${prompt}`.nothrow();
+
   const sanitized = selection.stdout.trim().replace("*", "").replace("^","").split(" ") ?? [];
   if (sanitized[0]) {
     return sanitized[0];
@@ -90,6 +94,7 @@ export const rofiListSelectRecentContexts = async (
   return await rofiListSelect(list, prompt, prefilter);
 };
 
+// TOFIX: pass in predicate
 export const rofiListSelectRecentActiveContexts = async (
   contexts: Context[],
   prompt: string,

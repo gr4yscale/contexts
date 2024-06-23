@@ -5,7 +5,7 @@ import { formatDistanceToNow } from "date-fns";
 
 import { getState } from "../state.mts";
 
-import { rofiListSelect } from "../ui.mts";
+import { rofiListSelect } from "../selection.mts";
 import { MenuItem } from "../menus.mts";
 
 // fetching links metadata w/ requests?

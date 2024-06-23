@@ -12,7 +12,7 @@ import {
 
 import { allocateWorkspace } from "../workspaces.mts";
 
-import { rofiListSelectRecentContexts } from "../ui.mts";
+import { rofiListSelectRecentContexts } from "../selection.mts";
 
 // context switching
 export const switchContext = async (prompt: string, prefilter?: string) => {
