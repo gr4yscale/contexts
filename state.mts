@@ -38,10 +38,12 @@ export type LinkGroup = {
 export type YamlDoc = {
   contexts: Context[];
   currentContextId: ContextId;
+  previousContextId: ContextId;
 };
 
 let contexts: Context[] = [];
 let currentContext: Context;
+let previousContext: Context;
 
 const dwmTags = new Array<ContextId>(32); // dwm uses a bitmask to store what "tags" a window (client) is visible on
 
@@ -52,6 +54,7 @@ export const getState = () => {
   return {
     contexts,
     currentContext,
+    previousContext,
     dwmTags,
   };
 };
@@ -95,17 +98,27 @@ export const loadState = async () => {
       console.error("expected to find current context");
     }
 
-    return { currentContext, contexts };
+    const previous = contextById(parsed.previousContextId);
+    if (previous) {
+      previousContext = previous;
+    } else {
+      console.error("expected to find current context");
+    }
+
+    return { currentContext, previousContext, contexts };
   } catch (e) {
     console.error(e);
   }
 };
 
 export const storeState = () => {
+
   const state: YamlDoc = {
     currentContextId: currentContext.contextId,
+    previousContextId: previousContext.contextId,
     contexts,
   };
+
   const stringified = stringify(state);
   fs.writeFileSync("./contexts.yml", stringified);
 };
@@ -129,6 +142,10 @@ export const createContext = (id: ContextId) => {
 
 export const updateCurrentContext = (context: Context) => {
   currentContext = context;
+};
+
+export const updatePreviousContext = (context: Context) => {
+  previousContext = context;
 };
 
 export const contextsActive = () => contexts.filter((c) => c.active === true);

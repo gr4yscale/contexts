@@ -4,6 +4,7 @@ import {
   getState,
   createContext,
   updateCurrentContext,
+  updatePreviousContext,
   contextById,
   Context,
   ContextId,
@@ -43,6 +44,9 @@ export const activateContext = async (id: ContextId) => {
   }
 };
 
+export const swapContext = async () => {
+  const { previousContext } = getState();
+  await activateContext(previousContext.contextId);
 };
 
 // windows
