@@ -1,1 +1,17 @@
 node_modules
+/contexts-with-linkgroups.yml
+/contexts.yml.bak.bigger
+/contexts.yml_latesttt
+/contexts.yml.old
+/contexts.yml.latest.bak
+/contexts.yml.bak
+/contexts.test.yml
+/.#test.org
+/tsconfig.json.bak
+/built.mjs
+/package-lock.json
+/server-built.mjs
+/contexts.yml_
+/contexts.yml-last-orig
+/backup.mts
+/contexts.yml
