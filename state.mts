@@ -113,6 +113,7 @@ export const loadState = async () => {
       return c;
     });
 
+    // todo: fix hacks
     const current = contextById(parsed.currentContextId);
     if (current) {
       currentContext = current;
@@ -129,6 +130,7 @@ export const loadState = async () => {
 
     return { currentContext, previousContext, contexts };
   } catch (e) {
+    console.error("Error occured while loading state from YAML");
     console.error(e);
   }
 };

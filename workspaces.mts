@@ -35,6 +35,7 @@ export const assignEmptyWorkspace = async (context: Context) => {
 };
 
 export const syncWorkspaces = (contexts: Context[]) => {
+  // TOFIX: iterate over ws indexes (dwmTags) , and search for contexts by dwmTag
   for (const c of contexts) {
     if (!c.dwmTag) { return }
     if (c.dwmTag > dwmTags.length) { return }
