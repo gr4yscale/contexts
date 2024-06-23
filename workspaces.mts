@@ -14,6 +14,11 @@ export const findEmptyWorkspace = () => {
   return 0;
 };
 
+const availableWorkspacesCount = () => {
+  const a = 29 - (dwmTags.filter(ws => ws === ws).length)
+  return a
+}
+
 export const assignEmptyWorkspace = async (context: Context) => {
   const ws = findEmptyWorkspace();
 

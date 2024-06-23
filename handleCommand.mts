@@ -61,6 +61,28 @@ export const handleCommand = async (command: string | undefined, args?: string) 
             storeState();
             break;
         }
+        // links operations
+        case "linkGroupStore": {
+            await linkGroupStore();
+            storeState();
+            break;
+        }
+        case "stickyLinkStore": {
+            await stickyLinkStore();
+            storeState();
+            break;
+        }
+        // emacs bookmarks + capture
+        case "emacsWindowBookmarkStore": {
+            await saveEmacsWindowBookmark(currentContext);
+            storeState();
+            break;
+        }
+        case "emacsOrgBookmarkStore": {
+            // await saveEmacsOrgBookmark(currentContext);
+            // storeState();
+            break;
+        }
         default: {
             console.error("command not recognized");
         }

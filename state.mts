@@ -11,11 +11,13 @@ export type Context = {
   lastAccessed: Date;
   active: boolean;
   scripts: string[];
-  orgBookmarks: string[];
+  emacsWindowBookmarks: EmacsBookmark[];
+  emacsOrgBookmarks: EmacsBookmark[];
   tags: string[];
   //sticky: boolean; use tag?
   parentContextId?: string;
   linkGroups: LinkGroup[];
+  links: Link[];
 };
 
 export type Link = {
@@ -25,14 +27,26 @@ export type Link = {
   description?: string;
   created: Date;
   accessed: Date;
+  sticky: boolean;
 };
 
 export type LinkGroup = {
   id: string;
-  description?: string; // default to created time, plus details of parent context?
+  name: string; // default to created time, plus details of parent context?
+  description?: string;
   created: Date;
   accessed: Date;
   links: Link[];
+};
+
+export type EmacsBookmark = {
+  id: string;
+  title: string;
+  env: string;
+  url?: string;
+  created: Date;
+  accessed: Date;
+  sticky: boolean;
 };
 
 export type YamlDoc = {
@@ -64,31 +78,39 @@ export const loadState = async () => {
     const file = fs.readFileSync("./contexts.yml", "utf8");
     const parsed = parse(file) as YamlDoc;
 
-    //TOFIX: map dates in linkGroups etc
     contexts = parsed.contexts.map((c) => {
-      const {
-        contextId,
-        name,
-        dwmTag,
-        tags,
-        active,
-        scripts,
-        orgBookmarks,
-        linkGroups,
-      } = c;
-      const context: Context = {
-        contextId,
-        name,
-        dwmTag,
-        created: new Date(c.created),
-        lastAccessed: new Date(c.lastAccessed),
-        active,
-        scripts,
-        orgBookmarks,
-        tags,
-        linkGroups: linkGroups ?? [],
-      };
-      return context;
+      c.created = new Date(c.created)
+      c.lastAccessed = new Date(c.lastAccessed)
+ 
+      c.emacsWindowBookmarks = c.emacsWindowBookmarks ?? []
+      c.emacsWindowBookmarks = c.emacsWindowBookmarks.map((bm) => {
+	bm.created = new Date(bm.created)
+	bm.accessed = new Date(bm.accessed)
+	return bm
+      })
+
+      c.emacsOrgBookmarks = c.emacsOrgBookmarks ?? []
+      c.emacsOrgBookmarks = c.emacsOrgBookmarks.map((bm) => {
+	bm.created = new Date(bm.created)
+	bm.accessed = new Date(bm.accessed)
+	return bm
+      })
+
+      c.linkGroups = c.linkGroups ?? []
+      c.linkGroups = c.linkGroups.map((lg) => {
+	lg.created= new Date(lg.created)
+	lg.accessed = new Date(lg.accessed)
+	lg.links = lg.links ?? []
+	lg.links = lg.links.map((l) => {
+	  l.created = new Date(l.created)
+	  l.accessed= new Date(l.accessed)
+	  return l
+	})
+	return lg
+      })
+      c.links = c.links ?? []
+
+      return c;
     });
 
     const current = contextById(parsed.currentContextId);
@@ -132,9 +154,11 @@ export const createContext = (id: ContextId) => {
     lastAccessed: new Date(),
     active: false,
     scripts: [],
-    orgBookmarks: [],
+    emacsWindowBookmarks: [],
+    emacsOrgBookmarks: [],
     tags: [],
     linkGroups: [],
+    links: [],
   };
   contexts.push(context);
   return context;

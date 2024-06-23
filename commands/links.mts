@@ -1,11 +1,34 @@
 import { $, sleep } from "zx";
 import clipboard from "clipboardy";
 import { nanoid } from "nanoid";
+import { formatDistanceToNow } from "date-fns";
 
 import { getState } from "../state.mts";
 
 import { rofiListSelect } from "../ui.mts";
 import { MenuItem } from "../menus.mts";
+
+// fetching links metadata w/ requests?
+const extractLink = (line: string) => {
+  const parts = line.split("](") ?? [];
+  if (parts.length === 2) {
+    // tab discard extension puts this unicode character (zzz) for sleeping tabs; sanitize
+    const title = parts[0].replace(/💤/g, ' ').substring(3).trim()
+    const url = parts[1].slice(0, -1);
+    return { url, title, id: nanoid(), created: new Date(), accessed: new Date(), sticky: false };
+  } else {
+    //TOFIX throw error here
+    $`notify-send "Error parsing link"`;
+  }
+  return {
+	url: "unknown",
+	title: "unknown",
+	id: nanoid(),
+        created: new Date(),
+	accessed: new Date(),
+	sticky: false
+    };
+};
 
 // links, link groups
 export const linkLoad = async () => {
@@ -29,22 +52,31 @@ export const linkStore = async () => {
   $`notify-send "Contexts: Not Implemented."`;
 };
 
+export const stickyLinkStore = async () => {
+  const { currentContext } = getState();
+    await sleep(500); //TOFIX sleep
+    await $`xdotool key "Control_L+Shift+F12"`;
+    await sleep(100);
+  const clipboardSelection = clipboard.readSync() ?? '';
+  const link = extractLink(clipboardSelection)
+  link.sticky = true
+  currentContext.links.push(link)
+  const msg = "Stored link " + link.title
+   $`notify-send ${msg}`;
+};
+
 export const linkGroupLoad = async (id: string) => {
-  console.log("link group id");
-  console.log(id);
   const { currentContext } = getState();
   if (!currentContext || !currentContext.linkGroups) {
     console.log("no link groups or context");
-    //TOFIX notify-send
+    $`notify-send "Link Group not found."`;
     return;
   }
-
+ 
   // select link group, or is there a "selected link group?" state for current context?
-  const linkGroup = currentContext.linkGroups.find((lg) => (lg.id = id));
+  const linkGroup = currentContext.linkGroups.find((lg) => (lg.id === id));
   if (linkGroup) {
-    console.log("found link group");
-    const links = linkGroup.links ?? []; //TODO createContext mapping
-    const mapped = links.map((l) => l.url);
+    const mapped = linkGroup.links.map((l) => l.url);
     await $`firefox -url ${mapped}`;
   }
 };
@@ -55,41 +87,30 @@ export const linkGroupStore = async () => {
     return;
   }
 
-  // fetching links metadata w/ requests?
-  const extractLink = (line: string, created: Date) => {
-    const parts = line.split("](") ?? [];
-    if (parts.length === 2) {
-      const title = parts[0].substring(5).trim();
-      const url = parts[1].slice(0, -1);
-      return { url, title, id: nanoid(), created, accessed: created };
+  try {
+    await sleep(500); //TOFIX sleep
+    await $`xdotool key "Control_L+F12"`;
+    await sleep(100);
+    const clipboardContent = clipboard.readSync().split("\n") ?? [];
+
+    const links = clipboardContent.map((link) => extractLink(link));
+    if (links.length > 0) {
+      const name = `${links[0].title}`
+      const lg = {
+	id: nanoid(),
+	name,
+	created: new Date(),
+	accessed: new Date(),
+	links
+      }
+      currentContext.linkGroups.push(lg)
+      const msg = "Stored link group (" + links.length + ") " + lg.name
+      $`notify-send ${msg}`;
+      console.log(`stored linkgroup ${lg.name}`);
     }
-    return {
-      url: "unknown",
-      title: "unknown",
-      id: nanoid(),
-      created,
-      accessed: created,
-    };
-  };
-
-  //TOFIX
-  await sleep(500);
-  await $`xdotool key "Control_L+F12"`;
-  await sleep(100);
-  const created = new Date();
-  const clipboardSelection = clipboard.readSync().split("\n") ?? [];
-
-  const links = clipboardSelection.map((link) => extractLink(link, created));
-  if (links.length > 0) {
-    currentContext.linkGroups.push({
-      id: nanoid(),
-      links,
-      created,
-      accessed: created,
-    });
+  } catch (e) {
+    $`notify-send "Contexts: Error occurred while storing link group."`;
   }
-  console.log("stored linkgroup");
-  console.log(currentContext.linkGroups[0]);
 };
 
 export const menuLinks = () => {
@@ -97,13 +118,17 @@ export const menuLinks = () => {
   if (!currentContext || !currentContext.linkGroups[0]) {
     return [];
   }
-  const links = currentContext.linkGroups[0].links ?? [];
+
+  const links = currentContext.linkGroups
+    .sort((l, r) => r.created.getTime() - l.created.getTime())
+    .flatMap(lg => lg.links)
+
   return links.map((l) => {
-    //TOFIX description != title
-    const description = l.description
-      ? l.description.substring(0, 40).padEnd(40, " ")
-      : "";
-    const display = `${description}     ${l.url}`;
+    //TOFIX
+    const timeAgo = formatDistanceToNow(l.created, {includeSeconds: true }).replace('about ', '').replace(' hours', 'h').replace(' days', 'd').replace(' day', 'd').replace(' hour', 'h')
+    const title = l.title.substring(0, 100).padEnd(100, ' ')
+    const display = `${title}   ${timeAgo} ago`
+
     const menuItem: MenuItem = {
       display,
       handler: async (selectionIndex?: number) => {
@@ -122,15 +147,19 @@ export const menuLinks = () => {
 
 export const menuLinkGroups = () => {
   const { currentContext } = getState();
-  return currentContext.linkGroups.map((lg) => {
+
+  const sorted = currentContext.linkGroups.sort(
+    (l, r) => r.created.getTime() - l.created.getTime(),
+  );
+
+  return sorted.map((lg) => {
     const linkCount = lg.links ? lg.links.length : 0;
-    // const created = lg.created ?? new Date(); //TOFIX hack
-    // console.log(created)
-    // const createdString = formatDistanceToNow(created, {includeSeconds: true })
-    // console.log(createdString)
+    const created = lg.created ?? new Date(); //TOFIX hack
+    const createdString = formatDistanceToNow(created, {includeSeconds: true }).replace('about ', '').replace(' hours', 'h').replace(' days', 'd')
+    const title = lg.name.substring(0, 100).padEnd(100, ' ')
     return {
-      //display: `${linkCount.toString()} - ${lg.id}                      ${createdString}`,
-      display: `${linkCount.toString()} - ${lg.id}`,
+      display: `${linkCount.toString()} - ${title}   ${createdString} ago`,
+      //display: `${linkCount.toString()} - ${lg.name}`,
       handler: async (_?: number) => {
         await linkGroupLoad(lg.id);
       },
