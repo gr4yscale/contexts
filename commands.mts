@@ -26,64 +26,8 @@ const initContext = async (context: Context) => {
   // run scripts
 };
 
-export const handleCommand = async (command: string | undefined) => {
-  if (!command) {
-    console.error("Error: You must specify a command.");
-    return;
-  }
   const currentContext = getState().currentContext;
 
-  switch (command) {
-    // navigation
-    case "switchContextRofi": {
-      await switchContextRofi();
-      storeState();
-      break;
-    }
-    case "switchContext": {
-      await switchContext(argv.contextId);
-      storeState();
-      break;
-    }
-    case "sendWindowToAnotherContext": {
-      await sendWindowToAnotherContext();
-      break;
-    }
-    case "currentContextInit": {
-      await initContext(currentContext);
-      break;
-    }
-    // bookmarks
-    case "bookmarks": {
-      await buildMenuBookmarks();
-      break;
-    }
-    // links
-    case "links": {
-      console.log("not implemented");
-      break;
-    }
-    case "linkGroups": {
-      console.log("not implemented");
-      break;
-    }
-    // lifecycle
-    case "deactivateWorkspace": {
-      await deactivateWorkspace(currentContext);
-      storeState();
-      break;
-    }
-    case "pruneInactiveContexts": {
-      // TODO
-      // prompt user for deactivating contexts per dwmTag
-      // store bookmarks, command snippets, etc for deactivated contexts
-      break;
-    }
-    default: {
-      console.error("command not recognized");
-    }
-  }
-};
 
 export const buildMenuBookmarks = async () =>
   await buildMenu({
