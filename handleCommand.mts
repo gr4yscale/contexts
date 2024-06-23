@@ -9,6 +9,12 @@ export const handleCommand = async (command: string | undefined, args?: string) 
     const currentContext = getState().currentContext;
 
     switch (command) {
+        case "deactivateWorkspace": {
+            //TOFIX: confirmation
+            await deallocateWorkspace(currentContext);
+            storeState();
+            break;
+        }
         default: {
             console.error("command not recognized");
         }

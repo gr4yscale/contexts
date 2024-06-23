@@ -2,66 +2,80 @@ import { $ } from "zx";
 
 import { getState, Context } from "./state.mts";
 
+const { dwmTags } = getState() 
+
 export const findEmptyWorkspace = () => {
-  const { dwmTags } = getState();
   for (let i = 1; i < dwmTags.length; i++) {
-    console.log(`tag: ${i}, val: ${dwmTags[i]}`);
-    if (!dwmTags[i] || dwmTags[i] === "available") {
-      $`notify-send "Found available dwm tag: ${i}"`;
+    if (!dwmTags[i] || dwmTags[i] === 'available') {
+      console.log(`found ${i}`)
       return i;
     }
   }
-  $`notify-send "Was unable to find an available dwm tag, using 0"`;
   return 0;
 };
 
 export const assignEmptyWorkspace = async (context: Context) => {
-  const { dwmTags } = getState();
-  const tag = findEmptyWorkspace();
-  context.dwmTag = tag;
-  dwmTags[tag] = context.contextId;
+  const ws = findEmptyWorkspace();
+
+  if (ws > 0) {
+    context.dwmTag = ws;
+    dwmTags[ws] = context.contextId;
+    $`notify-send "context ${context.name} allocated workspace\navailable: ${availableWorkspacesCount()}"`;
+    return true
+  } else {
+    context.dwmTag = undefined;
+    $`notify-send "Was unable to find an available workspace; cancelled"`;
+    return false
+  }
 };
 
 export const syncWorkspaces = (contexts: Context[]) => {
-  const { dwmTags } = getState();
   for (const c of contexts) {
-    //console.log(`checking context ${c.contextId} to see if dwm tag is assigned`)
-    if (c.dwmTag !== undefined && c.dwmTag < dwmTags.length) {
-      dwmTags[c.dwmTag] = c.contextId;
+    if (!c.dwmTag) { return }
+    if (c.dwmTag > dwmTags.length) { return }
+    if (c.dwmTag === undefined || c.dwmTag === 0) { // every restart of contexts frees dwm tag for contexts which got assigned to 0 
+      dwmTags[c.dwmTag] = 'available'
+      c.dwmTag = undefined
     } else {
-      console.log(`context did not have a dwm tag assigned: ${c.contextId}`);
+      dwmTags[c.dwmTag] = c.contextId;
     }
   }
 };
 
 export const viewWorkspace = async (context: Context) => {
-  if (context.dwmTag === undefined) {
-    console.log("Error: context is without a DWM tag!");
-    return;
-  }
+  if (context.dwmTag === undefined || context.dwmTag === 0) { return false; }
   await $`dwmc viewex ${context.dwmTag}`;
+  return true
 };
 
-export const activateWorkspace = async (context: Context) => {
+export const allocateWorkspace = async (context: Context) => {
   //TOFIX: handle case of not finding an available dwm tag
-  if (context.dwmTag === undefined) {
-    assignEmptyWorkspace(context);
+  if (context.dwmTag === undefined || context.dwmTag === 0) {
+    console.log(`Context needs a workspace allocated: ${context.name}`);
+    if (availableWorkspacesCount() > 1) {
+      await assignEmptyWorkspace(context)
+    } else {
+      $`notify-send "Available workspaces = 0; cancelling"`;
+    }
   }
 
-  await viewWorkspace(context);
-  context.active = true;
+  if (await viewWorkspace(context)) {
+    context.active = true; // TOFIX: make this a computed value
+    return true
+  }
+  return false
 };
 
-export const deactivateWorkspace = async (context: Context) => {
-  // confirm ui?
-  await viewWorkspace(context);
+export const deallocateWorkspace = async (context: Context) => {
   // rename dwm tag to "unused" or empty
   if (context.dwmTag) {
-    getState().dwmTags[context.dwmTag] = "available";
-    context.dwmTag = undefined;
+    // confirm ui?
+    dwmTags[context.dwmTag] = 'available'
+    context.dwmTag = undefined
   }
   context.active = false;
   // last accessed?
   // close clients?
-  // save contexts.yml
+  // rename dwm tag with dwmc
+  $`notify-send "Context ${context.name} freed workspace\navailable: ${availableWorkspacesCount()}"`;
 };
