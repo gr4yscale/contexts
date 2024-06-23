@@ -8,6 +8,7 @@ import {
 } from "./commands/navigation.mts";
 import { linkGroupStore, stickyLinkStore } from "./commands/links.mts";
 import { saveEmacsWindowBookmark } from "./commands/emacs.mts";
+import { buildMenuCurrentContext, buildMenuLinks, buildMenuLinkGroups, buildMenuEmacsBookmarks, buildMenuLaunchItems } from "./commands.mts";
 export const handleCommand = async (command: string | undefined, args?: string) => {
     if (!command) {
         console.error("Error: You must specify a command.");
@@ -83,6 +84,11 @@ export const handleCommand = async (command: string | undefined, args?: string) 
         case "emacsOrgBookmarkStore": {
             // await saveEmacsOrgBookmark(currentContext);
             // storeState();
+            break;
+        }
+        // menus
+        case "menuCurrentContext": {
+            await buildMenuCurrentContext();
             break;
         }
         default: {
