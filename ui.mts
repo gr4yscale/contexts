@@ -2,7 +2,7 @@ import { $ } from "zx";
 import { Context } from "./state.mts";
 import { formatDistanceToNow } from "date-fns";
 
-export const rofiListSelect = async (list: string, prompt: string) => {
+export const rofiListSelect = async (list: string, prompt: string, prefilter?: string) => {
   $.verbose = false;
   const selection =
     await $`echo ${list} | rofi -monitor -1 -disable-history -dmenu -i -p ${prompt}`.nothrow();
@@ -28,33 +28,53 @@ export const rofiListSelect = async (list: string, prompt: string) => {
   }
 };
 
-const formatRecentContextsList = async (contexts: Context[]) => {
+const formatContextsList = async (contexts: Context[]) => {
+  // TOFIX: abstract sorting and filtering into a reuseable module; check for query lang libs
   const sorted = contexts.sort(
     (l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime(),
   );
   const mapped = sorted.map((c) => {
-    const activeMarker = c.active ? "*" : "";
-    const contextId = c.contextId + activeMarker;
+    // TOFIX: consider & for sticky contexts
+    //        but then what about active *and* sticky contexts?
+    //        maybe sticky contexts *must* be initialized to be valid?
+    //        ie, can't deactivate a context until it is also no longer sticky
+
+    let marker = c.active ? "*" : "^";
+   
+    // if (c.tags.includes('sticky')) {
+    //   marker = '%'
+    // }
+    const contextId = c.contextId + marker;
     const tags = c.tags.join(",");
-    return `${contextId.padEnd(64, " ")}  ${tags}`;
+    return `${contextId.padEnd(80, " ")}  ${tags}`;
   });
   return mapped.length > 0
     ? mapped.reduce((prev, item) => prev + "\n" + item)
     : "";
 };
 
-const formatRecentContextsListExtended = async (contexts: Context[]) => {
+const formatContextsListExtended = async (contexts: Context[]) => {
+  // TOFIX: abstract sorting and filtering into a reuseable module; check for query lang libs
   const sorted = contexts.sort(
     (l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime(),
   );
   const mapped = sorted.map((c) => {
-    const activeMarker = c.active ? "*" : "";
-    const contextId = c.contextId + activeMarker;
-    const tags = c.tags.join(",").padEnd(36, " ");
-    const accessed = formatDistanceToNow(c.lastAccessed, {
-      includeSeconds: true,
-    });
-    return `${contextId.padEnd(56, " ")}  ${tags}  ${accessed}`;
+    // TOFIX: consider & for sticky contexts
+    //        but then what about active *and* sticky contexts?
+    //        maybe sticky contexts *must* be initialized to be valid?
+    //        ie, can't deactivate a context until it is also no longer sticky
+
+    let marker = c.active ? "*" : "^";
+   
+    // if (c.tags.includes('sticky')) {
+    //   marker = '%'
+    // }
+    const contextId = c.contextId + marker;
+    const tags = c.tags.join(",").substring(0, 32).padEnd(32, ' ')
+    //TOFIX absoutely atrocious
+    const lastAccessed = formatDistanceToNow(c.lastAccessed, {includeSeconds: true }).replace('about ', '').replace('days', 'days').replace('day', 'day').replace('minutes', 'mins').replace('minute', 'min').replace('less than a', '<').replace('less than', '<').replace('seconds', 'secs')
+
+    return `${contextId.padEnd(36, " ")}  ${tags}  ${lastAccessed}`;
   });
   return mapped.length > 0
     ? mapped.reduce((prev, item) => prev + "\n" + item)
@@ -64,9 +84,12 @@ const formatRecentContextsListExtended = async (contexts: Context[]) => {
 export const rofiListSelectRecentContexts = async (
   contexts: Context[],
   prompt: string,
+  prefilter?: string
 ) => {
-  const list = await formatRecentContextsList(contexts);
-  return await rofiListSelect(list, prompt);
+  const list = await formatContextsListExtended(contexts);
+  return await rofiListSelect(list, prompt, prefilter);
+};
+
 export const rofiListSelectRecentActiveContexts = async (
   contexts: Context[],
   prompt: string,
