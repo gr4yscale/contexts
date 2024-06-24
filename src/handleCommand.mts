@@ -1,15 +1,15 @@
 import { getState, storeState } from "./state.mts";
 import { allocateWorkspace, deallocateWorkspace } from "./workspaces.mts";
 import {
-    activateContext,
-    switchContext,
-    swapContext,
-    sendWindowToAnotherContext
+    activateActivity,
+    switchActivity,
+    swapActivity,
+    sendWindowToAnotherActivity
 } from "./commands/navigation.mts";
 import { linkGroupStore, stickyLinkStore } from "./commands/links.mts";
 import { saveEmacsWindowBookmark } from "./commands/emacs.mts";
-import { buildMenuCurrentContext, buildMenuLinks, buildMenuLinkGroups, buildMenuEmacsBookmarks, buildMenuLaunchItems } from "./menuBuilders.mjs";
-import { initContext } from "./initContext.mts";
+import { buildMenuCurrentActivity, buildMenuLinks, buildMenuLinkGroups, buildMenuEmacsBookmarks, buildMenuLaunchItems } from "./menuBuilders.mjs";
+import { initActivity } from "./initActivity.mts";
 
 export const handleCommand = async (command: string | undefined, args?: string) => {
     if (!command) {
@@ -18,51 +18,51 @@ export const handleCommand = async (command: string | undefined, args?: string) 
     }
     console.log(`handling command ${command}`);
 
-    const currentContext = getState().currentContext;
+    const currentActivity = getState().currentActivity;
 
     switch (command) {
         // navigation
-        case "switchContext": {
-            await switchContext("all");
+        case "switchActivity": {
+            await switchActivity("all");
             storeState();
             break;
         }
-        case "switchContextActive": {
-            await switchContext("active", "* ");
+        case "switchActivityActive": {
+            await switchActivity("active", "* ");
             storeState();
             break;
         }
-        case "switchContextSticky": {
-            await switchContext(" ", "sticky ");
+        case "switchActivitySticky": {
+            await switchActivity(" ", "sticky ");
             storeState();
             break;
         }
-        case "swapContext": {
-            await swapContext();
+        case "swapActivity": {
+            await swapActivity();
             storeState();
             break;
         }
-        case "sendWindowToAnotherContext": {
-            await sendWindowToAnotherContext();
+        case "sendWindowToAnotherActivity": {
+            await sendWindowToAnotherActivity();
             break;
         }
-        case "activateContext": {
+        case "activateActivity": {
             if (args) {
-                await activateContext(args);
+                await activateActivity(args);
                 storeState();
             }
             break;
         }
-        // current context operations
-        case "initContext": {
-            await allocateWorkspace(currentContext);
-            await initContext(currentContext);
+        // current activity operations
+        case "initActivity": {
+            await allocateWorkspace(currentActivity);
+            await initActivity(currentActivity);
             storeState();
             break;
         }
         case "deactivateWorkspace": {
             //TOFIX: confirmation
-            await deallocateWorkspace(currentContext);
+            await deallocateWorkspace(currentActivity);
             storeState();
             break;
         }
@@ -79,18 +79,18 @@ export const handleCommand = async (command: string | undefined, args?: string) 
         }
         // emacs bookmarks + capture
         case "emacsWindowBookmarkStore": {
-            await saveEmacsWindowBookmark(currentContext);
+            await saveEmacsWindowBookmark(currentActivity);
             storeState();
             break;
         }
         case "emacsOrgBookmarkStore": {
-            // await saveEmacsOrgBookmark(currentContext);
+            // await saveEmacsOrgBookmark(currentActivity);
             // storeState();
             break;
         }
         // menus
-        case "menuCurrentContext": {
-            await buildMenuCurrentContext();
+        case "menuCurrentActivity": {
+            await buildMenuCurrentActivity();
             break;
         }
         case "menuLinks": {

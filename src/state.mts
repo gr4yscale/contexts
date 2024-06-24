@@ -1,10 +1,10 @@
 import { parse, stringify } from "yaml";
 import { fs } from "zx";
 
-export type ContextId = string;
+export type ActivityId = string;
 
-export type Context = {
-  contextId: ContextId;
+export type Activity = {
+  activityId: ActivityId;
   name: string;
   dwmTag?: number;
   created: Date;
@@ -15,7 +15,7 @@ export type Context = {
   emacsOrgBookmarks: EmacsBookmark[];
   tags: string[];
   //sticky: boolean; use tag?
-  parentContextId?: string;
+  parentActivityId?: string;
   linkGroups: LinkGroup[];
   links: Link[];
 };
@@ -32,7 +32,7 @@ export type Link = {
 
 export type LinkGroup = {
   id: string;
-  name: string; // default to created time, plus details of parent context?
+  name: string; // default to created time, plus details of parent activity?
   description?: string;
   created: Date;
   accessed: Date;
@@ -50,35 +50,35 @@ export type EmacsBookmark = {
 };
 
 export type YamlDoc = {
-  contexts: Context[];
-  currentContextId: ContextId;
-  previousContextId: ContextId;
+  activities: Activity[];
+  currentActivityId: ActivityId;
+  previousActivityId: ActivityId;
 };
 
-let contexts: Context[] = [];
-let currentContext: Context;
-let previousContext: Context;
+let activities: Activity[] = [];
+let currentActivity: Activity;
+let previousActivity: Activity;
 
-const dwmTags = new Array<ContextId>(32); // dwm uses a bitmask to store what "tags" a window (client) is visible on
+const dwmTags = new Array<ActivityId>(32); // dwm uses a bitmask to store what "tags" a window (client) is visible on
 
-export const contextById = (id: ContextId) =>
-  contexts.find((c) => c.contextId === id);
+export const activityById = (id: ActivityId) =>
+  activities.find((c) => c.activityId === id);
 
 export const getState = () => {
   return {
-    contexts,
-    currentContext,
-    previousContext,
+    activities,
+    currentActivity,
+    previousActivity,
     dwmTags,
   };
 };
 
 export const loadState = async () => {
   try {
-    const file = fs.readFileSync("./contexts.yml", "utf8");
+    const file = fs.readFileSync("./state.yml", "utf8");
     const parsed = parse(file) as YamlDoc;
 
-    contexts = parsed.contexts.map((c) => {
+    activities = parsed.activities.map((c) => {
       c.created = new Date(c.created)
       c.lastAccessed = new Date(c.lastAccessed)
  
@@ -114,21 +114,21 @@ export const loadState = async () => {
     });
 
     // todo: fix hacks
-    const current = contextById(parsed.currentContextId);
+    const current = activityById(parsed.currentActivityId);
     if (current) {
-      currentContext = current;
+      currentActivity = current;
     } else {
-      console.error("expected to find current context");
+      console.error("expected to find current activity");
     }
 
-    const previous = contextById(parsed.previousContextId);
+    const previous = activityById(parsed.previousActivityId);
     if (previous) {
-      previousContext = previous;
+      previousActivity = previous;
     } else {
-      console.error("expected to find current context");
+      console.error("expected to find current activity");
     }
 
-    return { currentContext, previousContext, contexts };
+    return { currentActivity, previousActivity, activities };
   } catch (e) {
     console.error("Error occured while loading state from YAML");
     console.error(e);
@@ -138,21 +138,21 @@ export const loadState = async () => {
 export const storeState = () => {
 
   const state: YamlDoc = {
-    currentContextId: currentContext.contextId,
-    previousContextId: previousContext.contextId,
-    contexts,
+    currentActivityId: currentActivity.activityId,
+    previousActivityId: previousActivity.activityId,
+    activities,
   };
 
   const stringified = stringify(state);
   //TOFIX
   // https://joeattardi.dev/customizing-jsonparse-and-jsonstringify#heading-adding-a-reviver-function
-  fs.writeFileSync("./contexts.yml", stringified);
+  fs.writeFileSync("./activities.yml", stringified);
 };
 
-export const createContext = (id: ContextId) => {
-  console.log(`creating context: ${id}`);
-  const context = {
-    contextId: id,
+export const createActivity = (id: ActivityId) => {
+  console.log(`creating activity: ${id}`);
+  const activity = {
+    activityId: id,
     name: id,
     created: new Date(),
     lastAccessed: new Date(),
@@ -164,17 +164,17 @@ export const createContext = (id: ContextId) => {
     linkGroups: [],
     links: [],
   };
-  contexts.push(context);
-  return context;
+  activities.push(activity);
+  return activity;
 };
 
 // todo replace with a stack
-export const updateCurrentContext = (context: Context) => {
-  currentContext = context;
+export const updateCurrentActivity = (activity: Activity) => {
+  currentActivity = activity;
 };
 
-export const updatePreviousContext = (context: Context) => {
-  previousContext = context;
+export const updatePreviousActivity = (activity: Activity) => {
+  previousActivity = activity;
 };
 
-export const contextsActive = () => contexts.filter((c) => c.active === true);
+export const activitiesActive = () => activities.filter((c) => c.active === true);

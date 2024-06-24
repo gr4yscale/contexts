@@ -3,7 +3,7 @@
 import { createServer, Socket } from "net";
 import { $, fs } from "zx";
 
-import { loadState, contextsActive } from "./state.mts";
+import { loadState, activitiesActive } from "./state.mts";
 import { handleCommand } from "./handleCommand.mts";
 import { syncWorkspaces } from "./workspaces.mts";
 
@@ -22,7 +22,7 @@ const server = createServer((socket: Socket) => {
 	await handleCommand(data);
       }
     } catch (e) {
-      const msg = `Contexts: Error handling command ${data}!`;
+      const msg = `Activities: Error handling command ${data}!`;
       $`notify-send "${msg}"`;
       console.error(msg);
       console.error(e);
@@ -36,8 +36,8 @@ server.listen("/tmp/contexts.sock", () => {
 
 try {
   await loadState();
-  syncWorkspaces(contextsActive());
+  syncWorkspaces(activitiesActive());
 } catch (e) {
-  $`notify-send "Contexts: unhandled error occurred."`;
+  $`notify-send "Activities: unhandled error occurred."`;
   console.error(e);
 }

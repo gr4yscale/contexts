@@ -32,11 +32,11 @@ const extractLink = (line: string) => {
 
 // links, link groups
 export const linkLoad = async () => {
-  const { currentContext } = getState();
-  if (!currentContext || !currentContext.linkGroups[0]) {
+  const { currentActivity } = getState();
+  if (!currentActivity || !currentActivity.linkGroups[0]) {
     return;
   }
-  const links = currentContext.linkGroups[0].links;
+  const links = currentActivity.linkGroups[0].links;
   const mapped = links.map((l) => {
     const description = l.description
       ? l.description.substring(0, 40).padEnd(40, " ")
@@ -49,32 +49,32 @@ export const linkLoad = async () => {
 };
 
 export const linkStore = async () => {
-  $`notify-send "Contexts: Not Implemented."`;
+  $`notify-send "Activities: Not Implemented."`;
 };
 
 export const stickyLinkStore = async () => {
-  const { currentContext } = getState();
+  const { currentActivity } = getState();
     await sleep(500); //TOFIX sleep
     await $`xdotool key "Control_L+Shift+F12"`;
     await sleep(100);
   const clipboardSelection = clipboard.readSync() ?? '';
   const link = extractLink(clipboardSelection)
   link.sticky = true
-  currentContext.links.push(link)
+  currentActivity.links.push(link)
   const msg = "Stored link " + link.title
    $`notify-send ${msg}`;
 };
 
 export const linkGroupLoad = async (id: string) => {
-  const { currentContext } = getState();
-  if (!currentContext || !currentContext.linkGroups) {
-    console.log("no link groups or context");
+  const { currentActivity } = getState();
+  if (!currentActivity || !currentActivity.linkGroups) {
+    console.log("no link groups or activity");
     $`notify-send "Link Group not found."`;
     return;
   }
  
-  // select link group, or is there a "selected link group?" state for current context?
-  const linkGroup = currentContext.linkGroups.find((lg) => (lg.id === id));
+  // select link group, or is there a "selected link group?" state for current activity?
+  const linkGroup = currentActivity.linkGroups.find((lg) => (lg.id === id));
   if (linkGroup) {
     const mapped = linkGroup.links.map((l) => l.url);
     await $`firefox -url ${mapped}`;
@@ -82,8 +82,8 @@ export const linkGroupLoad = async (id: string) => {
 };
 
 export const linkGroupStore = async () => {
-  const { currentContext } = getState();
-  if (!currentContext) {
+  const { currentActivity } = getState();
+  if (!currentActivity) {
     return;
   }
 
@@ -103,23 +103,23 @@ export const linkGroupStore = async () => {
 	accessed: new Date(),
 	links
       }
-      currentContext.linkGroups.push(lg)
+      currentActivity.linkGroups.push(lg)
       const msg = "Stored link group (" + links.length + ") " + lg.name
       $`notify-send ${msg}`;
       console.log(`stored linkgroup ${lg.name}`);
     }
   } catch (e) {
-    $`notify-send "Contexts: Error occurred while storing link group."`;
+    $`notify-send "Activities: Error occurred while storing link group."`;
   }
 };
 
 export const menuLinks = () => {
-  const { currentContext } = getState();
-  if (!currentContext || !currentContext.linkGroups[0]) {
+  const { currentActivity } = getState();
+  if (!currentActivity || !currentActivity.linkGroups[0]) {
     return [];
   }
 
-  const links = currentContext.linkGroups
+  const links = currentActivity.linkGroups
     .sort((l, r) => r.created.getTime() - l.created.getTime())
     .flatMap(lg => lg.links)
 
@@ -146,9 +146,9 @@ export const menuLinks = () => {
 };
 
 export const menuLinkGroups = () => {
-  const { currentContext } = getState();
+  const { currentActivity } = getState();
 
-  const sorted = currentContext.linkGroups.sort(
+  const sorted = currentActivity.linkGroups.sort(
     (l, r) => r.created.getTime() - l.created.getTime(),
   );
 

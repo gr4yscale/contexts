@@ -2,78 +2,78 @@ import { $ } from "zx";
 
 import {
   getState,
-  createContext,
-  updateCurrentContext,
-  updatePreviousContext,
-  contextById,
-  Context,
-  ContextId,
+  createActivity,
+  updateCurrentActivity,
+  updatePreviousActivity,
+  activityById,
+  Activity,
+  ActivityId,
 } from "../state.mts";
 
 import { allocateWorkspace } from "../workspaces.mts";
 
-import { rofiListSelectRecentContexts } from "../selection.mts";
+import { rofiListSelectRecentActivities } from "../selection.mts";
 
-// context switching
-export const switchContext = async (prompt: string, prefilter?: string) => {
-  const selectedContextId = await selectRecentContextId(prompt, prefilter);
-  if (selectedContextId) {
-    await activateContext(selectedContextId);
+// activity switching
+export const switchActivity = async (prompt: string, prefilter?: string) => {
+  const selectedActivityId = await selectRecentActivityId(prompt, prefilter);
+  if (selectedActivityId) {
+    await activateActivity(selectedActivityId);
   }
 };
 
-// todo: overload this with contextId or Context
-export const activateContext = async (id: ContextId) => {
-  const previousContext = getState().currentContext;
+// todo: overload this with activityId or Activity
+export const activateActivity = async (id: ActivityId) => {
+  const previousActivity = getState().currentActivity;
 
-  let context: Context | undefined;
-  context = contextById(id);
-  if (!context) {
-    console.log(`context not found, creating for id: ${id}`);
-    context = createContext(id);
-    $`notify-send "Created new context: ${id}"`;
+  let activity: Activity | undefined;
+  activity = activityById(id);
+  if (!activity) {
+    console.log(`activity not found, creating for id: ${id}`);
+    activity = createActivity(id);
+    $`notify-send "Created new activity: ${id}"`;
   }
 
-  if(await allocateWorkspace(context)) {
+  if(await allocateWorkspace(activity)) {
     // todo: indempotency
-    updateCurrentContext(context);
-    updatePreviousContext(previousContext);
-    context.lastAccessed = new Date();
-    console.log('activated ' + context.name)
-    $`notify-send -a context -t 500 "Activated context: ${context.name}; ws: ${context.dwmTag}"`;
+    updateCurrentActivity(activity);
+    updatePreviousActivity(previousActivity);
+    activity.lastAccessed = new Date();
+    console.log('activated ' + activity.name)
+    $`notify-send -a activity -t 500 "Activated activity: ${activity.name}; ws: ${activity.dwmTag}"`;
   }
 };
 
-export const swapContext = async () => {
-  const { previousContext } = getState();
-  await activateContext(previousContext.contextId);
+export const swapActivity = async () => {
+  const { previousActivity } = getState();
+  await activateActivity(previousActivity.activityId);
 };
 
 // windows
-export const sendWindowToAnotherContext = async () => {
-  const context = await selectRecentContext("send to context:");
-  if (context) {
-    console.log(`sending window to ${context.dwmTag}: ${context.contextId}`);
-    await $`dwmc tagex ${context.dwmTag}`;
-    context.lastAccessed = new Date();
+export const sendWindowToAnotherActivity = async () => {
+  const activity = await selectRecentActivity("send to activity:");
+  if (activity) {
+    console.log(`sending window to ${activity.dwmTag}: ${activity.activityId}`);
+    await $`dwmc tagex ${activity.dwmTag}`;
+    activity.lastAccessed = new Date();
   }
 };
 
 // monitor selection
 
 // util
-const selectRecentContextId = async (prompt: string, prefilter?: string) => {
-  const { contexts } = getState();
-  return await rofiListSelectRecentContexts(
-    contexts,
-    prompt ?? "recent context: ",
+const selectRecentActivityId = async (prompt: string, prefilter?: string) => {
+  const { activities } = getState();
+  return await rofiListSelectRecentActivities(
+    activities,
+    prompt ?? "recent activity: ",
     prefilter
   );
 };
 
-const selectRecentContext = async (prompt: string) => {
-  const contextId = await selectRecentContextId(prompt);
-  if (contextId) {
-    return contextById(contextId);
+const selectRecentActivity = async (prompt: string) => {
+  const activityId = await selectRecentActivityId(prompt);
+  if (activityId) {
+    return activityById(activityId);
   }
 };

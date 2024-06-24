@@ -4,7 +4,7 @@ import clipboard from "clipboardy";
 import { nanoid } from "nanoid";
 import { formatDistanceToNow } from "date-fns";
 
-import { getState, Context, EmacsBookmark } from "../state.mts";
+import { getState, Activity, EmacsBookmark } from "../state.mts";
 
 export const viewEmacsWindowBookmark = (bookmark: EmacsBookmark) => {
     const evalArg = '(burly-open-bookmark "' + bookmark.id + '")';
@@ -18,17 +18,17 @@ export const viewEmacsWindowBookmark = (bookmark: EmacsBookmark) => {
 
 
 export const viewEmacsWindowBookmarks = () => {
-  const context = getState().currentContext;
-  if (!context.emacsWindowBookmarks || !context.emacsWindowBookmarks.length) {
-    $`notify-send "No Emacs bookmarks for current context."`;
+  const activity = getState().currentActivity;
+  if (!activity.emacsWindowBookmarks || !activity.emacsWindowBookmarks.length) {
+    $`notify-send "No Emacs bookmarks for current activity."`;
     return;
   }
-  for (const bm of context.emacsWindowBookmarks) {
+  for (const bm of activity.emacsWindowBookmarks) {
     viewEmacsWindowBookmark(bm)
   }
 };
 
-export const saveEmacsWindowBookmark = async (context: Context) => {
+export const saveEmacsWindowBookmark = async (activity: Activity) => {
     await $`xdotool key "F10"`;
     await sleep(100);
 
@@ -37,13 +37,13 @@ export const saveEmacsWindowBookmark = async (context: Context) => {
   await $`xdotool key "Control_L+F10"`;
   await sleep(500);
 
-  const bookmarkTitle = `contexts.${context.name}.${nanoid()}`;
+  const bookmarkTitle = `activities.${activity.name}.${nanoid()}`;
   await $`xdotool type "${bookmarkTitle}"`;
   await $`xdotool key Return`;
 
-  const env = context.tags.includes('dev') ? 'dev' : 'org'
+  const env = activity.tags.includes('dev') ? 'dev' : 'org'
 
-    context.emacsWindowBookmarks.push({
+    activity.emacsWindowBookmarks.push({
       id: nanoid(),
 	title: headlinePath,
 	env,
@@ -54,8 +54,8 @@ export const saveEmacsWindowBookmark = async (context: Context) => {
 }
 
 export const menuEmacsWindowBookmarks = () => {
-  const { currentContext } = getState();
-  return currentContext.emacsWindowBookmarks.map((bm) => {
+  const { currentActivity } = getState();
+  return currentActivity.emacsWindowBookmarks.map((bm) => {
     const createdString = formatDistanceToNow(bm.created, {includeSeconds: true })
     // if bm.id is org heading vs bookmark...
     return {
@@ -94,20 +94,20 @@ export const viewEmacsOrgBookmark = (bookmark: EmacsBookmark) => {
 };
 
 export const viewEmacsOrgBookmarks = () => {
-  const context = getState().currentContext;
-  if (!context.emacsOrgBookmarks || !context.emacsOrgBookmarks.length) {
-    $`notify-send "No Emacs org bookmarks for current context."`;
+  const activity = getState().currentActivity;
+  if (!activity.emacsOrgBookmarks || !activity.emacsOrgBookmarks.length) {
+    $`notify-send "No Emacs org bookmarks for current activity."`;
     return;
   }
-  for (const bm of context.emacsOrgBookmarks) {
+  for (const bm of activity.emacsOrgBookmarks) {
     viewEmacsOrgBookmark(bm)
   }
 };
 
 
 export const menuEmacsOrgBookmarks = () => {
-  const { currentContext } = getState();
-  return currentContext.emacsOrgBookmarks.map((bm) => {
+  const { currentActivity } = getState();
+  return currentActivity.emacsOrgBookmarks.map((bm) => {
     const createdString = formatDistanceToNow(bm.created, {includeSeconds: true })
     // if bm.id is org heading vs bookmark...
     return {

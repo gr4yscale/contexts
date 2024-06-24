@@ -5,11 +5,11 @@ import { getState } from "./state.mts";
 import { buildMenu } from "./menus.mts";
 import { menuLinks, menuLinkGroups } from "./commands/links.mts";
 import { menuEmacsWindowBookmarks, menuEmacsOrgBookmarks } from "./commands/emacs.mts";
-export const buildMenuCurrentContext = async () => {
-  const currentContext = getState().currentContext;
+export const buildMenuCurrentActivity = async () => {
+  const currentActivity = getState().currentActivity;
 
   await buildMenu({
-    display: "current context",
+    display: "current activity",
     builder: () => [
       { display: "links", builder: () => menuLinks() },
       { display: "links by group", builder: () => menuLinkGroups() },
@@ -47,7 +47,7 @@ export const buildMenuEmacsBookmarks = async () => {
 };
 
 export const buildMenuLaunchItems = async () => {
-  const c = getState().currentContext;
+  const c = getState().currentActivity;
   //const linksAll = linkGroups.flatMap((lg) => lg.links);
 
   const menuItemLinks = c.links.filter((l) => l.sticky === true).map((l) => {
