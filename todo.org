@@ -1,0 +1,1300 @@
+* context / workspaces manager (ctxman) :digital:
+** TODO [#A] ***** contexts architecture change *****
+:PROPERTIES:
+:ID:       d995da8c-b646-4baf-b926-fd5a3f231d56
+:END:
+*** STARTED rename contexts -> activities
+*** define new data models  + relations
+**** Context (1 current, always. composed of several parameters)
+***** Activities (unique list)
+****** actions, tools, operations (function, script)
+****** resources (workspaces, links, org ids)
+**** trail? 
+*** mode selection menu (add data from routine tree)
+*** list 'activities' by modeid
+*** activities list state managed by context
+*** tools / action = function (open a file in xyz app, download a video, send keystrokes to app, wait, do something else)
+*** define resources
+*** current activity menu: Actions/Tools/Scripts + Resources (link, org id, folder, file)
+**** pass resource to action / tool
+*** keybindings: mode selection, ws selection, tools/actions menu, context menu, bettter list selection (avy style)
+*** 
+*** global context menu to set mode, time avail, etc
+
+*** selecting activities for an ad-hoc list
+
+
+*** emacs: filter tasks by modeid, activityid
+*** emacs: filter tags by list of currently enabled modeids, or activityid
+*** emacs: org element at point: link to an activity (select)
+*** emacs: get current mode (shell out)
+
+
+
+
+
+
+
+
+
+
+
+** ****TO-TRIAGE (features/tasks) ****
+*** explore: (feeds) - github, ig, etc...can still be constrained by interest/account
+*** "trails" - starts when opening browser for a new topic, like i usually do in temp context for now
+*** show recently opened contexts, sticky, tags etc
+
+*** global voice to text -> paste/type into textbox
+
+*** sleep hook for weekplan
+https://wiki.archlinux.org/title/Power_management/Suspend_and_hibernate#Sleep_hooks
+
+*** prune + destroy contexts; archive resources
+prune by age
+prompt user for deactivating contexts that haven't been accessed in a while but are occupying a dwm tag
+store bookmarks, command snippets, etc for deactivated contexts in an archive?
+*** edit metadata for list items (tags list, name for activities, etc)
+*** see recently accessed contexts, even if dead
+
+*** contexts: push "context-switch" context onto the stack when switching
+*** enable side-effects (actions) to trigger when context stack is updated
+*** run queries about contexts, output to org blocks
+
+*** stop making contexts for projects? keep projects for higher-level contexts?
+
+*** "explore" / "inspiration" contexts for the appropriate time to do that
+
+*** temp context -> persist vs purge. track age and gc contexts every x hours
+*** default context - jump back to after no activity in a while (week intentions)
+
+*** context: jump back (home + esc = jump back, home + home = contexts list)
+
+*** how many times opened contexts per day
+**** contexts-stats
+
+
+
+*** contexts help page / root org doc
+*** in which contexts do i have clients? (ask dwm how many clients on selected workspace?)
+
+*** bookmarks / links tags separate from contexts and their tags?
+
+*** run command ON a selected context - don't select the context first, then run the command 
+
+*** dwm tagmask -> 64bits
+*** dwm: activated state - decouple dwm tag assignment from 'activated'
+
+*** transient contexts, and auto purge prompt
+
+*** steno input method for contexts access
+*** stop abusing dwm workspaces, make it semantically correct to prevent adhd)
+*** whisper ai input method for navigation and audio rendering
+
+*** contexts history - git-like, can branch?
+
+*** jump to new context from keywords (in org, browser text selected, etc?): *things*, *people*, *actions, *intentions*
+
+*** "new temp browsing context"
+**** no more meta-g, b
+**** if a concrete trail is formed, and we need to persist, we can save current browser window
+
+*** concepts: storage, retrieval, retention, focus, attention
+
+*** command: activate context, run command, with parameter (url encode?)
+
+*** suggestions for contexts reinforced by what time of day + duration you usually go to them
+
+*** subcontext from a more broad context (Narrowing)
+
+*** context list filters: tags selected, time of day / scheduling, mood/mental state/mental performance, weather, time available, location
+*** modes switching for context list: recent, tags selected, sticky, active, marked, all
+**** <home>: shows lists in different modes
+*** schedules / routines just auto-select tags
+
+*** "mark" a set of contexts to run commands: (de)activate, make group? (ContextGroup), delete etc
+*** "mark" links to: move to another LinkGroup, delete, open
+*** rofi: display tree-like structure for Links+Linkgroups?
+*** 'focus' mode: hides all contexts except a selected/marked list; *each new window becomes a subcontext?*
+**** is ContextGroup needed? maybe stick with just a transient marked set
+**** see emacs marks; transient vs
+**** update /etc/hosts to block whatsapp, YT, etc?
+https://github.com/MadhavBahl/Control-Yourself/blob/master/JavaScript/blocker.js
+*** notify-send mode changes
+
+*** "mark xyz contexts" - as active, deactivate, etc
+
+*** contexts <-> org nodes, links, content, relationships
+**** draw it out for vinny + prot?
+
+*** feeding the reccomendation engines at the time you want; otherwise staying anon
+**** pipetube
+
+*** yt watch history
+
+*** message *retrieval* also needs focus (ex: "what was that place that andrijana shared with me?" ... 10 text responses later.....)
+
+*** message *sending* needs buffering (maybe its not a good time to send that to them rn and you know it)
+
+*** migrating resources from one context to another
+
+*** scripts
+*** global links search
+*** typesense for nested document search (find link by tag or keyword in context)
+*** global search: links (opens the context it was found in), contexts, org headlines
+**** gonna need redis
+
+*** contexts share resources? (links, org headlines? etc)
+
+*** a person is a context or a node; social -> vinny; can keep messaging logs there
+
+*** tags are keywords for contexts?
+
+*** computed tags: "org" for contexts with an orgBookmarks item?
+
+*** when navigating to that resource, we are presented with a refined context list to choose from
+**** would this get messy?
+
+
+*** define multiple bookmarks for dev-contexts: todo.org + dev window
+*** parent, or related-to relationships in place of tags? example: study-xyz
+
+*** add todo command (so that i quit writing paper notes)
+
+*** org-headline bookmarking -> default naming, also do we first switch context?
+
+
+*** search relevancy by access - weighted graph? (vinny thought, maybe ask clarification)
+
+*** track context open count, average age of contexts, etc
+
+*** jumping to another context, vs an org-heading within the same emacs frame
+
+*** querying contexts for bookmarks list; skip rofi interface, return stdout
+
+*** linking org headings to contexts vs other org headings
+
+*** brotab-like browser interface? fork "copy as markdown"?
+*** bug: can't store links while dunst notification is up?
+
+
+*** client / window count in contexts
+
+*** send links to another inactive context
+
+*** scheduling / timeboxing ContextGroups
+
+*** bookmarks server (context_id is like request_id in distributed tracing)
+
+*** how does org transclusion fit into contexts nodes?
+
+*** parent contexts (or tag filters): study (read), *explore* (timebox it), project, brainstorm, dev, watch, community/social, house
+
+*** ink
+https://github.com/vadimdemedes/ink#getting-started
+
+*** ux issue: typing a new context which has substring text as existing context; requires inventing new context name
+
+*** org headline bookmark
+
+*** org notes can link to a linkgroup in a context, for a list of links
+
+*** parent contexts apply filters (tags) to context selection process? ie, you "zoom into" a context, such as study?
+
+*** scripts launching - pipe-viewer
+
+*** contexts expiration date - timer / age
+
+*** linkgroups sorting + format
+*** track time active on contexts to a separate time-series yaml
+*** move LinkGroups + Links to other, or multiple contexts
+
+*** frecency for contexts list
+https://en.wikipedia.org/wiki/Frecency
+Frecency can be computed from a list of use dates, either as pro-actively while a user browses the web or as needed.[4] Some frecency measures can also be computed in a rolling manner without storing such a list.[1]
+The ZFS filesystem uses this concept in its adaptive replacement cache (ARC) cache with a most recently used (MRU) and most frequently used (MFU) list. 
+
+
+*** send window to inactive context - don't send?
+
+*** when opening linkgroup, when ff window isn't already open, be sure to open it or we open tab in another context
+
+*** stateful filters that can be "applied" to context list, such as selecting a subset of contexts to be "sticky"
+
+*** history / time-series of contexts snapshots
+
+*** contexts list frecency + sticky behavior
+**** construct by putting 'sticky' contexts at the top of search; limit to most recent 5-10, and place the rest of them interleaved with the other contexts (inactive and active), sorted by frecency
+*** context init: popup menu allowing selection of items to launch (linkgroups, bookmarks, scripts), with multi-selection state applied from the previous init
+
+*** contexts: (bug) workspaces availability- having to restart 
+
+*** context count in prompt
+*** org-ql tags
+*** active contexts: -filter flag in rofi
+
+*** org-ql for inheriting contexts tags
+*** helper funcs to write headlines for new contexts? (review contexts list)
+
+*** context "stickiness" + list shortcut
+
+*** fzf tab completion
+
+*** scripts list; associate with contexts
+*** bookmarks in separate db; later it can be an API server for a flutter/web app
+*** temp vs "sticky" state + filtering
+*** search through ALL links
+*** jump to context when sending window
+
+*** mpv queuing
+
+*** contexts schema: temp, or "projected age" for auto-pruning
+
+*** org func to make a link and also add it to current context
+
+*** url to linkgroup *
+*** open linkgroup, switch context
+
+*** contexts url handler for emacs
+
+*** YT: rofi /fzf search (to avoid seeing reccomendations beforehand, which distract)
+*** YT: mpv for private videos
+
+*** dropdown terminal w/ tmux support - tdrop
+https://github.com/noctuid/tdrop
+*** darkman scripts
+*** sxhkd linter
+https://www.reddit.com/r/bspwm/comments/vqblcy/sxhkdparser_a_library_for_parsing_sxhkd_configs/
+*** fzf hacks + completion
+https://github.com/Aloxaf/fzf-tab
+https://seb.jambor.dev/posts/improving-shell-workflows-with-fzf/
+https://news.ycombinator.com/item?id=26634419
+*** LLM AI bound to hotkey
+*** dictionary bound to hotkey
+*** send window to a not-active context
+
+*** link-hint for emacs
+https://github.com/noctuid/link-hint.el
+
+*** test emacs bookmarks saving - which instance/servername?
+
+
+*** TODO emacs bookmarks menu + stickiness
+**** store bookmark (like sticky link) for org bookmarks (headline id or burly config), www links, scripts
+
+*** dunstify -h int:value:64 "lala"
+
+*** bookmarks creation like "sticky" links
+
+*** contexts to add: watch (rename youtube?)
+
+*** pre-selected launch items
+
+*** TODO dwm rebuild / patching / testing
+**** copy dwm folder
+**** sync w/ git remote?
+https://git.suckless.org/dwm/
+**** list commits to cherry-pick
+**** test w/ Xephyr
+
+**** deck patch
+
+**** ewmh patch
+**** rename tag func
+**** bar buttons
+**** bar mods - drawing, dual
+**** "minimize" windows
+**** check dwm-dev for more patches (sta
+
+**** 64 bits for tags
+https://stackoverflow.com/a/30777541
+ https://stackoverflow.com/questions/2453189/how-to-produce-64-bit-masks
+ 1LL << (input - 1LL)
+
+**** single tagset or monitortags patch?
+https://github.com/bakkeby/patches/blob/master/dwm/dwm-monitortags-6.2.diff
+
+*** TODO multi-select links ui
+*** TODO multi-select tags ui
+*** TODO multi-select launch items
+
+*** launch items auto-build
+
+*** TODO current context operations
+**** launch items
+***** links
+***** link groups
+***** emacs bookmarks
+***** scripts
+***** pdf coordinates
+***** misc files + directories (rifle/ranger)
+**** rename current
+**** DONE activate
+CLOSED: [2023-12-18 Mon 16:52]
+**** DONE deactivate (confirm)
+CLOSED: [2023-12-18 Mon 16:52]
+**** init "sticky" launch items
+**** sticky toggle
+
+*** TODO "launch item" edit menu
+**** move/copy "launch item" (bookmark) to another context
+**** delete
+**** rename
+*** TODO contextId -> nanoId
+*** TODO ui: prompt (rename, descriptions)
+*** TODO ui: confirmation
+*** TODO tags edit w/ rofi multi-select
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*** add org bookmark
+*** dwmc tag rename
+
+*** emacs: org narrowing keybinds
+*** emacs: buffer tab nav keybinds
+*** emacs: jump to context link handler
+
+*** ---------------------------------------------------------------------------------------------------
+*** TODO monitor selection
+**** set state on which monitor selected; track currentContext separately for it
+**** send dwm command (create signal if does not exist) to select monitor w/ dwmc
+**** fix for window selection with rofi changing dwm tag
+***** sleep after then send command to contexts to get it to update context based on open dwm tag
+**** allow "locking" monitors to retrieve the same context on both
+*** TODO visually navigate up/down a stack of contexts (bar / sxhkd)
+*** TODO contexts list operations
+**** set stickiness / pinned state for list of contexts
+*** TODO inheritance / parent relationships
+**** use keypaths, dot notation
+**** bookmarks inherit tags from context, for search?
+*** TODO pdf coordinates bookmarks, parse-pdf, pdf.js
+*** eww widgets
+*** uninstall bt
+
+*** ---------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+*** TODO persistence / orm / cache
+**** TODO yaml (de)serialization of Date
+**** TODO mikro-orm
+
+*** delete (confirm)
+*** ensure that linkgroup ids don't get updated on edit?
+
+*** "marking" windows to gather info used for automation
+*** track available dwm tags count to plan cleaning up
+
+*** search
+**** typesense
+**** search within contexts- their children content 
+**** sqlite built-in?
+*** links: gather additional metadata with request
+
+*** plugins for scripts, emacs, urls
+
+*** DONE client-server w/ unix socket
+CLOSED: [2023-12-09 Sat 05:17]
+*** DONE refactor + git commit
+CLOSED: [2023-12-09 Sat 05:17]
+*** DONE sxhkd - update to use contexts client
+CLOSED: [2023-12-11 Mon 22:00]
+**** backup contexts.yml
+**** printf "switchContextRofi" | nc -w0 -uU /tmp/contexts.sock
+*** DONE LinkGroup import
+CLOSED: [2023-12-12 Tue 19:14]
+**** copy links from ff current window using "copy as markdown" kb shortcut
+**** "paste" into contextctl
+**** store links
+**** bind to hotkey
+*** DONE hotkeys mapped directly to current context submenus
+CLOSED: [2023-12-14 Thu 20:48]
+*** DONE links stickiness (for launch items/bookmarks)
+CLOSED: [2023-12-16 Sat 00:28]
+*** DONE submenus with list should be able to map to a hotkey
+CLOSED: [2023-12-14 Thu 23:54]
+*** DONE map all links from all linkgroups (flatmap?) to search through
+CLOSED: [2023-12-15 Fri 02:48]
+*** DONE sxhkd mode tracking w/ FIFO or parser tools
+CLOSED: [2023-12-25 Mon 14:22]
+https://old.reddit.com/r/bspwm/comments/ervjed/is_there_a_simple_way_to_add_notification_or_some/
+https://www.reddit.com/r/bspwm/comments/vqblcy/sxhkdparser_a_library_for_parsing_sxhkd_configs/
+
+** context switching emacs link (example included)
+(setq shell-file-name "/bin/bash")  
+(setenv "ESHELL" "/bin/bash")
+
+[[shell:contextc activatecontext][activate context]]
+[[shell:contextc "activateContext|bebo"][activate context: bebo]]
+
+** NEXT TODO
+*** import links from tab session manager
+
+*** rofi more lines
+https://github.com/davatorium/rofi/issues/1007
+
+*** update last accessed after sending window to context
+*** prune contexts conveniently
+*** emacs bookmarks /w servername
+
+*** context property: tags,
+*** context property: geohex zones, location
+*** context property: sticky / persistent
+
+*** notifs daemon / dunst -> tiramisu
+https://github.com/Sweets/tiramisu
+
+*** multi-monitor tags (contexts) handling
+**** available dwm tags func
+**** dwm patch - single tagset?
+
+*** global error handling / notify-send improvements
+
+*** parent contexts, inherit properties
+
+*** python ff recovery
+https://stackoverflow.com/questions/76559601/save-urls-of-open-tabs-in-chrome-using-bash-script-and-python
+
+*** ui for attachments web links, emacs bookmarks, scripts, files (pdf, video, etc), geohex zones
+*** ui for tags add/remove
+*** ui for bools / checkboxes
+
+*** multiselect rofi helpers
+echo "uno|dos" | rofi -sep "|" -dmenu -multi-select
+*** [[https://github.com/sdothum/dotfiles/blob/29bce00ad011e6d9450305ede25d5533d8f5f856/bin/bin/functions/ui/rmenu#L124][rofi vs fzf interchangeability]]
+*** add/remove tags from new contexts (snapshot) to diff against the parent?
+*** history per command / sub-menu
+
+** structure-plan.org, contexts.org
+
+** commands
+./main.mts --command=rofiSwitchRecent
+node built.mjs --command=rofiSwitchRecent
+npm build
+** immediate
+*** reload contexts list
+**** load from yaml
+*** list contexts by lastAccessed
+
+*** view existing context (dwm tag id assigned) by id
+***** update lastAccessed
+***** view dwm tag
+
+*** activate existing context (find available dwm tag, assign it, view context, run scripts)
+**** search for available dwm tags
+**** assign the next available dwm tag
+**** run scripts
+**** view context
+**** set active flag
+
+*** switch context
+**** if context not exist, create
+**** if active + dwm tag assigned
+***** view context
+**** else if inactive || no dwm tag
+***** activate context
+**** set current context
+
+*** create new context
+**** add context to global contexts we load from yaml
+**** capture details (zx prompts)
+**** activate context
+**** save global contexts list
+
+*** cache window count per dwm tag to find next available dwm tag
+**** for i= 0...32, dwmc viewex i
+**** set window count for each pos in array
+
+*** find next dwm tag available from index
+**** check if windows present on tag
+**** recurse until empty tag
+
+** ARCHIVE / DONE
+*** DONE tab groups: links (url, desc, create date, access date); group (creation, access, name, sticky)
+CLOSED: [2023-12-08 Fri 12:57]
+*** DONE handler for "current context menu"
+CLOSED: [2023-12-08 Fri 12:56]
+*** DONE search for "empty" dwm tags (context not active, no dwmtag assigned)
+CLOSED: [2023-12-08 Fri 12:56]
+*** DONE listing recent contexts
+CLOSED: [2023-12-08 Fri 12:57]
+*** DONE tracking which ones are "active" (dwm tag is being used)
+CLOSED: [2023-12-08 Fri 12:57]
+*** DONE esbuild
+CLOSED: [2023-12-08 Fri 12:57]
+*** DONE move window to xyz workspace
+CLOSED: [2023-12-08 Fri 12:57]
+
+
+*** DONE menu handling
+CLOSED: [2023-12-08 Fri 14:45]
+*** DONE context property: active (dwm used)
+CLOSED: [2023-12-08 Fri 14:49]
+
+** speed improvements (startup)
+*** #!/usr/bin/env -S node --loader @swc-node/register/esm
+*** https://www.codejam.info/2023/04/zx-typescript-esm.html
+
+
+** tasks
+- select context as we are working - create or find existing
+- internally store 32 context positions
+- emphermal vs persistent 
+- move window to context_id
+- menu updates as a result of updated context
+- launch emacs bookmark for window config + buffers (org, dev, general)
+- search + filter contexts by tags
+- add/remove tags to current context
+- "swallow" context by cloning its items to parent an deleting
+- link to other contexts?
+- launch browser with selected bookmarks
+- bookmark selection UI
+** contexts
+*** see [[id:14e59dfb-24f9-4fc4-be93-1904c83710f2][contexts]]
+*** contextman
+*** interests-mapping
+*** procurement
+*** refile
+*** projects
+*** weekplan
+*** emacs-rice
+*** 2023-plan
+*** 2023-review
+
+*** -------------------------------
+*** review notes
+*** reminders
+*** planning
+**** week, month
+*** digital tasks
+*** physical tasks
+*** social
+**** communication / messaging
+**** messaging
+**** review social.org
+**** write tasks for future comms/plans
+*** creative idea generation (projects, business)
+*** research (reading, wiki, review links, yt, take notes)
+*** writing (public)
+*** decisions / planning (reflection, goals review, goals setting)
+*** jot down something that inspired me, to investigate later
+*** procurement
+**** research
+**** prioritizing
+**** actual buying
+
+*** project active (log findings, document problems, write tasks for future)
+*** review ideas + inspiration, writing
+** features (most comprehensive + useful)
+- context-switch helper
+
+- show commands for current context
+- list contexts
+- filter list by tags, search term
+
+- invoke with contextId arg, else get it from dwm
+
+- commands for context
+
+- collect links for browser windows
+- links, separated by windows
+
+- navigation of links w/ various filters
+
+- open org headline bookmark (emacs)
+- open project folder (emacs)
+- open set of files (emacs)
+
+
+- tags for contexts
+- quickly edit tags
+
+- relations to other workspaces
+
+- misuse dwm tags as workspaces; generate id for them
+- interop with dwm
+
+- launch ranger in working directory
+- make working directory
+
+
+- persistance
+- persist filters
+** commands
+*** throw a window to another context
+*** persist tabs to context: close ff, save links for open tabs; assign links to a window id provided by current context
+*** "save open links to a new/existing workspace"
+** models
+*** context:node
+**** parent_project_id                                      {  RELATED_PROJECT_IDS 
+**** children_project_ids []                             }  MAY BE A BETTER OPTION- not everything is hierarchical
+**** depends_on []
+**** time budget estimate
+**** cost estimate
+**** deadline
+**** estimated end datetime (or null if ongoing)
+**** ongoing? recurring?
+**** priority
+**** start time
+**** logbook
+***** 2023-10-04 - 16:36
+****** Trying something new
+:PROPERTIES:
+:ID:       5dee8b70-7162-4f9b-8aa6-aebf4ff27e1f
+:END:
+***** add to a drawer, or?? automate entering logs
+**** attached media
+blah link
+**** supplies list
+**** design/plan/overview/abstract
+**** workspace_id                                              { OBSCOLETE? }
+***** workspace_id
+***** storage_dir
+**** scale - estimate how big i think it is? maybe calculated val by time + budget
+*** link
+**** url
+**** title (get from http request)
+**** body snippet (get from http request)
+**** description (user generated)
+**** tags
+**** last_accessed_datetime
+**** create_datetime
+*** link set (window in ff)
+*** context_type?
+*** context_types have different set of commands associated?
+*** links (web, org bookmarks)
+*** tag
+*** attachments (pdfs, videos, files, uses working dir)
+*** commands (default, spaces mutations, org nav and capture, links, scripts, dwm)
+*** relations
+*** lifecycle hooks
+
+** map emacs desktops to context_id
+** docked state from system state applied onto each context
+** compose contexts (redux style?)
+
+
+** design goals brainstorm
+*** stop relying on tab session manager in FF
+*** visualize various relationships between topics?
+*** track projects in ctx bar charts perhaps
+*** implement TUI to list contexts
+*** ctxman will be the source of truth for which "workspace" is open
+*** implement new bar for dwm since we basically replace its workspace handling
+https://github.com/ryanflannery/oxbar
+** features
+*** open new dwm  workspace - count the dwm bitmask field for tags, to id the "workspace"?
+*** recompile dwm with increased max workspaces/tags, patch for IPC?
+*** hide some windows that are not relevant (now), but will be later
+**** that's' what dwm tags would be used for, typically
+*** navigate to the "context root" node of org note
+*** need to compile dwm w/ patch for wmctrl
+https://dwm.suckless.org/patches/current_desktop/
+*** dwm scratchpad for ctx man
+*** getting "current desktop" in dwm - based on the index of the bitmask
+*** update internal context_id when dwm workspace changes due to things like FF focusing a tab
+*** https://stackoverflow.com/questions/2250757/is-there-a-linux-command-to-determine-the-window-ids-associated-with-a-given-pro
+*** brotab: store groups of tabs like "research trails" by occasionally snapshotting FF windows
+*** open "trail" snapshot (brotab) -  FF windows+tabs, on a dwm workspace (Like TSM)
+*** have official "bookmarks" that are more favorite and separate from trails
+*** avy-style navigation in context list
+*** bookmark detail - edit tags + note for a bookmark
+*** handle multi monitors, maybe brotab has this covered
+
+*** "create a context/workspace/bookmark here" - read id from emacs, add to list, persist
+*** org code blocks can get my links out from the context manager app
+*** cli args for ^^ ctx --get-bookmarks <context_id>
+
+
+*** keep up with links, notes, videos, PDFs for various projects/research/tasks
+**** attachment
+*** fetch titles for any given URLs
+*** import open FF tabs
+
+*** archive irrelevant contexts
+**** one-time task, project finished
+*** access persistent contexts (routine, frequent workflows)
+*** search/query: compose "calculated contexts" by aggregating entity results within contexts
+*** relate "big-picture" contexts to detail context
+**** see above ^^
+**** each context can swallow their parents attributes/props
+
+spaces, links, or attachments from multiple ways to query (tags, parent/child)
+
+*** visualize / select links in a novel way
+
+*** track where time goes - which context?
+*** log / journal for each context?
+
+*** persistence: easily close "context" and re-open it (to save resources)
+*** serialize a window config in dwm?
+
+*** workspaces mgr can open a project on a specific org path/id, from a keybinding (burly?)
+*** a workspace can have many topics (org root headlines?)
+*** a workspace is a collection of: notes/bookmarks to nodes in notes, links, scripts
+*** org urls for tasks in weekplan can invoke scripts in workspaces
+** hide
+*** ctxman can map dwm tag # with its own internal ids; dwm does not need to statically alloc for 9999 contexts
+*** decisions
+**** dwm integrations: scope it
+**** emacs integration: scope it
+*** possible tools
+**** neo-blessed
+*** design brainstorm / old ideas
+**** encoding / serialization
+***** use FS, keep separate files for separate applications)
+***** start with browers and their clipboard extension w/xdotool
+***** lifetime states: urgent, temporary, routine, permanent
+****** these are effectively tags, no need to complicate things by using symbols?
+***** tags: mostly come from top-level columns in todo.org
+***** symbols can encode lifetime states: !@$%^
+***** tags: / can encode
+***** file content for state serialization ideas
+****** tag/workspace
+******* study/serbian
+****** workspace/tag
+******* serbian/study
+****** workspace/tag1/tag2/tag3/tag4
+****** workspace/tag1/lifetime
+******* dj/learn/ongoing
+***** ~/workspaces symlinks -> workspaces-desktop or workspaces-laptop
+***** each workspace gets its own org doc
+***** symlinks can happen within workspaces
+***** working directory
+****** try to set that to the workspace, if possible
+**** misc
+***** 2 sets: dwm current workspaces + my persistent workspaces
+****** opening creates a dwm workspace if it doesnt exist
+****** for current dwm workspace can make persistent, which writes to fs and json
+***** workspaces poll script (daemon)
+****** spawn a process to write tag json on tag rename event
+****** or on tag rename function write json
+
+***** workspace detail
+****** toggle visibility
+****** rofi here
+****** pcmanfm here
+****** shell here
+****** emacs capture template with workspace name
+****** associate with dwm tags
+***** create new
+****** serialize with jq to json
+****** store path for ~/storage/workspaces
+***** list current workspaces
+****** sort by access time, name
+**** digital workflow improvements / ricing
+***** ★ de-serializing tabs
+***** ★ managing / discarding unused tabs
+***** ★ workspaces: when creating a new workspace, automatically create an entry in workspaces.org
+***** ★ xmonad scratchpads
+****** ★ google translate
+****** ★ links to share
+***** ★ display scripting physical button?
+****** ★ (also mqtt - discovery board?)
+***** ★ org-capture for links to share with people
+***** ★ START USING ORG-CAPTURE AGAIN
+***** ★ emacs vs xmonad super keys
+
+**** rofi workspaces context menu
+
+**** use timestamps for serializing ff tabs
+
+**** workspace-context-aware org capture mode
+**** digi journal: org capture invoke
+
+**** dumps, with the same timestamp, when saving:
+***** wmctrl
+***** browser tabs, for each window necessary
+
+**** wmctrl dump for my workspace, timestamped, just to keep an idea of what was going on
+
+**** workspaces list
+***** persistent:
+****** jobs
+****** web-etc
+****** journal-
+****** journal-digital
+****** photo-
+****** social-comms
+******* there is no chat, keep notes, send things 3x a day
+****** social-browse
+****** study-serbian
+****** music-play
+****** music-explore
+***** top-level domains?
+****** social
+****** photo
+****** dev
+****** chores
+****** etc
+
+**** org capture - revisit this idea, integrating with workspaces - maybe just always focus emacs on the same shortcut for whichever workspace i'm on?
+
+
+**** emacs / org - follow outline tree path for workspaces, to get into specific parts of notes without breaking it into so many small files?
+**** so we have domains
+
+**** notes kb shortcut: focus emacs for each workspace (context menu)
+
+**** ★ context menu for current workspace
+***** notes, folder creation
+**** initialize
+***** no overwrite, show warning
+
+
+**** ★ define fs structure: 
+
+**** some org files should be in the agenda, some not - symlink?
+***** how to keep priority / order? properties / custom agenda?
+**** each workspace gets its own scripts folder?
+
+
+**** rust-based workspace manager (wmctrl wrapper)
+https://github.com/Treborium/rust-wmctrl/tree/master/src
+**** xraise (crates.io)
+
+**** mupdf + xprop for serializing state of "reading" workspaces
+***** or use a wrapper to capture it?
+
+**** CTRL + \ will be the workspaces menu
+
+**** modal - put workspaces in priority or frequency
+
+
+**** use symlinks to create hierarchy for workspaces
+
+**** send "save org file" to emacs
+
+**** have scripts for different WM_CLASS for (de)serialization
+
+**** note on disappointent / flow
+A great source of disappointment occurs when starting something that requires a lot of sacrifice: effort, focus, concentration, discipline ... only to completely get off-track, either by stopping a habit, or some techincal details (laptop died / X11 crashed, all the workspaces vanished).
+
+**** states: last updated (saved/restored), launch init script on restore
+
+It seems that notes + browser research are the most common pattern i find myself working through problems / tasks. 
+
+Consistency would be good
+
+**** associating pinboard tags with a workspace name
+
+A map of how these things connect would also be good
+
+Emacs / Tree style is helpful for filtering hierarchical data
+
+props + filtering would give enough control to get visibility on what workflows / tasks i should be doing
+
+emacs: links to exec shell scripts to run commands on xmonad (switch to workspace, for example)
+
+
+**** find categories in pinboard bookmarks, creating workspaces
+**** routine: define frequency for working in those workspaces
+
+**** manually move the project-* files into workspaces, this will clean up the agenda
+**** make a refile workspace start inbox.org with a blank slate
+***** open evernote notes
+***** open simplenote notes
+
+**** Xmonad servermode - create/open workspace
+**** workspacectl
+***** list workspaces
+****** list all
+****** list filtered view of workspaces
+****** filter toggles
+****** state / persistence of filters
+***** restore workspaces
+***** context (current workspace actions)
+****** open notes (for this workspace)
+****** open file manager (for this workspace)
+
+**** workspace context menu
+***** hide/show this workspace
+***** re-initialize
+***** toggle note location, to keep orgzly agenda tidy
+~/org vs ~/workspace/workspace.org (symlink)
+***** open terminal in workspace scratch dir
+***** open emacs note
+***** open ranger
+***** rename workspace
+***** symlink ~/downloads to workspace scratch
+
+**** lemonbar or polybar to display current workspace state
+
+**** ~/scripts/workspaces/workspacemgr.sh
+
+
+**** open emacs for currently open workspace
+
+**** visibility flags in json
+**** list "visible" workspaces
+**** lemonbar or dzen etc
+
+**** xmonad commands defined with lambdas and strings
+**** programmatically creating workspaces:
+***** addWorkspace :: String -> X ()Source#
+
+ Add a new workspace with the given name, or do nothing if a workspace with the given name already exists; then switch to the newly created workspace.
+
+
+
+**** get workspaces which include a particular tag:
+cat workspace-dump-wmctrl-to-jq.json | jq '. | select(.tags | contains(["daily"]))'
+cat workspace-dump-wmctrl-to-jq.json | jq '. | select(.tags | contains(["daily"])) | .name'
+
+**** get workspace id by name
+workspace_id=$(wmctrl -d | grep todo | cut -f 1 -d ' ')
+
+**** jq examples
+
+map(select( any(.tags[]; .name == "TAG" )))
+
+jq '.arrayOfStuff[] | select(.key2 | contains("dar"))'
+
+get the workspace names with prioirty 1
+wmctrl -d | cut -c 33- | jq -R ". | {name: ., priority: 0, tags: []} | select(.priority == 0) | .name"
+
+
+**** jq / scripting
+***** json structure
+ wmctrl -d | cut -c 33- | jq -R "{name: ., priority: 0, tags: []}" > workspace-dump-wmctrl-to-jq.json
+
+
+
+**** *** creating json from current window list example ***
+wmctrl -d | cut -c 33- | jq -R "{name: ., priority: 0, tags: []}"
+
+**** *** workspaces automation / scripting*** 
+***** type into emacs creating a link with the name
+***** a folder for shell scripts to get executed on workspace launch
+***** rofi / bash interface:
+****** restore all workspaces
+******* get list of currently open workspaces with wmctrl
+******* iterate over each workspace in state file
+******* check if it already exists
+******* if not, open it
+****** create + open new workspace (with state and tag/s)
+******* create directory ~/workspaces/workspacename
+******* copy template over
+******** init.sh
+********* switch to named xmonad layout (use server mode)
+******** workspacename.org
+******* xdotool types to create the workspace
+******* *update* no, we use xmonad servermode:
+******* run init.sh
+~/workspaces/workspacename/init.sh
+******* opens org file
+~/workspaces/name/name.org
+
+****** edit workspace metadata
+******* visibility
+******* tags
+******* priority
+****** switch to workspace (with state and/org tag)
+****** rename current workspace
+******* wmctrl gets the name of the current workspace
+******* this keeps xmonad and script in sync
+******* xdotool calls the rename command on xmonad
+****** display current workspace
+******* xmonad pp could also filter out just the current (use a symbol like &)
+****** import workspace laptop -> desktop
+****** import workspace desktop -> laptop
+***** directory structure
+# ~/workspaces/workspacename/2019-10-07-state
+***** wmctrl commands
+****** save current workspaces to a file
+wmctrl -d | cut -c 33- > ~/workspaces/workspaces
+***** encoding / serialization
+****** lifetime states: urgent, temporary, routine, permanent
+******* these are effectively tags, no need to complicate things by using symbols?
+****** tags: mostly come from top-level columns in todo.org
+****** symbols can encode lifetime states: !@$%^
+****** tags: / can encode
+****** file content for state serialization ideas
+******* tag/workspace
+******** study/serbian
+******* workspace/tag
+******** serbian/study
+******* workspace/tag1/tag2/tag3/tag4
+******* workspace/tag1/lifetime
+******** dj/learn/ongoing
+****** ~/workspaces symlinks -> workspaces-desktop or workspaces-laptop
+****** each workspace gets its own org doc
+****** symlinks can happen within workspaces
+****** working directory
+******* try to set that to the workspace, if possible
+
+
+**** dzen2 as status indicator for workspace names
+**** rofi menu to change scope or search by tag for workspaces
+**** each workspace has a startup script added when it's created
+
+**** launch comms apps separately
+
+**** *** SYNC ***
+***** ~/workspaces/workspacename/{desktop, laptop}/window-id-tabs.txt
+***** ssh script to trigger desktop to run the appropriate commands
+***** provide proper $DISPLAY variable
+***** unison batch mode to sync the files at the end
+
+***** now the other computer can "launch" the browser and emacs files from the laptop
+
+**** wmctrl - activate window
+wmctrl -x -a gvim.Gvim
+
+**** links
+https://superuser.com/questions/850145/how-to-use-wmctrl-to-activate-window-of-a-given-class
+https://stackoverflow.com/questions/369758/how-to-trim-whitespace-from-a-bash-variable
+https://wiki.archlinux.org/index.php/Rofi
+
+**** wmctrl example commands~
+❯ wmctrl -d | cut -c 33-
+NSP
+camera*
+dishwasher*
+maxi*
+music
+nutrition
+photo
+routine
+serbian
+
+
+
+❯ wmctrl -d
+0  - DG: N/A  VP: N/A  WA: N/A  NSP
+1  - DG: N/A  VP: N/A  WA: N/A  camera*
+2  - DG: N/A  VP: N/A  WA: N/A  dishwasher*
+3  - DG: N/A  VP: N/A  WA: N/A  maxi*
+4  - DG: N/A  VP: N/A  WA: N/A  music
+5  - DG: N/A  VP: N/A  WA: N/A  nutrition
+6  - DG: N/A  VP: N/A  WA: N/A  photo
+7  - DG: N/A  VP: N/A  WA: N/A  routine
+8  - DG: N/A  VP: N/A  WA: N/A  serbian
+9  - DG: N/A  VP: N/A  WA: N/A  social
+10 - DG: N/A  VP: N/A  WA: N/A  todo
+11 * DG: N/A  VP: N/A  WA: N/A  web
+12 - DG: N/A  VP: N/A  WA: N/A  workspaces
+
+~
+❯ cat ~/workspaces/workspaces.txt
+NSP
+camera*
+dishwasher*
+maxi*
+music
+nutrition
+photo
+routine
+serbian
+social
+todo
+web
+workspaces
+
+~
+❯ echo ~/workspaces/workspaces.txt
+/home/gr4yscale/workspaces/workspaces.txt
+
+~
+❯ cat ~/workspaces/workspaces.txt
+NSP
+camera*
+dishwasher*
+maxi*
+music
+nutrition
+photo
+routine
+serbian
+social
+todo
+web
+workspaces
+
+~
+❯ cat ~/workspaces/workspaces.txt | rofi
+Rofi is unsure what to show.
+Please specify the mode you want to show.
+
+    rofi -show {mode}
+
+The following modi are enabled:
+ * combi
+
+The following can be enabled:
+ * window
+ * windowcd
+ * run
+ * ssh
+ * drun
+ * keys
+
+To activate a mode, add it to the list of modi in the modi setting.
+
+~
+❯ cat ~/workspaces/workspaces.txt | rofi -show combi
+
+~
+❯ cat ~/workspaces/workspaces.txt | rofi -show run
+Mode run is not enabled. I have enabled it for now.
+Please consider adding run to the list of enabled modi: modi: combi,run.
+
+~
+❯ cat ~/workspaces/workspaces.txt | rofi -d
+Rofi is unsure what to show.
+Please specify the mode you want to show.
+
+    rofi -show {mode}
+
+The following modi are enabled:
+ * combi
+
+The following can be enabled:
+ * window
+ * windowcd
+ * run
+ * ssh
+ * drun
+ * keys
+
+To activate a mode, add it to the list of modi in the modi setting.
+
+~
+❯ man rofi
+
+~ 17s
+❯ rofi -e "my messsage"
+
+~
+❯ cat ~/workspaces/workspaces.txt | rofi -dmenu
+
+~ 7s
+❯ man rofi
+
+~ 1m 5s
+❯ dmenu
+
+~
+❯ cat ~/workspaces/workspaces.txt | dmenu
+
+~
+❯ cat ~/workspaces/workspaces.txt | dmenu
+camera*
+
+~
+❯ wmctrl -d
+0  - DG: N/A  VP: N/A  WA: N/A  NSP
+1  - DG: N/A  VP: N/A  WA: N/A  camera*
+2  - DG: N/A  VP: N/A  WA: N/A  dishwasher*
+3  - DG: N/A  VP: N/A  WA: N/A  maxi*
+4  - DG: N/A  VP: N/A  WA: N/A  music
+5  - DG: N/A  VP: N/A  WA: N/A  nutrition
+6  - DG: N/A  VP: N/A  WA: N/A  photo
+7  - DG: N/A  VP: N/A  WA: N/A  routine
+8  - DG: N/A  VP: N/A  WA: N/A  serbian
+9  - DG: N/A  VP: N/A  WA: N/A  social
+10 - DG: N/A  VP: N/A  WA: N/A  todo
+11 * DG: N/A  VP: N/A  WA: N/A  workspaces
+
+~
+❯ wmctrl -d | grep routine
+7  - DG: N/A  VP: N/A  WA: N/A  routine
+
+~
+❯ wmctrl -d | grep routine | cut -c 1
+7
+
+~
+❯ wmctrl -d | grep routine | cut -c 1-
+7  - DG: N/A  VP: N/A  WA: N/A  routine
+
+~
+❯ wmctrl -d | grep routine | cut -d 1
+cut: you must specify a list of bytes, characters, or fields
+Try 'cut --help' for more information.
+
+~
+❯ wmctrl -d | grep routine | cut -f 0
+cut: fields are numbered from 1
+Try 'cut --help' for more information.
+
+~
+❯ wmctrl -d | grep routine | cut -f 1
+7  - DG: N/A  VP: N/A  WA: N/A  routine
+
+~
+❯ wmctrl -d | grep routine | cut -f 1 -d ' '
+7
+
+~
+❯ wmctrl -d | grep todo | cut -f 1 -d ' '
+10
+
+~
+❯ 
+
+**** links
+https://superuser.com/questions/850145/how-to-use-wmctrl-to-activate-window-of-a-given-class
+https://stackoverflow.com/questions/369758/how-to-trim-whitespace-from-a-bash-variable
+https://wiki.archlinux.org/index.php/Rofi
+
+**** rofi / bash interface:
+***** restore all workspaces
+****** get list of currently open workspaces with wmctrl
+****** iterate over each workspace in state file
+****** check if it already exists
+****** if not, open it
+***** create new workspace (with state and tag/s)
+****** which state? (list)
+****** which tag? (list)
+****** xdotool types to create the workspace
+****** opens emacs with the org file in ~/workspaces/name/name.org
+***** switch to workspace (with state and/org tag)
+***** rename current workspace
+****** wmctrl gets the name of the current workspace
+****** this keeps xmonad and script in sync
+****** xdotool calls the rename command on xmonad
+***** display current workspace
+****** xmonad pp could also filter out just the current (use a symbol like &)
+***** import workspace laptop -> desktop
+***** import workspace desktop -> laptop
+
+**** directory structure
+# ~/workspaces/workspacename/2019-10-07-state
+
+**** wmctrl commands
+***** save current workspaces to a file
+wmctrl -d | cut -c 33- > ~/workspaces/workspaces
+
+** dwm mods
+*** disable rules
+*** accept integer arg, and use that for selected workspace
+** sqlite-web container: see script in ~/ctx
+
+** misc brainstorming
+*** view dwm tag for context
+*** manage dwm tags (32) <-> active contexts
