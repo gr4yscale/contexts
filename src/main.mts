@@ -1,11 +1,13 @@
 #!/usr/bin/env tsx
 
 import { createServer, Socket } from "net";
-import { $ } from "zx";
+import { $, fs } from "zx";
 
 import { loadState, contextsActive } from "./state.mts";
 import { handleCommand } from "./handleCommand.mts";
 import { syncWorkspaces } from "./workspaces.mts";
+
+fs.removeSync('/tmp/contexts.sock')
 
 const server = createServer((socket: Socket) => {
   socket.setEncoding("utf8");
