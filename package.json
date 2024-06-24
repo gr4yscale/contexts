@@ -4,8 +4,8 @@
   "description": "",
   "main": "main.mts",
   "scripts": {
-    "build-server": "esbuild main.mts --bundle --platform=node --format=esm --packages=external --outfile=server-built.mjs",
-    "build-client": "esbuild client.mts --bundle --platform=node --format=esm --packages=external --outfile=client-built.mjs"
+    "start": "tsx src/main.mts",
+    "build": "esbuild src/main.mts --bundle --platform=node --format=esm --packages=external --outfile=build.mjs"
   },
   "keywords": [],
   "author": "gr4yscale",

@@ -1,0 +1,314 @@
+currentContextId: dev-contextctl
+contexts:
+  - contextId: photos
+    name: photos
+    dwmTag: 1
+    created: 2023-11-29T21:34:31.792Z
+    lastAccessed: 2023-12-11T16:45:54.078Z
+    active: true
+    scripts: []
+    tags:
+      - review
+  - contextId: projects-list
+    name: projects-list
+    dwmTag: 3
+    created: 2023-11-29T21:34:31.792Z
+    lastAccessed: 2023-12-11T16:45:28.210Z
+    active: true
+    scripts: []
+    orgBookmarks:
+      - projects-list
+    tags:
+      - plan
+      - brainstorm
+  - contextId: dev-contextctl
+    name: dev-contextctl
+    dwmTag: 5
+    created: 2023-11-29T13:24:22.502Z
+    lastAccessed: 2023-12-11T17:07:10.515Z
+    active: true
+    scripts: []
+    tags:
+      - system
+    linkGroups:
+      - id: Vr4xEtMbz1o5IlHY0trwu
+        links:
+          - url: https://gitlab.com/autokent/pdf-parse
+            description: autokent / pdf-parse · GitLab
+          - url: https://www.google.com/search?client=firefox-b-d&q=nodejs+pdf+parse#ip=1
+            description: nodejs pdf parse - Google Search
+          - url: https://github.com/adrienjoly/npm-pdfreader
+            description:
+              "adrienjoly/npm-pdfreader: 🚜 Parse text and tables from PDF
+              files."
+          - url: https://github.com/adrienjoly/npm-pdfreader-example
+            description:
+              "adrienjoly/npm-pdfreader-example: Example of use of pdfreader:
+              parse a PDF résumé"
+          - url: https://www.npmjs.com/package/pdf2json
+            description: pdf2json - npm
+          - url: https://github.com/modesty/pdf2json
+            description:
+              "modesty/pdf2json: A PDF file parser that converts PDF binaries to
+              text based JSON, powered by a fork of PDF.JS"
+          - url: https://github.com/mozilla/pdf.js/
+            description: "mozilla/pdf.js: PDF Reader in JavaScript"
+          - url: https://github.com/mozilla/pdf.js/wiki/Setup-pdf.js-in-a-website
+            description: Setup PDF.js in a website · mozilla/pdf.js Wiki
+          - url: https://github.com/mozilla/pdf.js/blob/master/examples/node/getinfo.mjs
+            description: pdf.js/examples/node/getinfo.mjs at master · mozilla/pdf.js
+          - url: https://www.freecodecamp.org/news/how-to-parse-pdfs-at-scale-in-nodejs-what-to-do-and-what-not-to-do-541df9d2eec1/
+            description:
+              "How to parse PDFs at scale in NodeJS: what to do and what not to
+              do"
+          - url: https://www.npmjs.com/package/pdfreader
+            description: pdfreader - npm
+          - url: https://dev.to/itsahsanmangal/extracting-pdf-data-and-generating-json-with-gpts-langchain-and-nodejs-a-comprehensive-guide-22nc
+            description:
+              "tracting PDF Data and Generating JSON with GPTs, Langchain, and
+              Node.js: A Comprehensive Guide - DEV Community"
+          - url: https://pipedream.com/community/t/how-to-import-pdf-parse-in-nodejs-code-without-using-npm-install/8545
+            description:
+              How to Import pdf-parse in NodeJS Code Without Using npm Install? -
+              Help - Pipedream
+          - url: https://js.langchain.com/docs/integrations/document_loaders/file_loaders/pdf
+            description: PDF files | 🦜️🔗 Langchain
+          - url: https://www.google.com/search?q=linux+pdf+page+coordinates+nodejs&client=firefox-b-d&sca_esv=589766361&sxsrf=AM9HkKkOI7fYU_3QUjPleTR2gd2Alhjh6g%3A1702300695262&ei=Fwx3ZYDND-eP9u8Pl5mlmAk&ved=0ahUKEwjAtPehvIeDAxXnh_0HHZdMCZMQ4dUDCBA&uact=5&oq=linux+pdf+page+coordinates+nodejs&gs_lp=Egxnd3Mtd2l6LXNlcnAiIWxpbnV4IHBkZiBwYWdlIGNvb3JkaW5hdGVzIG5vZGVqc0jsF1D4B1jZEHAAeAKQAQGYAakCoAHKCKoBBTAuNS4yuAEDyAEA-AEBwgIEEAAYR8ICBRAhGKABwgIEECEYFcICBxAhGKABGAriAwQYACBBiAYBkAYI&sclient=gws-wiz-serp
+            description: linux pdf page coordinates nodejs - Google Search
+          - url: https://stackoverflow.com/questions/73354005/extract-pdf-text-at-specific-location-from-each-page-of-document-using-nodejs
+            description:
+              javascript - Extract pdf text at specific location from each page
+              of document using NodeJs - Stack Overflow
+          - url: https://www.npmjs.com/package/pdf-parse
+            description: pdf-parse - npm
+          - url: https://github.com/tabulapdf/tabula-java/issues/99
+            description: "Coordinates in PDF · Issue #99 · tabulapdf/tabula-java"
+          - url: https://github.com/tabulapdf/tabula-java/wiki/Using-the-command-line-tabula-extractor-tool
+            description: Using the command line tabula extractor tool ·
+              tabulapdf/tabula-java Wiki
+          - url: https://unix.stackexchange.com/questions/246719/extract-coordinates-of-matching-text-in-pdf
+            description:
+              bash - Extract coordinates of matching text in PDF - Unix & Linux
+              Stack Exchange
+          - url: https://askubuntu.com/questions/221962/how-can-i-extract-a-page-range-a-part-of-a-pdf
+            description:
+              split - How can I extract a page range / a part of a PDF? - Ask
+              Ubuntu
+  - contextId: temp
+    name: temp
+    dwmTag: 10
+    created: 2023-12-04T22:05:25.679Z
+    lastAccessed: 2023-12-11T16:36:16.628Z
+    active: true
+    scripts: []
+    orgBookmarks: []
+    tags: []
+    linkGroups: []
+  - contextId: contexts-define
+    name: contexts-define
+    dwmTag: 4
+    created: 2023-12-01T11:35:53.499Z
+    lastAccessed: 2023-12-11T14:38:21.466Z
+    active: true
+    scripts: []
+    orgBookmarks:
+      - contexts-define
+    tags:
+      - system
+  - contextId: dev-vc
+    name: dev-vc
+    dwmTag: 24
+    created: 2023-12-10T00:16:11.685Z
+    lastAccessed: 2023-12-11T14:22:58.110Z
+    active: true
+    scripts: []
+    orgBookmarks: []
+    tags: []
+    linkGroups: []
+  - contextId: messaging
+    name: messaging
+    dwmTag: 21
+    created: 2023-12-05T12:05:13.324Z
+    lastAccessed: 2023-12-11T12:26:12.970Z
+    active: true
+    scripts: []
+    orgBookmarks: []
+    tags:
+      - social
+    linkGroups: []
+  - contextId: youtube
+    name: youtube
+    dwmTag: 22
+    created: 2023-12-05T23:30:33.654Z
+    lastAccessed: 2023-12-11T12:13:32.323Z
+    active: true
+    scripts: []
+    orgBookmarks: []
+    tags: []
+    linkGroups: []
+  - contextId: procurement
+    name: procurement
+    dwmTag: 2
+    created: 2023-11-29T21:34:31.792Z
+    lastAccessed: 2023-12-11T11:24:14.636Z
+    active: true
+    scripts: []
+    orgBookmarks:
+      - procurement
+    tags:
+      - procurement
+  - contextId: mima-bday
+    name: mima-bday
+    dwmTag: 7
+    created: 2023-12-06T15:07:28.759Z
+    lastAccessed: 2023-12-11T10:41:40.354Z
+    active: true
+    scripts: []
+    orgBookmarks: []
+    tags: []
+    linkGroups: []
+  - contextId: hotkeys-config
+    name: hotkeys-config
+    dwmTag: 9
+    created: 2023-11-29T21:34:31.792Z
+    lastAccessed: 2023-12-10T15:00:33.395Z
+    active: true
+    scripts: []
+    orgBookmarks:
+      - hotkeys
+    tags:
+      - system
+  - contextId: music
+    name: music
+    dwmTag: 8
+    created: 2023-11-29T21:34:31.792Z
+    lastAccessed: 2023-12-09T18:42:10.779Z
+    active: true
+    scripts: []
+    tags: []
+  - contextId: weekplan
+    name: weekplan
+    dwmTag: 16
+    created: 2023-11-29T21:34:31.792Z
+    lastAccessed: 2023-12-09T05:08:32.840Z
+    active: true
+    scripts: []
+    orgBookmarks:
+      - weekplan
+    tags:
+      - plan
+  - contextId: dev-dwm
+    name: dev-dwm
+    dwmTag: 11
+    created: 2023-11-29T21:34:31.792Z
+    lastAccessed: 2023-12-09T04:16:20.624Z
+    active: true
+    scripts: []
+    tags:
+      - system
+  - contextId: dev-docs
+    name: dev-docs
+    dwmTag: 23
+    created: 2023-12-07T18:14:51.207Z
+    lastAccessed: 2023-12-09T04:15:03.479Z
+    active: true
+    scripts: []
+    orgBookmarks: []
+    tags: []
+    linkGroups: []
+  - contextId: emacs-config
+    name: emacs-config
+    dwmTag: 6
+    created: 2023-11-30T02:18:18.282Z
+    lastAccessed: 2023-12-09T03:37:21.510Z
+    active: true
+    scripts: []
+    orgBookmarks:
+      - emacs-config
+    tags:
+      - system
+  - contextId: review-2023
+    name: review-2023
+    dwmTag: 13
+    created: 2023-11-29T21:34:31.792Z
+    lastAccessed: 2023-12-09T02:33:18.423Z
+    active: true
+    scripts: []
+    orgBookmarks:
+      - 2023-review
+    tags:
+      - review
+  - contextId: volume
+    name: volume
+    dwmTag: 12
+    created: 2023-11-29T13:24:22.502Z
+    lastAccessed: 2023-12-07T20:18:16.266Z
+    active: true
+    scripts: []
+    tags:
+      - system
+  - contextId: social
+    name: social
+    dwmTag: 17
+    created: 2023-11-29T21:34:31.792Z
+    lastAccessed: 2023-12-06T11:06:55.361Z
+    active: true
+    scripts: []
+    orgBookmarks:
+      - social
+    tags: []
+  - contextId: refile
+    name: refile
+    dwmTag: 15
+    created: 2023-11-29T21:34:31.792Z
+    lastAccessed: 2023-12-05T01:16:48.209Z
+    active: true
+    scripts: []
+    orgBookmarks:
+      - refile
+    tags:
+      - clarity
+  - contextId: business-ideas
+    name: business-ideas
+    dwmTag: 19
+    created: 2023-11-29T21:34:31.792Z
+    lastAccessed: 2023-12-04T17:00:17.531Z
+    active: true
+    scripts: []
+    orgBookmarks:
+      - business-ideas
+    tags:
+      - brainstorm
+  - contextId: interests-mapping
+    name: interests-mapping
+    dwmTag: 14
+    created: 2023-11-29T21:34:31.792Z
+    lastAccessed: 2023-12-01T09:08:39.257Z
+    active: true
+    scripts: []
+    orgBookmarks:
+      - interests-mapping
+    tags:
+      - clarity
+  - contextId: 2023-plan
+    name: 2023-plan
+    dwmTag: 18
+    created: 2023-11-29T21:34:31.792Z
+    lastAccessed: 2023-11-30T01:07:08.131Z
+    active: true
+    scripts: []
+    orgBookmarks:
+      - 2023-plan
+    tags:
+      - plan
+  - contextId: yt-channel
+    name: yt-channel
+    dwmTag: 20
+    created: 2023-11-29T21:34:31.792Z
+    lastAccessed: 2023-11-30T01:07:08.131Z
+    active: true
+    scripts: []
+    orgBookmarks:
+      - yt-channel
+    tags:
+      - brainstorm

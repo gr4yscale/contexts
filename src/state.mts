@@ -144,6 +144,8 @@ export const storeState = () => {
   };
 
   const stringified = stringify(state);
+  //TOFIX
+  // https://joeattardi.dev/customizing-jsonparse-and-jsonstringify#heading-adding-a-reviver-function
   fs.writeFileSync("./contexts.yml", stringified);
 };
 
@@ -166,6 +168,7 @@ export const createContext = (id: ContextId) => {
   return context;
 };
 
+// todo replace with a stack
 export const updateCurrentContext = (context: Context) => {
   currentContext = context;
 };

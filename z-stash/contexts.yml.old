@@ -1,0 +1,14 @@
+- contextId: 1
+  name: volume
+  dwmTag: 13
+  created: 2023-11-29T13:24:22.502Z
+  lastAccessed: 2023-11-28T13:24:22.506Z
+  active: false
+  scripts: []
+- contextId: 2
+  name: contextctl-dev
+  dwmTag: 6
+  created: 2023-11-29T13:24:22.502Z
+  lastAccessed: 2023-11-29T20:34:39.057Z
+  active: false
+  scripts: []
