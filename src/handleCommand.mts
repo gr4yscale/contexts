@@ -8,13 +8,14 @@ import {
 } from "./commands/navigation.mts";
 import { linkGroupStore, stickyLinkStore } from "./commands/links.mts";
 import { saveEmacsWindowBookmark } from "./commands/emacs.mts";
+import { listEnabledModes } from "./commands/modes.mts";
 import { buildMenuCurrentActivity, buildMenuLinks, buildMenuLinkGroups, buildMenuEmacsBookmarks, buildMenuLaunchItems } from "./menuBuilders.mjs";
 import { initActivity } from "./initActivity.mts";
 
-export const handleCommand = async (command: string | undefined, args?: string) => {
+export const handleCommand = async (command: string | undefined, args?: string) : Promise<string | undefined> => {
     if (!command) {
         console.error("Error: You must specify a command.");
-        return;
+      return Promise.resolve("error");
     }
     console.log(`handling command ${command}`);
 
@@ -45,6 +46,9 @@ export const handleCommand = async (command: string | undefined, args?: string) 
         case "sendWindowToAnotherActivity": {
             await sendWindowToAnotherActivity();
             break;
+        }
+        case "listEnabledModes": {
+          return await listEnabledModes(); // returns comma-separated string of enabled modes
         }
         case "activateActivity": {
             if (args) {
@@ -111,7 +115,7 @@ export const handleCommand = async (command: string | undefined, args?: string) 
             break;
         }
         default: {
-            console.error("command not recognized");
+          console.error("command not recognized");
         }
     }
 };

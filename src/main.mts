@@ -17,7 +17,10 @@ const server = createServer((socket: Socket) => {
       if (data.includes('|')) {
 	const cmd = data.split('|')[0]
 	const args = data.split('|')[1]
-	await handleCommand(cmd, args);
+	const response = await handleCommand(cmd, args);
+	if (response) {
+	  socket.write(response) 
+	}
       } else {
 	await handleCommand(data);
       }

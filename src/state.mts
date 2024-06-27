@@ -20,6 +20,15 @@ export type Activity = {
   links: Link[];
 };
 
+// export type Mode = {
+//   id: string;
+//   title: string;
+//   created: Date;
+//   accessed: Date;
+// };
+
+export type Mode = string
+
 export type Link = {
   id: string;
   url: string;
@@ -51,6 +60,8 @@ export type EmacsBookmark = {
 
 export type YamlDoc = {
   activities: Activity[];
+  modes: Mode[];
+  enabledModes: Mode[];
   currentActivityId: ActivityId;
   previousActivityId: ActivityId;
 };
@@ -59,16 +70,25 @@ let activities: Activity[] = [];
 let currentActivity: Activity;
 let previousActivity: Activity;
 
+let modes: Mode[] = [];
+let enabledModes: Mode[] = [];
+
 const dwmTags = new Array<ActivityId>(32); // dwm uses a bitmask to store what "tags" a window (client) is visible on
 
 export const activityById = (id: ActivityId) =>
   activities.find((c) => c.activityId === id);
+
+
+enabledModes.push('dev')
+
 
 export const getState = () => {
   return {
     activities,
     currentActivity,
     previousActivity,
+    modes,
+    enabledModes,
     dwmTags,
   };
 };
@@ -113,6 +133,8 @@ export const loadState = async () => {
       return c;
     });
 
+    modes = parsed.modes
+    
     // todo: fix hacks
     const current = activityById(parsed.currentActivityId);
     if (current) {
@@ -128,7 +150,7 @@ export const loadState = async () => {
       console.error("expected to find current activity");
     }
 
-    return { currentActivity, previousActivity, activities };
+    return { currentActivity, previousActivity, activities, modes, enabledModes };
   } catch (e) {
     console.error("Error occured while loading state from YAML");
     console.error(e);
@@ -136,11 +158,13 @@ export const loadState = async () => {
 };
 
 export const storeState = () => {
-
+  return
   const state: YamlDoc = {
     currentActivityId: currentActivity.activityId,
     previousActivityId: previousActivity.activityId,
     activities,
+    modes,
+    enabledModes
   };
 
   const stringified = stringify(state);
@@ -163,6 +187,7 @@ export const createActivity = (id: ActivityId) => {
     tags: [],
     linkGroups: [],
     links: [],
+    modes: [],
   };
   activities.push(activity);
   return activity;
