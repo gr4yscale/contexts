@@ -27,7 +27,7 @@ export type Activity = {
 //   accessed: Date;
 // };
 
-export type Mode = string
+export type Tag = string
 
 export type Link = {
   id: string;
@@ -60,8 +60,7 @@ export type EmacsBookmark = {
 
 export type YamlDoc = {
   activities: Activity[];
-  modes: Mode[];
-  enabledModes: Mode[];
+  enabledTags: Tag[];
   currentActivityId: ActivityId;
   previousActivityId: ActivityId;
 };
@@ -70,8 +69,7 @@ let activities: Activity[] = [];
 let currentActivity: Activity;
 let previousActivity: Activity;
 
-let modes: Mode[] = [];
-let enabledModes: Mode[] = [];
+let enabledTags: Tag[] = [];
 
 const dwmTags = new Array<ActivityId>(32); // dwm uses a bitmask to store what "tags" a window (client) is visible on
 
@@ -87,8 +85,7 @@ export const getState = () => {
     activities,
     currentActivity,
     previousActivity,
-    modes,
-    enabledModes,
+    enabledTags,
     dwmTags,
   };
 };
@@ -133,7 +130,7 @@ export const loadState = async () => {
       return c;
     });
 
-    modes = parsed.modes
+    enabledTags = parsed.enabledTags
     
     // todo: fix hacks
     const current = activityById(parsed.currentActivityId);
@@ -150,7 +147,7 @@ export const loadState = async () => {
       console.error("expected to find current activity");
     }
 
-    return { currentActivity, previousActivity, activities, modes, enabledModes };
+    return { currentActivity, previousActivity, activities, enabledTags };
   } catch (e) {
     console.error("Error occured while loading state from YAML");
     console.error(e);
@@ -163,8 +160,7 @@ export const storeState = () => {
     currentActivityId: currentActivity.activityId,
     previousActivityId: previousActivity.activityId,
     activities,
-    modes,
-    enabledModes
+    enabledTags
   };
 
   const stringified = stringify(state);
@@ -192,6 +188,24 @@ export const createActivity = (id: ActivityId) => {
   activities.push(activity);
   return activity;
 };
+
+export const filteredActivities = () => {
+  return activities;
+};
+
+// TODO: needs memoization
+export const availableTags = () => {
+  return new Set(activities.flatMap((a) => a.tags));
+};
+
+export const toggleTagEnabled = (t: string) => {
+  if (enabledTags.includes(t)) {
+    const index = enabledTags.indexOf(t);
+    if (~index) enabledTags.splice(index, 1);
+  } else {
+    enabledTags.push(t)
+  }
+}
 
 // todo replace with a stack
 export const updateCurrentActivity = (activity: Activity) => {

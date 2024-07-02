@@ -4,12 +4,13 @@ import {
     activateActivity,
     switchActivity,
     swapActivity,
-    sendWindowToAnotherActivity
+    selectActivityByEnabledTags,
+    sendWindowToAnotherActivity,
 } from "./commands/navigation.mts";
 import { linkGroupStore, stickyLinkStore } from "./commands/links.mts";
 import { saveEmacsWindowBookmark } from "./commands/emacs.mts";
 import { listEnabledModes } from "./commands/modes.mts";
-import { buildMenuCurrentActivity, buildMenuLinks, buildMenuLinkGroups, buildMenuEmacsBookmarks, buildMenuLaunchItems } from "./menuBuilders.mjs";
+import { buildMenuCurrentActivity, buildMenuTagsToggle, buildMenuLinks, buildMenuLinkGroups, buildMenuEmacsBookmarks, buildMenuLaunchItems } from "./menuBuilders.mts";
 import { initActivity } from "./initActivity.mts";
 
 export const handleCommand = async (command: string | undefined, args?: string) : Promise<string | undefined> => {
@@ -35,6 +36,11 @@ export const handleCommand = async (command: string | undefined, args?: string) 
         }
         case "switchActivitySticky": {
             await switchActivity(" ", "sticky ");
+            storeState();
+            break;
+        }
+        case "selectActivityByEnabledTags": {
+            await selectActivityByEnabledTags();
             storeState();
             break;
         }
@@ -95,6 +101,10 @@ export const handleCommand = async (command: string | undefined, args?: string) 
         // menus
         case "menuCurrentActivity": {
             await buildMenuCurrentActivity();
+            break;
+        }
+        case "menuTagsToggle": {
+          await buildMenuTagsToggle();
             break;
         }
         case "menuLinks": {

@@ -49,6 +49,26 @@ export const swapActivity = async () => {
   await activateActivity(previousActivity.activityId);
 };
 
+
+
+export const selectActivityByEnabledTags = async (prefilter?: string) => {
+  const { activities, enabledTags } = getState();
+  const filtered = new Set<Activity>()
+  enabledTags.forEach((t) => {
+    const matches = activities.filter((a) => a.tags.includes(t))
+    matches.forEach((m) => filtered.add(m))
+  })
+  const selectedActivityId = await rofiListSelectRecentActivities(
+    Array.from(filtered),
+    "recent activity by enabled tags: ",
+    prefilter
+  );
+  if (selectedActivityId) {
+    await activateActivity(selectedActivityId);
+  }
+};
+
+
 // windows
 export const sendWindowToAnotherActivity = async () => {
   const activity = await selectRecentActivity("send to activity:");

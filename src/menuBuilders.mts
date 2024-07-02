@@ -3,6 +3,7 @@ import { $ } from "zx";
 import { getState } from "./state.mts";
 
 import { buildMenu } from "./menus.mts";
+import { menuTagsToggle } from "./commands/tags.mts";
 import { menuLinks, menuLinkGroups } from "./commands/links.mts";
 import { menuEmacsWindowBookmarks, menuEmacsOrgBookmarks } from "./commands/emacs.mts";
 export const buildMenuCurrentActivity = async () => {
@@ -21,6 +22,13 @@ export const buildMenuCurrentActivity = async () => {
       { display: "scripts" /* builder: () => menuScripts() */ },
       { display: "de-activate" /* handler: () => menuRename() */ },
     ],
+  });
+};
+
+export const buildMenuTagsToggle = async () => {
+  await buildMenu({
+    display: "tags",
+    builder: () => menuTagsToggle(),
   });
 };
 
