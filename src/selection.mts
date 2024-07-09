@@ -77,9 +77,8 @@ export const formatActivitiesListExtended = async (activities: Activity[]) => {
 
     return `${activityId.padEnd(36, " ")}  ${tags}  ${lastAccessed}`;
   });
-  return mapped.length > 0
-    ? mapped.reduce((prev, item) => prev + "\n" + item)
-    : "";
+
+  return mapped
 };
 
 export const rofiListSelectRecentActivities = async (
@@ -88,7 +87,9 @@ export const rofiListSelectRecentActivities = async (
   prefilter?: string
 ) => {
   const list = await formatActivitiesListExtended(activities);
-  return await rofiListSelect(list, prompt, prefilter);
+  const stringified = list.length > 0 ? list.reduce((prev, item) => prev + "\n" + item) : "";
+
+  return await rofiListSelect(stringified, prompt, prefilter);
 };
 
 // TOFIX: pass in predicate

@@ -1,4 +1,4 @@
-import { availableTags, toggleTagEnabled, Tag, getState } from "../state.mts";
+import { availableTags, toggleTagEnabled, getState } from "../state.mts";
 
 export const menuTagsToggle = () => {
   const tags = Array.from(availableTags())

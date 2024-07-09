@@ -10,7 +10,7 @@ import {
 import { linkGroupStore, stickyLinkStore } from "./commands/links.mts";
 import { saveEmacsWindowBookmark } from "./commands/emacs.mts";
 import { listEnabledModes } from "./commands/modes.mts";
-import { buildMenuCurrentActivity, buildMenuTagsToggle, buildMenuLinks, buildMenuLinkGroups, buildMenuEmacsBookmarks, buildMenuLaunchItems } from "./menuBuilders.mts";
+import { buildMenuCurrentActivity, buildMenuTagsToggle, buildMenuLinks, buildMenuLinkGroups, buildMenuEmacsBookmarks, buildMenuLaunchItems, buildMenuActivityListTypesToggle } from "./menuBuilders.mts";
 import { initActivity } from "./initActivity.mts";
 
 export const handleCommand = async (command: string | undefined, args?: string) : Promise<string | undefined> => {
@@ -25,22 +25,7 @@ export const handleCommand = async (command: string | undefined, args?: string) 
     switch (command) {
         // navigation
         case "switchActivity": {
-            await switchActivity("all");
-            storeState();
-            break;
-        }
-        case "switchActivityActive": {
-            await switchActivity("active", "* ");
-            storeState();
-            break;
-        }
-        case "switchActivitySticky": {
-            await switchActivity(" ", "sticky ");
-            storeState();
-            break;
-        }
-        case "selectActivityByEnabledTags": {
-            await selectActivityByEnabledTags();
+            await switchActivity();
             storeState();
             break;
         }
@@ -105,6 +90,10 @@ export const handleCommand = async (command: string | undefined, args?: string) 
         }
         case "menuTagsToggle": {
           await buildMenuTagsToggle();
+            break;
+        }
+        case "menuActivityListTypesToggle": {
+          await buildMenuActivityListTypesToggle();
             break;
         }
         case "menuLinks": {

@@ -6,6 +6,8 @@ import { buildMenu } from "./menus.mts";
 import { menuTagsToggle } from "./commands/tags.mts";
 import { menuLinks, menuLinkGroups } from "./commands/links.mts";
 import { menuEmacsWindowBookmarks, menuEmacsOrgBookmarks } from "./commands/emacs.mts";
+import { menuActivityListTypesToggle } from "./activityList.mts";
+
 export const buildMenuCurrentActivity = async () => {
   const currentActivity = getState().currentActivity;
 
@@ -31,6 +33,14 @@ export const buildMenuTagsToggle = async () => {
     builder: () => menuTagsToggle(),
   });
 };
+
+export const buildMenuActivityListTypesToggle = async () => {
+  await buildMenu({
+    display: "activity list types",
+    builder: () => menuActivityListTypesToggle(),
+  });
+};
+
 
 export const buildMenuLinks = async () => {
   await buildMenu({

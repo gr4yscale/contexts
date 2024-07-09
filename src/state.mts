@@ -66,14 +66,16 @@ export type YamlDoc = {
 };
 
 export enum ActivityListType {
-  all,
-  // active
-  // enabledTags,
+  All = "all",
+  Active = "active",
+  EnabledTags = "enabledTags"
   // orgTasks,
   // selected,
   // transient,
   // recent?
 }
+
+type ActivityListBuilder = (activities: Activity[]) => Activity[]
 
 let activities: Activity[] = [];
 let currentActivity: Activity;
@@ -87,10 +89,7 @@ const dwmTags = new Array<ActivityId>(32); // dwm uses a bitmask to store what "
 export const activityById = (id: ActivityId) =>
   activities.find((c) => c.activityId === id);
 
-
-enabledModes.push('dev')
-
-enabledActivityListTypes.push(ActivityListType.all)
+enabledActivityListTypes.push(ActivityListType.EnabledTags)
 
 export const getState = () => {
   return {
@@ -229,4 +228,43 @@ export const updatePreviousActivity = (activity: Activity) => {
   previousActivity = activity;
 };
 
-export const activitiesActive = () => activities.filter((c) => c.active === true);
+
+
+// activities lists
+
+export const activitiesAll = (a: Activity[]) => a
+export const activitiesActive = (a: Activity[]) => a.filter((c) => c.active === true);
+export const activitiesEnabledTags = (activities: Activity[]) => {
+  const filtered = new Set<Activity>()
+  enabledTags.forEach((t) => {
+    const matches = activities.filter((a) => a.tags.includes(t))
+    matches.forEach((m) => filtered.add(m))
+  })
+  return Array.from(filtered)
+}
+
+const activityListBuilders: Record<ActivityListType, ActivityListBuilder> = {
+  [ActivityListType.All]: activitiesAll,
+  [ActivityListType.Active]: activitiesActive,
+  [ActivityListType.EnabledTags]: activitiesEnabledTags,
+};
+
+export const buildActivityList = (listTypes: ActivityListType[], activities: Activity[]) => {
+  let combined : Array<Activity> = []
+  for (const listType of listTypes) {
+    const build = activityListBuilders[listType];
+    const list = build(activities)
+    combined = [...list, ...combined]
+  }
+  return combined
+}
+
+// tofix: dealing with an array of enumeration values rather than strings here
+export const toggleActivityListTypeEnabled = (l: ActivityListType) => {
+  if (enabledActivityListTypes.includes(l)) {
+    const index = enabledActivityListTypes.indexOf(l);
+    if (~index) enabledActivityListTypes.splice(index, 1);
+  } else {
+    enabledActivityListTypes.push(l)
+  }
+}

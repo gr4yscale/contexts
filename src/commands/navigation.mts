@@ -6,9 +6,9 @@ import {
   updateCurrentActivity,
   updatePreviousActivity,
   activityById,
+  buildActivityList,
   Activity,
   ActivityId,
-  ActivityListType
 } from "../state.mts";
 
 import { buildMenu } from "../menus.mts";
@@ -17,52 +17,34 @@ import { allocateWorkspace } from "../workspaces.mts";
 
 import { rofiListSelectRecentActivities , formatActivitiesListExtended} from "../selection.mts";
 
-type ActivityListBuilder = (activities: Activity[]) => Activity[]
 
-const activitiesAll = (activities: Activity[]) => activities
+/** build lists of activities for each of the ListTypes
+ *  append them to a combined list, sort by recent access
+ *  format lists of activities to include tags, for matching in rofi
+ *  build menu with handler for item selection
+ */
+export const switchActivity = async () => {
 
-const activityListBuilders: Record<ActivityListType, ActivityListBuilder> = {
-  [ActivityListType.all]: activitiesAll,
-};
-
-const buildActivityList = (listTypes: ActivityListType[], activities: Activity[]) => {
-  let combined : Array<Activity> = []
-  for (const listType of listTypes) {
-    const build = activityListBuilders[listType];
-    const list = build(activities)
-    combined = [...list, ...combined]
-  }
-  return combined
-}
-
-// activity switching
-export const switchActivity = async (prompt: string, prefilter?: string) => {
-
-  // build lists of activities for each of the ListTypes
-  // append them to a combined list, sort by recent access
-  // format lists of activities to include tags, for matching in rofi
-  // build menu with handler for item selection
-
-  const { activities, enabledActivityListTypes: listTypes } = getState();
-  const lists = buildActivityList(listTypes, activities);
+  const { activities, enabledActivityListTypes } = getState();
+  const lists = buildActivityList(enabledActivityListTypes, activities);
   const sorted = lists.sort((l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime());
   const formatted = await formatActivitiesListExtended(sorted);
-
+  const prompt = `${Object.values(enabledActivityListTypes).join(', ')}`
   await buildMenu({
     display: prompt,
     builder: () => formatted.map((line: string) => {
-	return {
-	    display: line,
-	    handler: async (selectionIndex?: number) => {
-		if (!selectionIndex) {
-		  // TOFIX notify error
-		  return;
-		}
-		const activity = sorted[selectionIndex];
-		await activateActivity(activity.activityId);
-		return;
-	    },
+      return {
+	display: line,
+	handler: async (selectionIndex?: number) => {
+	  if (!selectionIndex) {
+	    // TOFIX notify error
+	    return;
+	  }
+	  const activity = sorted[selectionIndex];
+	  await activateActivity(activity.activityId);
+	  return;
 	}
+      }
     })
   })
 }
@@ -85,7 +67,7 @@ export const activateActivity = async (id: ActivityId) => {
     updatePreviousActivity(previousActivity);
     activity.lastAccessed = new Date();
     console.log('activated ' + activity.name)
-    $`notify-send -a activity -t 500 "Activated activity: ${activity.name}; ws: ${activity.dwmTag}"`;
+    $`notify-send -a activity -t 500 "${activity.dwmTag}: ${activity.name}"`;
   }
 };
 
@@ -93,26 +75,6 @@ export const swapActivity = async () => {
   const { previousActivity } = getState();
   await activateActivity(previousActivity.activityId);
 };
-
-
-
-export const selectActivityByEnabledTags = async (prefilter?: string) => {
-  const { activities, enabledTags } = getState();
-  const filtered = new Set<Activity>()
-  enabledTags.forEach((t) => {
-    const matches = activities.filter((a) => a.tags.includes(t))
-    matches.forEach((m) => filtered.add(m))
-  })
-  const selectedActivityId = await rofiListSelectRecentActivities(
-    Array.from(filtered),
-    "recent activity by enabled tags: ",
-    prefilter
-  );
-  if (selectedActivityId) {
-    await activateActivity(selectedActivityId);
-  }
-};
-
 
 // windows
 export const sendWindowToAnotherActivity = async () => {
