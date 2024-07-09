@@ -57,12 +57,9 @@ const formatActivitiesList = async (activities: Activity[]) => {
     : "";
 };
 
-const formatActivitiesListExtended = async (activities: Activity[]) => {
+export const formatActivitiesListExtended = async (activities: Activity[]) => {
   // TOFIX: abstract sorting and filtering into a reuseable module; check for query lang libs
-  const sorted = activities.sort(
-    (l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime(),
-  );
-  const mapped = sorted.map((c) => {
+  const mapped = activities.map((c) => {
     // TOFIX: consider & for sticky activities
     //        but then what about active *and* sticky activities?
     //        maybe sticky activities *must* be initialized to be valid?

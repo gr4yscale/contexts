@@ -65,10 +65,21 @@ export type YamlDoc = {
   previousActivityId: ActivityId;
 };
 
+export enum ActivityListType {
+  all,
+  // active
+  // enabledTags,
+  // orgTasks,
+  // selected,
+  // transient,
+  // recent?
+}
+
 let activities: Activity[] = [];
 let currentActivity: Activity;
 let previousActivity: Activity;
 
+let enabledActivityListTypes: ActivityListType[] = [];
 let enabledTags: Tag[] = [];
 
 const dwmTags = new Array<ActivityId>(32); // dwm uses a bitmask to store what "tags" a window (client) is visible on
@@ -79,14 +90,16 @@ export const activityById = (id: ActivityId) =>
 
 enabledModes.push('dev')
 
+enabledActivityListTypes.push(ActivityListType.all)
 
 export const getState = () => {
   return {
     activities,
+    enabledActivityListTypes,
     currentActivity,
     previousActivity,
-    enabledTags,
     dwmTags,
+    enabledTags
   };
 };
 

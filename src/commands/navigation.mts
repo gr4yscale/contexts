@@ -8,19 +8,64 @@ import {
   activityById,
   Activity,
   ActivityId,
+  ActivityListType
 } from "../state.mts";
+
+import { buildMenu } from "../menus.mts";
 
 import { allocateWorkspace } from "../workspaces.mts";
 
-import { rofiListSelectRecentActivities } from "../selection.mts";
+import { rofiListSelectRecentActivities , formatActivitiesListExtended} from "../selection.mts";
+
+type ActivityListBuilder = (activities: Activity[]) => Activity[]
+
+const activitiesAll = (activities: Activity[]) => activities
+
+const activityListBuilders: Record<ActivityListType, ActivityListBuilder> = {
+  [ActivityListType.all]: activitiesAll,
+};
+
+const buildActivityList = (listTypes: ActivityListType[], activities: Activity[]) => {
+  let combined : Array<Activity> = []
+  for (const listType of listTypes) {
+    const build = activityListBuilders[listType];
+    const list = build(activities)
+    combined = [...list, ...combined]
+  }
+  return combined
+}
 
 // activity switching
 export const switchActivity = async (prompt: string, prefilter?: string) => {
-  const selectedActivityId = await selectRecentActivityId(prompt, prefilter);
-  if (selectedActivityId) {
-    await activateActivity(selectedActivityId);
-  }
-};
+
+  // build lists of activities for each of the ListTypes
+  // append them to a combined list, sort by recent access
+  // format lists of activities to include tags, for matching in rofi
+  // build menu with handler for item selection
+
+  const { activities, enabledActivityListTypes: listTypes } = getState();
+  const lists = buildActivityList(listTypes, activities);
+  const sorted = lists.sort((l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime());
+  const formatted = await formatActivitiesListExtended(sorted);
+
+  await buildMenu({
+    display: prompt,
+    builder: () => formatted.map((line: string) => {
+	return {
+	    display: line,
+	    handler: async (selectionIndex?: number) => {
+		if (!selectionIndex) {
+		  // TOFIX notify error
+		  return;
+		}
+		const activity = sorted[selectionIndex];
+		await activateActivity(activity.activityId);
+		return;
+	    },
+	}
+    })
+  })
+}
 
 // todo: overload this with activityId or Activity
 export const activateActivity = async (id: ActivityId) => {
