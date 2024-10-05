@@ -13,16 +13,18 @@ const server = createServer((socket: Socket) => {
   socket.setEncoding("utf8");
   socket.on("data", async (data: string) => {
     try {
+      let response
       // TOFIX: lock while existing command is being handled
       if (data.includes('|')) {
-	const cmd = data.split('|')[0]
-	const args = data.split('|')[1]
-	const response = await handleCommand(cmd, args);
-	if (response) {
-	  socket.write(response) 
-	}
+        const cmd = data.split('|')[0]
+        const args = data.split('|')[1]
+        response = await handleCommand(cmd, args);
       } else {
-	await handleCommand(data);
+        response = await handleCommand(data);
+      }
+      if (response) {
+        console.log(response)
+        socket.write(response)
       }
     } catch (e) {
       const msg = `Activities: Error handling command ${data}!`;

@@ -1,2 +1,4 @@
 #!/bin/bash
+
 printf "$1" | nc -w0 -U /tmp/contexts.sock
+#printf "$1" | nc -U /tmp/contexts.sock
