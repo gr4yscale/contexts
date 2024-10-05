@@ -1,9 +1,93 @@
 * context / workspaces manager (ctxman) :digital:
+** allow org headline IDs to be the nested context, where root is global
+** this way, we use emacs+org for layering data (properties) from trees, to contextualize / categorize different types of items easily, visually
+
+** the current "context" (stack, layering properties) can be updated by updating contexts with a list of org heading ids
+** examples
+*** usually derived from org-ql group heading + task
+
+*** dev (mode), contexts (project)
+*** shopping (mode), lathe tools (topic?)
+
+
+** "activities" currently own org bookmarks, web links, and soon actions. 
+** do we accumulate these resources from each context?
+
+** avy jump to "activity" from org-ql buffer (directly)
+
+
 ** TODO [#A] ***** contexts architecture change *****
 :PROPERTIES:
 :ID:       d995da8c-b646-4baf-b926-fd5a3f231d56
 :END:
-*** STARTED rename contexts -> activities
+
+*** DONE rename contexts -> activities
+CLOSED: [2024-07-01 Mon 14:42]
+
+*** in org-ql buffer, switching to different activity by calling contexts with activityID arg/parameter
+*** in addition to switchActivity, triggering dwm workspace allocation, also
+*** start a clock/timer to log how much time in an activity
+**** store in org, or in my own stats db?
+
+
+*** current-context = enabledTags, markedActivities, for example
+
+*** actions-for-current-context
+**** see tasks for current params (enabledTags?), calling org-ql
+
+*** capture-for-current-context
+*** capture-for-current-activity
+
+*** capture/journal is saved with current context/enabled tags, but i could also add some? ex: planning, dev
+
+*** learning  9(tag), learning-metal-casting (time track)
+*** derive time from the tags
+
+*** actions, org tasks can have multiple activities/contexts?
+
+*** research-what
+*** tasks are closely related to the 'what'; research tools may vary but probably less influenced
+
+*** workspaces can have multiple activities/contexts, and share them? 
+
+*** add an org id to every task, and associate task with a context (or tag?)
+*** doing what (action) with thing (resource)
+
+*** actions list, filtered by (tag|enabledActivities) - think on that
+*** org tasks list, filtered by enabledActivities
+
+*** life domains: finance, work, business, partner, health, exercise, nutrition, community, projects, digital, home
+*** life modes: planning, decisions, execution - see contexts-routines
+*** dwm statusbar can show which activity is selected by clock, and also # mins since switched to last context
+*** auto-compare the last time saved with next time; if an 30min gap or more, use that last saved time
+*** ask the person for confirmation with the proposed time
+
+*** enabledActivities / selectedActivities
+*** selectActivity, group by tag/mode
+
+*** activitiesListBy: all, tags, active
+
+*** enabledTags / selectedTags
+*** availableTags
+
+*** tags vs "contexts"
+
+*** incremental changes, what's simplest for now?
+*** specifiers for rofi-based menus: @ context, $ project, % resource, & workspace
+
+*** org tasks can be filtered by either selectedTags in contexts, which causes
+*** * categorization scaling issues - will begin to accumulate too many categories for very specific tasks
+*** * can forget to clean up categories, or get distracted by wondering how to categorize something
+
+*** org tasks can be filtered by "hidden" property that i would toggle manually between different contexts
+*** * can forget to re-enable some tasks, procrastinate on reviewing
+
+*** want the ability to hide/show "tags" or whatever propertys we are "collecting" on
+
+*** hide tags with expiry time
+
+*** ----------------------
+
 *** define new data models  + relations
 **** Context (1 current, always. composed of several parameters)
 ***** Activities (unique list)
@@ -449,7 +533,7 @@ https://www.reddit.com/r/bspwm/comments/vqblcy/sxhkdparser_a_library_for_parsing
 (setenv "ESHELL" "/bin/bash")
 
 [[shell:contextc activatecontext][activate context]]
-[[shell:contextc "activateContext|bebo"][activate context: bebo]]
+[[shell:contextc "activateActivity|planning"][activate context: planning]]
 
 ** NEXT TODO
 *** import links from tab session manager
