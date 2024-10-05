@@ -3,7 +3,7 @@
 import { createServer, Socket } from "net";
 import { $, fs } from "zx";
 
-import { loadState, activitiesActive } from "./state.mts";
+import { activitiesActive, getState, loadState } from "./state.mts";
 import { handleCommand } from "./handleCommand.mts";
 import { syncWorkspaces } from "./workspaces.mts";
 
@@ -26,6 +26,17 @@ const server = createServer((socket: Socket) => {
         console.log(response)
         socket.write(response)
       }
+
+      //const activeActivities = activitiesActive(getState().activities)
+      //const activityIds = activeActivities.map(a => a.activityId)
+
+      //console.log(' activityIds:    *****')
+      //console.log(activityIds)
+
+      //console.log(' dwmTags:    *****')
+      const dwmTags = getState().dwmTags.toString()
+      console.log(dwmTags)
+
     } catch (e) {
       const msg = `Activities: Error handling command ${data}!`;
       $`notify-send "${msg}"`;
@@ -41,7 +52,9 @@ server.listen("/tmp/contexts.sock", () => {
 
 try {
   await loadState();
-  syncWorkspaces(activitiesActive());
+  // TODO
+  const activeActivities = activitiesActive(getState().activities)
+  syncWorkspaces(activeActivities);
 } catch (e) {
   $`notify-send "Activities: unhandled error occurred."`;
   console.error(e);

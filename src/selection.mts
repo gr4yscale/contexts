@@ -1,6 +1,7 @@
 import { $ } from "zx";
 import { Activity } from "./state.mts";
 import { formatDistanceToNow } from "date-fns";
+import { rofiSelectItem } from "./menus.mts"
 
 export const rofiListSelect = async (list: string, prompt: string, prefilter?: string) => {
   $.verbose = false;
@@ -70,12 +71,16 @@ export const formatActivitiesListExtended = async (activities: Activity[]) => {
     // if (c.tags.includes('sticky')) {
     //   marker = '%'
     // }
-    const activityId = c.activityId + marker;
+
+    //
+
+    const display = c.name ? c.name : c.activityId + marker;
+    //const activityId = c.activityId + marker;
     const tags = c.tags.join(",").substring(0, 32).padEnd(32, ' ')
     //TOFIX absoutely atrocious
     const lastAccessed = formatDistanceToNow(c.lastAccessed, {includeSeconds: true }).replace('about ', '').replace('days', 'days').replace('day', 'day').replace('minutes', 'mins').replace('minute', 'min').replace('less than a', '<').replace('less than', '<').replace('seconds', 'secs')
 
-    return `${activityId.padEnd(36, " ")}  ${tags}  ${lastAccessed}`;
+    return `${display.padEnd(36, " ")}  ${tags}  ${lastAccessed}`;
   });
 
   return mapped
@@ -86,19 +91,20 @@ export const rofiListSelectRecentActivities = async (
   prompt: string,
   prefilter?: string
 ) => {
-  const list = await formatActivitiesListExtended(activities);
-  const stringified = list.length > 0 ? list.reduce((prev, item) => prev + "\n" + item) : "";
+  const formatted = await formatActivitiesListExtended(activities);
+  const stringified = formatted.length > 0 ? formatted.reduce((prev, item) => prev + "\n" + item) : "";
 
   return await rofiListSelect(stringified, prompt, prefilter);
 };
 
-// TOFIX: pass in predicate
-export const rofiListSelectRecentActiveActivities = async (
-  activities: Activity[],
-  prompt: string,
-  prefilter?: string
-) => {
-  const activeActivities = activities.filter(c => c.active === true)
-  const list = await formatActivitiesList(activeActivities);
-  return await rofiListSelect(list, prompt, prefilter);
-};
+
+// export const rofiListSelectRecentActivities = async (
+//   activities: Activity[],
+//   prompt: string,
+//   prefilter?: string
+// ) => {
+//   const list = await formatActivitiesListExtended(activities);
+//   const stringified = list.length > 0 ? list.reduce((prev, item) => prev + "\n" + item) : "";
+
+//   return await rofiListSelect(stringified, prompt, prefilter);
+// };

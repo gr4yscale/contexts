@@ -5,6 +5,8 @@ export type ActivityId = string;
 
 export type Activity = {
   activityId: ActivityId;
+  orgId: string;
+  orgText: string;
   name: string;
   dwmTag?: number;
   created: Date;
@@ -63,13 +65,14 @@ export type YamlDoc = {
   enabledTags: Tag[];
   currentActivityId: ActivityId;
   previousActivityId: ActivityId;
+  //dwmTags: ActivityId[]; 
 };
 
 export enum ActivityListType {
   All = "all",
   Active = "active",
-  EnabledTags = "enabledTags"
-  // orgTasks,
+  EnabledTags = "enabledTags",
+  OrgIds = "orgIds"
   // selected,
   // transient,
   // recent?
@@ -89,7 +92,11 @@ const dwmTags = new Array<ActivityId>(32); // dwm uses a bitmask to store what "
 export const activityById = (id: ActivityId) =>
   activities.find((c) => c.activityId === id);
 
-enabledActivityListTypes.push(ActivityListType.EnabledTags)
+export const activityByOrgId = (orgId: string) =>
+  activities.find((c) => c.orgId === orgId);
+
+
+enabledActivityListTypes.push(ActivityListType.Active)
 
 export const getState = () => {
   return {
@@ -143,6 +150,8 @@ export const loadState = async () => {
     });
 
     enabledTags = parsed.enabledTags
+
+    //dwmTags.concat(dwmTags)
     
     // todo: fix hacks
     const current = activityById(parsed.currentActivityId);
@@ -161,31 +170,34 @@ export const loadState = async () => {
 
     return { currentActivity, previousActivity, activities, enabledTags };
   } catch (e) {
-    console.error("Error occured while loading state from YAML");
+    console.error("Error occured while oading state from YAML");
     console.error(e);
   }
 };
 
 export const storeState = () => {
-  return
   const state: YamlDoc = {
     currentActivityId: currentActivity.activityId,
     previousActivityId: previousActivity.activityId,
-    activities,
-    enabledTags
+    //dwmTags,
+    enabledTags,
+    //enabledActivityListTypes,
+    activities
   };
 
   const stringified = stringify(state);
   //TOFIX
   // https://joeattardi.dev/customizing-jsonparse-and-jsonstringify#heading-adding-a-reviver-function
-  fs.writeFileSync("./activities.yml", stringified);
+  fs.writeFileSync("./state.yml", stringified);
 };
 
 export const createActivity = (id: ActivityId) => {
   console.log(`creating activity: ${id}`);
-  const activity = {
+  const activity: Activity = {
     activityId: id,
     name: id,
+    orgId: '',
+    orgText: '',
     created: new Date(),
     lastAccessed: new Date(),
     active: false,
@@ -194,10 +206,25 @@ export const createActivity = (id: ActivityId) => {
     emacsOrgBookmarks: [],
     tags: [],
     linkGroups: [],
-    links: [],
-    modes: [],
+    links: []
   };
   activities.push(activity);
+  return activity;
+};
+
+// convenient keybinding for emacs activity activation in agenda and org-mode buffers
+// make name include the orgId
+// deactivate for orgId
+
+// convenient keybinding for searching current buffer
+// prune activities
+
+export const createActivityForOrgId = (id: ActivityId, orgId: string, orgText: string) => {
+  const activity = createActivity(id)
+  activity.orgId = orgId
+  activity.orgText = orgText
+  activity.name = orgText
+  activity.tags.push('orgTask')
   return activity;
 };
 
@@ -207,7 +234,7 @@ export const filteredActivities = () => {
 
 // TODO: needs memoization
 export const availableTags = () => {
-  return new Set(activities.flatMap((a) => a.tags));
+  return new Set<Tag>(activities.flatMap((a) => a.tags));
 };
 
 export const toggleTagEnabled = (t: string) => {
@@ -233,7 +260,9 @@ export const updatePreviousActivity = (activity: Activity) => {
 // activities lists
 
 export const activitiesAll = (a: Activity[]) => a
+
 export const activitiesActive = (a: Activity[]) => a.filter((c) => c.active === true);
+
 export const activitiesEnabledTags = (activities: Activity[]) => {
   const filtered = new Set<Activity>()
   enabledTags.forEach((t) => {
@@ -243,20 +272,25 @@ export const activitiesEnabledTags = (activities: Activity[]) => {
   return Array.from(filtered)
 }
 
+export const activitiesOrgIds = (activities: Activity[]) => {
+  return activities.filter((a) => a.tags.includes('orgTask'))
+}
+
 const activityListBuilders: Record<ActivityListType, ActivityListBuilder> = {
   [ActivityListType.All]: activitiesAll,
   [ActivityListType.Active]: activitiesActive,
   [ActivityListType.EnabledTags]: activitiesEnabledTags,
+  [ActivityListType.OrgIds]: activitiesOrgIds,
 };
 
 export const buildActivityList = (listTypes: ActivityListType[], activities: Activity[]) => {
-  let combined : Array<Activity> = []
+  const combined = new Set<Activity>()
   for (const listType of listTypes) {
     const build = activityListBuilders[listType];
     const list = build(activities)
-    combined = [...list, ...combined]
+    list.forEach((e)=> combined.add(e))
   }
-  return combined
+  return Array.from(combined)
 }
 
 // tofix: dealing with an array of enumeration values rather than strings here

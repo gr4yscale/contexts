@@ -2,14 +2,15 @@ import { getState, storeState } from "./state.mts";
 import { allocateWorkspace, deallocateWorkspace } from "./workspaces.mts";
 import {
     activateActivity,
+    toggleActivity,
     switchActivity,
     swapActivity,
-    selectActivityByEnabledTags,
     sendWindowToAnotherActivity,
+    activateActivityForOrgId,
 } from "./commands/navigation.mts";
 import { linkGroupStore, stickyLinkStore } from "./commands/links.mts";
 import { saveEmacsWindowBookmark } from "./commands/emacs.mts";
-import { listEnabledModes } from "./commands/modes.mts";
+import { listEnabledTags } from "./commands/tags.mts";
 import { buildMenuCurrentActivity, buildMenuTagsToggle, buildMenuLinks, buildMenuLinkGroups, buildMenuEmacsBookmarks, buildMenuLaunchItems, buildMenuActivityListTypesToggle } from "./menuBuilders.mts";
 import { initActivity } from "./initActivity.mts";
 
@@ -23,6 +24,10 @@ export const handleCommand = async (command: string | undefined, args?: string) 
     const currentActivity = getState().currentActivity;
 
     switch (command) {
+        // switchActivity
+        // toggle enabledActivityListTypes
+        // toggle enabledTags
+
         // navigation
         case "switchActivity": {
             await switchActivity();
@@ -36,11 +41,17 @@ export const handleCommand = async (command: string | undefined, args?: string) 
         }
         case "sendWindowToAnotherActivity": {
             await sendWindowToAnotherActivity();
+            storeState();
             break;
         }
-        case "listEnabledModes": {
-          return await listEnabledModes(); // returns comma-separated string of enabled modes
+        case "toggleActivity": {
+            if (args) {
+                await toggleActivity(args);
+                storeState();
+            }
+            break;
         }
+        // activity lifecycle
         case "activateActivity": {
             if (args) {
                 await activateActivity(args);
@@ -48,20 +59,76 @@ export const handleCommand = async (command: string | undefined, args?: string) 
             }
             break;
         }
-        // current activity operations
-        case "initActivity": {
-            await allocateWorkspace(currentActivity);
-            await initActivity(currentActivity);
-            storeState();
-            break;
-        }
+	// TODO: cleanup
         case "deactivateWorkspace": {
             //TOFIX: confirmation
             await deallocateWorkspace(currentActivity);
             storeState();
             break;
         }
+        // case "listEnabledTags": {
+        //   const a = await listEnabledTags();
+	//   console.log('enabled tags:')
+	//   console.log(a)
+        //   return await listEnabledTags(); // returns comma-separated string of enabled modes
+        // }
+        case "initActivity": {
+            await allocateWorkspace(currentActivity);
+            await initActivity(currentActivity);
+            storeState();
+            break;
+        }
+
+        // keybindings
+        case "leaderKey": {
+	  // triggered by ctrl + home
+
+	  // tagList, listType for filtering activities
+	  
+	  // home = show plan activity (emacs + current orgql query)
+	  
+          //await leaderKey();
+            storeState();
+            break;
+        }
+        case "localLeaderKey": {
+	  // triggered by ctrl + end
+
+	  // activities/modes/context-specific
+	  // run actions, act on resources (dwm workspaces,org headlines)
+
+	  // end = show activities list
+	  
+	  //await localLeaderKey();
+            storeState();
+            break;
+        }
+        // UI: tags/modes, global context
+        case "menuActivityListTypesToggle": {
+          await buildMenuActivityListTypesToggle();
+            storeState();
+            break;
+        }
+        case "menuTagsToggle": {
+          await buildMenuTagsToggle();
+            storeState();
+            break;
+        }
+        // emacs org-mode integration
+        case "activateActivityForOrgId": {
+          if (args) {
+            const response = await activateActivityForOrgId(args);
+            storeState();
+	    return response
+          }
+          break;
+        }
+        // context-sensitive operations (perform actions on resources)
         // links operations
+        case "menuCurrentActivity": {
+            await buildMenuCurrentActivity();
+            break;
+        }
         case "linkGroupStore": {
             await linkGroupStore();
             storeState();
@@ -83,19 +150,7 @@ export const handleCommand = async (command: string | undefined, args?: string) 
             // storeState();
             break;
         }
-        // menus
-        case "menuCurrentActivity": {
-            await buildMenuCurrentActivity();
-            break;
-        }
-        case "menuTagsToggle": {
-          await buildMenuTagsToggle();
-            break;
-        }
-        case "menuActivityListTypesToggle": {
-          await buildMenuActivityListTypesToggle();
-            break;
-        }
+        // UI, menus
         case "menuLinks": {
             await buildMenuLinks();
             break;

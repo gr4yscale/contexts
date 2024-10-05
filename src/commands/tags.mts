@@ -16,3 +16,8 @@ export const menuTagsToggle = () => {
     };
   });
 };
+
+export const listEnabledTags = async () => {
+  const { enabledTags } = getState();
+  return enabledTags.join(',')
+}
