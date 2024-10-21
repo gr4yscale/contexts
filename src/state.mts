@@ -31,6 +31,14 @@ export type Activity = {
 
 export type Tag = string
 
+export type Action = {
+  actionId: string;
+  name: string;
+  created: Date;
+  accessed: Date;
+  tasks: string[];
+};
+
 export type Link = {
   id: string;
   url: string;
