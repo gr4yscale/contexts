@@ -1,28 +1,42 @@
 * context / workspaces manager (ctxman) :digital:
-** allow org headline IDs to be the nested context, where root is global
-** this way, we use emacs+org for layering data (properties) from trees, to contextualize / categorize different types of items easily, visually
-
-** the current "context" (stack, layering properties) can be updated by updating contexts with a list of org heading ids
-** examples
-*** usually derived from org-ql group heading + task
-
-*** dev (mode), contexts (project)
-*** shopping (mode), lathe tools (topic?)
-
-
-** "activities" currently own org bookmarks, web links, and soon actions. 
-** do we accumulate these resources from each context?
-
-** avy jump to "activity" from org-ql buffer (directly)
-
-
-** TODO [#A] ***** contexts architecture change *****
+** TODO [#A] architecture change
 :PROPERTIES:
 :ID:       d995da8c-b646-4baf-b926-fd5a3f231d56
 :END:
+*** define new data models  + relations
+**** Context (1 current, always. composed of several parameters)
+***** Activities (unique list)
+****** actions, tools, operations (function, script)
+****** resources (workspaces, links, org ids)
+**** trail? 
+*** mode selection menu (add data from routine tree)
+*** list 'activities' by modeid
+*** activities list state managed by context
+*** tools / action = function (open a file in xyz app, download a video, send keystrokes to app, wait, do something else)
+*** define resources
+*** current activity menu: Actions/Tools/Scripts + Resources (link, org id, folder, file)
+**** pass resource to action / tool
+*** keybindings: mode selection, ws selection, tools/actions menu, context menu, bettter list selection (avy style)
 
-*** DONE rename contexts -> activities
-CLOSED: [2024-07-01 Mon 14:42]
+*** global context menu to set mode, time avail, etc
+
+*** selecting activities for an ad-hoc list
+
+*** emacs: filter tasks by modeid, activityid
+*** emacs: filter tags by list of currently enabled modeids, or activityid
+*** emacs: org element at point: link to an activity (select)
+*** emacs: get current mode (shell out)
+
+
+
+
+
+
+
+
+
+
+*** -------------------------------
 
 *** in org-ql buffer, switching to different activity by calling contexts with activityID arg/parameter
 *** in addition to switchActivity, triggering dwm workspace allocation, also
@@ -40,7 +54,7 @@ CLOSED: [2024-07-01 Mon 14:42]
 
 *** capture/journal is saved with current context/enabled tags, but i could also add some? ex: planning, dev
 
-*** learning  9(tag), learning-metal-casting (time track)
+*** learning  (tag), learning-metal-casting (time track)
 *** derive time from the tags
 
 *** actions, org tasks can have multiple activities/contexts?
@@ -88,42 +102,10 @@ CLOSED: [2024-07-01 Mon 14:42]
 
 *** ----------------------
 
-*** define new data models  + relations
-**** Context (1 current, always. composed of several parameters)
-***** Activities (unique list)
-****** actions, tools, operations (function, script)
-****** resources (workspaces, links, org ids)
-**** trail? 
-*** mode selection menu (add data from routine tree)
-*** list 'activities' by modeid
-*** activities list state managed by context
-*** tools / action = function (open a file in xyz app, download a video, send keystrokes to app, wait, do something else)
-*** define resources
-*** current activity menu: Actions/Tools/Scripts + Resources (link, org id, folder, file)
-**** pass resource to action / tool
-*** keybindings: mode selection, ws selection, tools/actions menu, context menu, bettter list selection (avy style)
-*** 
-*** global context menu to set mode, time avail, etc
+*** DONE rename contexts -> activities
+CLOSED: [2024-07-01 Mon 14:42]
 
-*** selecting activities for an ad-hoc list
-
-
-*** emacs: filter tasks by modeid, activityid
-*** emacs: filter tags by list of currently enabled modeids, or activityid
-*** emacs: org element at point: link to an activity (select)
-*** emacs: get current mode (shell out)
-
-
-
-
-
-
-
-
-
-
-
-** ****TO-TRIAGE (features/tasks) ****
+** to-triage
 *** explore: (feeds) - github, ig, etc...can still be constrained by interest/account
 *** "trails" - starts when opening browser for a new topic, like i usually do in temp context for now
 *** show recently opened contexts, sticky, tags etc
@@ -527,15 +509,7 @@ CLOSED: [2023-12-15 Fri 02:48]
 CLOSED: [2023-12-25 Mon 14:22]
 https://old.reddit.com/r/bspwm/comments/ervjed/is_there_a_simple_way_to_add_notification_or_some/
 https://www.reddit.com/r/bspwm/comments/vqblcy/sxhkdparser_a_library_for_parsing_sxhkd_configs/
-
-** context switching emacs link (example included)
-(setq shell-file-name "/bin/bash")  
-(setenv "ESHELL" "/bin/bash")
-
-[[shell:contextc activatecontext][activate context]]
-[[shell:contextc "activateActivity|planning"][activate context: planning]]
-
-** NEXT TODO
+** old-todo
 *** import links from tab session manager
 
 *** rofi more lines
@@ -573,223 +547,27 @@ echo "uno|dos" | rofi -sep "|" -dmenu -multi-select
 *** add/remove tags from new contexts (snapshot) to diff against the parent?
 *** history per command / sub-menu
 
-** structure-plan.org, contexts.org
 
-** commands
-./main.mts --command=rofiSwitchRecent
-node built.mjs --command=rofiSwitchRecent
-npm build
-** immediate
-*** reload contexts list
-**** load from yaml
-*** list contexts by lastAccessed
+*** allow org headline IDs to be the nested context, where root is global :reminder:
+*** this way, we use emacs+org for layering data (properties) from trees, to contextualize / categorize different types of items easily, visually
 
-*** view existing context (dwm tag id assigned) by id
-***** update lastAccessed
-***** view dwm tag
+*** the current "context" (stack, layering properties) can be updated by updating contexts with a list of org heading ids
+*** "activities" currently own org bookmarks, web links, and soon actions. 
+*** do we accumulate these resources from each context?
 
-*** activate existing context (find available dwm tag, assign it, view context, run scripts)
-**** search for available dwm tags
-**** assign the next available dwm tag
-**** run scripts
-**** view context
-**** set active flag
+*** context switching emacs link (example included)
+(setq shell-file-name "/bin/bash")  
+(setenv "ESHELL" "/bin/bash")
 
-*** switch context
-**** if context not exist, create
-**** if active + dwm tag assigned
-***** view context
-**** else if inactive || no dwm tag
-***** activate context
-**** set current context
-
-*** create new context
-**** add context to global contexts we load from yaml
-**** capture details (zx prompts)
-**** activate context
-**** save global contexts list
-
-*** cache window count per dwm tag to find next available dwm tag
-**** for i= 0...32, dwmc viewex i
-**** set window count for each pos in array
-
-*** find next dwm tag available from index
-**** check if windows present on tag
-**** recurse until empty tag
-
-** ARCHIVE / DONE
-*** DONE tab groups: links (url, desc, create date, access date); group (creation, access, name, sticky)
-CLOSED: [2023-12-08 Fri 12:57]
-*** DONE handler for "current context menu"
-CLOSED: [2023-12-08 Fri 12:56]
-*** DONE search for "empty" dwm tags (context not active, no dwmtag assigned)
-CLOSED: [2023-12-08 Fri 12:56]
-*** DONE listing recent contexts
-CLOSED: [2023-12-08 Fri 12:57]
-*** DONE tracking which ones are "active" (dwm tag is being used)
-CLOSED: [2023-12-08 Fri 12:57]
-*** DONE esbuild
-CLOSED: [2023-12-08 Fri 12:57]
-*** DONE move window to xyz workspace
-CLOSED: [2023-12-08 Fri 12:57]
+[[shell:contextc activatecontext][activate context]]
+[[shell:contextc "activateActivity|planning"][activate context: planning]]
 
 
-*** DONE menu handling
-CLOSED: [2023-12-08 Fri 14:45]
-*** DONE context property: active (dwm used)
-CLOSED: [2023-12-08 Fri 14:49]
 
-** speed improvements (startup)
-*** #!/usr/bin/env -S node --loader @swc-node/register/esm
-*** https://www.codejam.info/2023/04/zx-typescript-esm.html
+*** docked state from system state applied onto each context
+*** compose contexts (redux style?)
 
 
-** tasks
-- select context as we are working - create or find existing
-- internally store 32 context positions
-- emphermal vs persistent 
-- move window to context_id
-- menu updates as a result of updated context
-- launch emacs bookmark for window config + buffers (org, dev, general)
-- search + filter contexts by tags
-- add/remove tags to current context
-- "swallow" context by cloning its items to parent an deleting
-- link to other contexts?
-- launch browser with selected bookmarks
-- bookmark selection UI
-** contexts
-*** see [[id:14e59dfb-24f9-4fc4-be93-1904c83710f2][contexts]]
-*** contextman
-*** interests-mapping
-*** procurement
-*** refile
-*** projects
-*** weekplan
-*** emacs-rice
-*** 2023-plan
-*** 2023-review
-
-*** -------------------------------
-*** review notes
-*** reminders
-*** planning
-**** week, month
-*** digital tasks
-*** physical tasks
-*** social
-**** communication / messaging
-**** messaging
-**** review social.org
-**** write tasks for future comms/plans
-*** creative idea generation (projects, business)
-*** research (reading, wiki, review links, yt, take notes)
-*** writing (public)
-*** decisions / planning (reflection, goals review, goals setting)
-*** jot down something that inspired me, to investigate later
-*** procurement
-**** research
-**** prioritizing
-**** actual buying
-
-*** project active (log findings, document problems, write tasks for future)
-*** review ideas + inspiration, writing
-** features (most comprehensive + useful)
-- context-switch helper
-
-- show commands for current context
-- list contexts
-- filter list by tags, search term
-
-- invoke with contextId arg, else get it from dwm
-
-- commands for context
-
-- collect links for browser windows
-- links, separated by windows
-
-- navigation of links w/ various filters
-
-- open org headline bookmark (emacs)
-- open project folder (emacs)
-- open set of files (emacs)
-
-
-- tags for contexts
-- quickly edit tags
-
-- relations to other workspaces
-
-- misuse dwm tags as workspaces; generate id for them
-- interop with dwm
-
-- launch ranger in working directory
-- make working directory
-
-
-- persistance
-- persist filters
-** commands
-*** throw a window to another context
-*** persist tabs to context: close ff, save links for open tabs; assign links to a window id provided by current context
-*** "save open links to a new/existing workspace"
-** models
-*** context:node
-**** parent_project_id                                      {  RELATED_PROJECT_IDS 
-**** children_project_ids []                             }  MAY BE A BETTER OPTION- not everything is hierarchical
-**** depends_on []
-**** time budget estimate
-**** cost estimate
-**** deadline
-**** estimated end datetime (or null if ongoing)
-**** ongoing? recurring?
-**** priority
-**** start time
-**** logbook
-***** 2023-10-04 - 16:36
-****** Trying something new
-:PROPERTIES:
-:ID:       5dee8b70-7162-4f9b-8aa6-aebf4ff27e1f
-:END:
-***** add to a drawer, or?? automate entering logs
-**** attached media
-blah link
-**** supplies list
-**** design/plan/overview/abstract
-**** workspace_id                                              { OBSCOLETE? }
-***** workspace_id
-***** storage_dir
-**** scale - estimate how big i think it is? maybe calculated val by time + budget
-*** link
-**** url
-**** title (get from http request)
-**** body snippet (get from http request)
-**** description (user generated)
-**** tags
-**** last_accessed_datetime
-**** create_datetime
-*** link set (window in ff)
-*** context_type?
-*** context_types have different set of commands associated?
-*** links (web, org bookmarks)
-*** tag
-*** attachments (pdfs, videos, files, uses working dir)
-*** commands (default, spaces mutations, org nav and capture, links, scripts, dwm)
-*** relations
-*** lifecycle hooks
-
-** map emacs desktops to context_id
-** docked state from system state applied onto each context
-** compose contexts (redux style?)
-
-
-** design goals brainstorm
-*** stop relying on tab session manager in FF
-*** visualize various relationships between topics?
-*** track projects in ctx bar charts perhaps
-*** implement TUI to list contexts
-*** ctxman will be the source of truth for which "workspace" is open
-*** implement new bar for dwm since we basically replace its workspace handling
-https://github.com/ryanflannery/oxbar
 ** features
 *** open new dwm  workspace - count the dwm bitmask field for tags, to id the "workspace"?
 *** recompile dwm with increased max workspaces/tags, patch for IPC?
@@ -841,277 +619,188 @@ spaces, links, or attachments from multiple ways to query (tags, parent/child)
 *** a workspace can have many topics (org root headlines?)
 *** a workspace is a collection of: notes/bookmarks to nodes in notes, links, scripts
 *** org urls for tasks in weekplan can invoke scripts in workspaces
-** hide
-*** ctxman can map dwm tag # with its own internal ids; dwm does not need to statically alloc for 9999 contexts
-*** decisions
-**** dwm integrations: scope it
-**** emacs integration: scope it
-*** possible tools
-**** neo-blessed
-*** design brainstorm / old ideas
-**** encoding / serialization
-***** use FS, keep separate files for separate applications)
-***** start with browers and their clipboard extension w/xdotool
-***** lifetime states: urgent, temporary, routine, permanent
-****** these are effectively tags, no need to complicate things by using symbols?
-***** tags: mostly come from top-level columns in todo.org
-***** symbols can encode lifetime states: !@$%^
-***** tags: / can encode
-***** file content for state serialization ideas
-****** tag/workspace
-******* study/serbian
-****** workspace/tag
-******* serbian/study
-****** workspace/tag1/tag2/tag3/tag4
-****** workspace/tag1/lifetime
-******* dj/learn/ongoing
-***** ~/workspaces symlinks -> workspaces-desktop or workspaces-laptop
-***** each workspace gets its own org doc
-***** symlinks can happen within workspaces
-***** working directory
-****** try to set that to the workspace, if possible
-**** misc
-***** 2 sets: dwm current workspaces + my persistent workspaces
-****** opening creates a dwm workspace if it doesnt exist
-****** for current dwm workspace can make persistent, which writes to fs and json
-***** workspaces poll script (daemon)
-****** spawn a process to write tag json on tag rename event
-****** or on tag rename function write json
+** features (most comprehensive + useful)
+- context-switch helper
 
-***** workspace detail
-****** toggle visibility
-****** rofi here
-****** pcmanfm here
-****** shell here
-****** emacs capture template with workspace name
-****** associate with dwm tags
-***** create new
-****** serialize with jq to json
-****** store path for ~/storage/workspaces
-***** list current workspaces
-****** sort by access time, name
-**** digital workflow improvements / ricing
-***** ★ de-serializing tabs
-***** ★ managing / discarding unused tabs
-***** ★ workspaces: when creating a new workspace, automatically create an entry in workspaces.org
-***** ★ xmonad scratchpads
-****** ★ google translate
-****** ★ links to share
-***** ★ display scripting physical button?
-****** ★ (also mqtt - discovery board?)
-***** ★ org-capture for links to share with people
-***** ★ START USING ORG-CAPTURE AGAIN
-***** ★ emacs vs xmonad super keys
+- show commands for current context
+- list contexts
+- filter list by tags, search term
 
-**** rofi workspaces context menu
+- invoke with contextId arg, else get it from dwm
 
-**** use timestamps for serializing ff tabs
+- commands for context
 
-**** workspace-context-aware org capture mode
-**** digi journal: org capture invoke
+- collect links for browser windows
+- links, separated by windows
 
-**** dumps, with the same timestamp, when saving:
-***** wmctrl
-***** browser tabs, for each window necessary
+- navigation of links w/ various filters
 
-**** wmctrl dump for my workspace, timestamped, just to keep an idea of what was going on
-
-**** workspaces list
-***** persistent:
-****** jobs
-****** web-etc
-****** journal-
-****** journal-digital
-****** photo-
-****** social-comms
-******* there is no chat, keep notes, send things 3x a day
-****** social-browse
-****** study-serbian
-****** music-play
-****** music-explore
-***** top-level domains?
-****** social
-****** photo
-****** dev
-****** chores
-****** etc
-
-**** org capture - revisit this idea, integrating with workspaces - maybe just always focus emacs on the same shortcut for whichever workspace i'm on?
+- open org headline bookmark (emacs)
+- open project folder (emacs)
+- open set of files (emacs)
 
 
-**** emacs / org - follow outline tree path for workspaces, to get into specific parts of notes without breaking it into so many small files?
-**** so we have domains
+- tags for contexts
+- quickly edit tags
 
-**** notes kb shortcut: focus emacs for each workspace (context menu)
+- relations to other workspaces
 
-**** ★ context menu for current workspace
-***** notes, folder creation
-**** initialize
-***** no overwrite, show warning
+- misuse dwm tags as workspaces; generate id for them
+- interop with dwm
 
-
-**** ★ define fs structure: 
-
-**** some org files should be in the agenda, some not - symlink?
-***** how to keep priority / order? properties / custom agenda?
-**** each workspace gets its own scripts folder?
+- launch ranger in working directory
+- make working directory
 
 
-**** rust-based workspace manager (wmctrl wrapper)
-https://github.com/Treborium/rust-wmctrl/tree/master/src
-**** xraise (crates.io)
-
-**** mupdf + xprop for serializing state of "reading" workspaces
-***** or use a wrapper to capture it?
-
-**** CTRL + \ will be the workspaces menu
-
-**** modal - put workspaces in priority or frequency
+- persistance
+- persist filters
 
 
-**** use symlinks to create hierarchy for workspaces
-
-**** send "save org file" to emacs
-
-**** have scripts for different WM_CLASS for (de)serialization
-
-**** note on disappointent / flow
-A great source of disappointment occurs when starting something that requires a lot of sacrifice: effort, focus, concentration, discipline ... only to completely get off-track, either by stopping a habit, or some techincal details (laptop died / X11 crashed, all the workspaces vanished).
-
-**** states: last updated (saved/restored), launch init script on restore
-
-It seems that notes + browser research are the most common pattern i find myself working through problems / tasks. 
-
-Consistency would be good
-
-**** associating pinboard tags with a workspace name
-
-A map of how these things connect would also be good
-
-Emacs / Tree style is helpful for filtering hierarchical data
-
-props + filtering would give enough control to get visibility on what workflows / tasks i should be doing
-
-emacs: links to exec shell scripts to run commands on xmonad (switch to workspace, for example)
-
-
-**** find categories in pinboard bookmarks, creating workspaces
-**** routine: define frequency for working in those workspaces
-
-**** manually move the project-* files into workspaces, this will clean up the agenda
-**** make a refile workspace start inbox.org with a blank slate
-***** open evernote notes
-***** open simplenote notes
-
-**** Xmonad servermode - create/open workspace
-**** workspacectl
-***** list workspaces
-****** list all
-****** list filtered view of workspaces
-****** filter toggles
-****** state / persistence of filters
-***** restore workspaces
-***** context (current workspace actions)
-****** open notes (for this workspace)
-****** open file manager (for this workspace)
-
-**** workspace context menu
-***** hide/show this workspace
-***** re-initialize
-***** toggle note location, to keep orgzly agenda tidy
-~/org vs ~/workspace/workspace.org (symlink)
-***** open terminal in workspace scratch dir
-***** open emacs note
-***** open ranger
-***** rename workspace
-***** symlink ~/downloads to workspace scratch
-
-**** lemonbar or polybar to display current workspace state
-
-**** ~/scripts/workspaces/workspacemgr.sh
-
-
-**** open emacs for currently open workspace
-
-**** visibility flags in json
-**** list "visible" workspaces
-**** lemonbar or dzen etc
-
-**** xmonad commands defined with lambdas and strings
-**** programmatically creating workspaces:
-***** addWorkspace :: String -> X ()Source#
-
- Add a new workspace with the given name, or do nothing if a workspace with the given name already exists; then switch to the newly created workspace.
+** ----------------------------------------
+** design goals brainstorm
+*** visualize various relationships between topics?
+*** stop relying on tab session manager in FF
+*** implement TUI to list contexts
+*** ctxman will be the source of truth for which "workspace" is open
+** models
+*** context:node
+**** parent_project_id                                      {  RELATED_PROJECT_IDS 
+**** children_project_ids []                             }  MAY BE A BETTER OPTION- not everything is hierarchical
+**** depends_on []
+**** time budget estimate
+**** cost estimate
+**** deadline
+**** estimated end datetime (or null if ongoing)
+**** ongoing? recurring?
+**** priority
+**** start time
+**** logbook
+***** 2023-10-04 - 16:36
+****** Trying something new
+:PROPERTIES:
+:ID:       5dee8b70-7162-4f9b-8aa6-aebf4ff27e1f
+:END:
+***** add to a drawer, or?? automate entering logs
+**** attached media
+blah link
+**** supplies list
+**** design/plan/overview/abstract
+**** workspace_id                                              { OBSCOLETE? }
+***** workspace_id
+***** storage_dir
+**** scale - estimate how big i think it is? maybe calculated val by time + budget
+*** link
+**** url
+**** title (get from http request)
+**** body snippet (get from http request)
+**** description (user generated)
+**** tags
+**** last_accessed_datetime
+**** create_datetime
+*** link set (window in ff)
+*** context_type?
+*** context_types have different set of commands associated?
+*** links (web, org bookmarks)
+*** tag
+*** attachments (pdfs, videos, files, uses working dir)
+*** commands (default, spaces mutations, org nav and capture, links, scripts, dwm)
+*** relations
+*** lifecycle hooks
 
 
 
-**** get workspaces which include a particular tag:
-cat workspace-dump-wmctrl-to-jq.json | jq '. | select(.tags | contains(["daily"]))'
-cat workspace-dump-wmctrl-to-jq.json | jq '. | select(.tags | contains(["daily"])) | .name'
 
-**** get workspace id by name
-workspace_id=$(wmctrl -d | grep todo | cut -f 1 -d ' ')
+** archive
+*** examples
+**** usually derived from org-ql group heading + task
 
-**** jq examples
+**** dev (mode), contexts (project)
+**** shopping (mode), lathe tools (topic?)
+*** commands
+./main.mts --command=rofiSwitchRecent
+node built.mjs --command=rofiSwitchRecent
+npm build
+*** commands
+**** throw a window to another context
+**** persist tabs to context: close ff, save links for open tabs; assign links to a window id provided by current context
+**** "save open links to a new/existing workspace"
+*** immediate
+**** reload contexts list
+***** load from yaml
+**** list contexts by lastAccessed
 
-map(select( any(.tags[]; .name == "TAG" )))
+**** view existing context (dwm tag id assigned) by id
+****** update lastAccessed
+****** view dwm tag
 
-jq '.arrayOfStuff[] | select(.key2 | contains("dar"))'
+**** activate existing context (find available dwm tag, assign it, view context, run scripts)
+***** search for available dwm tags
+***** assign the next available dwm tag
+***** run scripts
+***** view context
+***** set active flag
 
-get the workspace names with prioirty 1
-wmctrl -d | cut -c 33- | jq -R ". | {name: ., priority: 0, tags: []} | select(.priority == 0) | .name"
+**** switch context
+***** if context not exist, create
+***** if active + dwm tag assigned
+****** view context
+***** else if inactive || no dwm tag
+****** activate context
+***** set current context
+
+**** create new context
+***** add context to global contexts we load from yaml
+***** capture details (zx prompts)
+***** activate context
+***** save global contexts list
+
+**** cache window count per dwm tag to find next available dwm tag
+***** for i= 0...32, dwmc viewex i
+***** set window count for each pos in array
+
+**** find next dwm tag available from index
+***** check if windows present on tag
+***** recurse until empty tag
+*** speed improvements (startup)
+**** #!/usr/bin/env -S node --loader @swc-node/register/esm
+**** https://www.codejam.info/2023/04/zx-typescript-esm.html
+
+*** tasks
+- select context as we are working - create or find existing
+- internally store 32 context positions
+- emphermal vs persistent 
+- move window to context_id
+- menu updates as a result of updated context
+- launch emacs bookmark for window config + buffers (org, dev, general)
+- search + filter contexts by tags
+- add/remove tags to current context
+- "swallow" context by cloning its items to parent an deleting
+- link to other contexts?
+- launch browser with selected bookmarks
+- bookmark selection UI
+*** dwm mods
+**** disable rules
+**** accept integer arg, and use that for selected workspace
+*** misc brainstorming
+**** view dwm tag for context
+**** manage dwm tags (32) <-> active contexts
+
+*** map emacs desktops to context_id
 
 
-**** jq / scripting
-***** json structure
- wmctrl -d | cut -c 33- | jq -R "{name: ., priority: 0, tags: []}" > workspace-dump-wmctrl-to-jq.json
+*** sqlite-web container: see script in ~/ctx
 
-
-
-**** *** creating json from current window list example ***
-wmctrl -d | cut -c 33- | jq -R "{name: ., priority: 0, tags: []}"
-
-**** *** workspaces automation / scripting*** 
-***** type into emacs creating a link with the name
-***** a folder for shell scripts to get executed on workspace launch
-***** rofi / bash interface:
-****** restore all workspaces
-******* get list of currently open workspaces with wmctrl
-******* iterate over each workspace in state file
-******* check if it already exists
-******* if not, open it
-****** create + open new workspace (with state and tag/s)
-******* create directory ~/workspaces/workspacename
-******* copy template over
-******** init.sh
-********* switch to named xmonad layout (use server mode)
-******** workspacename.org
-******* xdotool types to create the workspace
-******* *update* no, we use xmonad servermode:
-******* run init.sh
-~/workspaces/workspacename/init.sh
-******* opens org file
-~/workspaces/name/name.org
-
-****** edit workspace metadata
-******* visibility
-******* tags
-******* priority
-****** switch to workspace (with state and/org tag)
-****** rename current workspace
-******* wmctrl gets the name of the current workspace
-******* this keeps xmonad and script in sync
-******* xdotool calls the rename command on xmonad
-****** display current workspace
-******* xmonad pp could also filter out just the current (use a symbol like &)
-****** import workspace laptop -> desktop
-****** import workspace desktop -> laptop
-***** directory structure
-# ~/workspaces/workspacename/2019-10-07-state
-***** wmctrl commands
-****** save current workspaces to a file
-wmctrl -d | cut -c 33- > ~/workspaces/workspaces
+*** hide
+**** ctxman can map dwm tag # with its own internal ids; dwm does not need to statically alloc for 9999 contexts
+**** decisions
+***** dwm integrations: scope it
+***** emacs integration: scope it
+**** possible tools
+***** neo-blessed
+**** design brainstorm / old ideas
 ***** encoding / serialization
+****** use FS, keep separate files for separate applications)
+****** start with browers and their clipboard extension w/xdotool
 ****** lifetime states: urgent, temporary, routine, permanent
 ******* these are effectively tags, no need to complicate things by using symbols?
 ****** tags: mostly come from top-level columns in todo.org
@@ -1130,31 +819,291 @@ wmctrl -d | cut -c 33- > ~/workspaces/workspaces
 ****** symlinks can happen within workspaces
 ****** working directory
 ******* try to set that to the workspace, if possible
+***** misc
+****** 2 sets: dwm current workspaces + my persistent workspaces
+******* opening creates a dwm workspace if it doesnt exist
+******* for current dwm workspace can make persistent, which writes to fs and json
+****** workspaces poll script (daemon)
+******* spawn a process to write tag json on tag rename event
+******* or on tag rename function write json
+
+****** workspace detail
+******* toggle visibility
+******* rofi here
+******* pcmanfm here
+******* shell here
+******* emacs capture template with workspace name
+******* associate with dwm tags
+****** create new
+******* serialize with jq to json
+******* store path for ~/storage/workspaces
+****** list current workspaces
+******* sort by access time, name
+***** digital workflow improvements / ricing
+****** ★ de-serializing tabs
+****** ★ managing / discarding unused tabs
+****** ★ workspaces: when creating a new workspace, automatically create an entry in workspaces.org
+****** ★ xmonad scratchpads
+******* ★ google translate
+******* ★ links to share
+****** ★ display scripting physical button?
+******* ★ (also mqtt - discovery board?)
+****** ★ org-capture for links to share with people
+****** ★ START USING ORG-CAPTURE AGAIN
+****** ★ emacs vs xmonad super keys
+
+***** rofi workspaces context menu
+
+***** use timestamps for serializing ff tabs
+
+***** workspace-context-aware org capture mode
+***** digi journal: org capture invoke
+
+***** dumps, with the same timestamp, when saving:
+****** wmctrl
+****** browser tabs, for each window necessary
+
+***** wmctrl dump for my workspace, timestamped, just to keep an idea of what was going on
+
+***** workspaces list
+****** persistent:
+******* jobs
+******* web-etc
+******* journal-
+******* journal-digital
+******* photo-
+******* social-comms
+******** there is no chat, keep notes, send things 3x a day
+******* social-browse
+******* study-serbian
+******* music-play
+******* music-explore
+****** top-level domains?
+******* social
+******* photo
+******* dev
+******* chores
+******* etc
+
+***** org capture - revisit this idea, integrating with workspaces - maybe just always focus emacs on the same shortcut for whichever workspace i'm on?
 
 
-**** dzen2 as status indicator for workspace names
-**** rofi menu to change scope or search by tag for workspaces
-**** each workspace has a startup script added when it's created
+***** emacs / org - follow outline tree path for workspaces, to get into specific parts of notes without breaking it into so many small files?
+***** so we have domains
 
-**** launch comms apps separately
+***** notes kb shortcut: focus emacs for each workspace (context menu)
 
-**** *** SYNC ***
-***** ~/workspaces/workspacename/{desktop, laptop}/window-id-tabs.txt
-***** ssh script to trigger desktop to run the appropriate commands
-***** provide proper $DISPLAY variable
-***** unison batch mode to sync the files at the end
+***** ★ context menu for current workspace
+****** notes, folder creation
+***** initialize
+****** no overwrite, show warning
 
-***** now the other computer can "launch" the browser and emacs files from the laptop
 
-**** wmctrl - activate window
+***** ★ define fs structure: 
+
+***** some org files should be in the agenda, some not - symlink?
+****** how to keep priority / order? properties / custom agenda?
+***** each workspace gets its own scripts folder?
+
+
+***** rust-based workspace manager (wmctrl wrapper)
+https://github.com/Treborium/rust-wmctrl/tree/master/src
+***** xraise (crates.io)
+
+***** mupdf + xprop for serializing state of "reading" workspaces
+****** or use a wrapper to capture it?
+
+***** CTRL + \ will be the workspaces menu
+
+***** modal - put workspaces in priority or frequency
+
+
+***** use symlinks to create hierarchy for workspaces
+
+***** send "save org file" to emacs
+
+***** have scripts for different WM_CLASS for (de)serialization
+
+***** note on disappointent / flow
+A great source of disappointment occurs when starting something that requires a lot of sacrifice: effort, focus, concentration, discipline ... only to completely get off-track, either by stopping a habit, or some techincal details (laptop died / X11 crashed, all the workspaces vanished).
+
+***** states: last updated (saved/restored), launch init script on restore
+
+It seems that notes + browser research are the most common pattern i find myself working through problems / tasks. 
+
+Consistency would be good
+
+***** associating pinboard tags with a workspace name
+
+A map of how these things connect would also be good
+
+Emacs / Tree style is helpful for filtering hierarchical data
+
+props + filtering would give enough control to get visibility on what workflows / tasks i should be doing
+
+emacs: links to exec shell scripts to run commands on xmonad (switch to workspace, for example)
+
+
+***** find categories in pinboard bookmarks, creating workspaces
+***** routine: define frequency for working in those workspaces
+
+***** manually move the project-* files into workspaces, this will clean up the agenda
+***** make a refile workspace start inbox.org with a blank slate
+****** open evernote notes
+****** open simplenote notes
+
+***** Xmonad servermode - create/open workspace
+***** workspacectl
+****** list workspaces
+******* list all
+******* list filtered view of workspaces
+******* filter toggles
+******* state / persistence of filters
+****** restore workspaces
+****** context (current workspace actions)
+******* open notes (for this workspace)
+******* open file manager (for this workspace)
+
+***** workspace context menu
+****** hide/show this workspace
+****** re-initialize
+****** toggle note location, to keep orgzly agenda tidy
+~/org vs ~/workspace/workspace.org (symlink)
+****** open terminal in workspace scratch dir
+****** open emacs note
+****** open ranger
+****** rename workspace
+****** symlink ~/downloads to workspace scratch
+
+***** lemonbar or polybar to display current workspace state
+
+***** ~/scripts/workspaces/workspacemgr.sh
+
+
+***** open emacs for currently open workspace
+
+***** visibility flags in json
+***** list "visible" workspaces
+***** lemonbar or dzen etc
+
+***** xmonad commands defined with lambdas and strings
+***** programmatically creating workspaces:
+****** addWorkspace :: String -> X ()Source#
+
+ Add a new workspace with the given name, or do nothing if a workspace with the given name already exists; then switch to the newly created workspace.
+
+
+
+***** get workspaces which include a particular tag:
+cat workspace-dump-wmctrl-to-jq.json | jq '. | select(.tags | contains(["daily"]))'
+cat workspace-dump-wmctrl-to-jq.json | jq '. | select(.tags | contains(["daily"])) | .name'
+
+***** get workspace id by name
+workspace_id=$(wmctrl -d | grep todo | cut -f 1 -d ' ')
+
+***** jq examples
+
+map(select( any(.tags[]; .name == "TAG" )))
+
+jq '.arrayOfStuff[] | select(.key2 | contains("dar"))'
+
+get the workspace names with prioirty 1
+wmctrl -d | cut -c 33- | jq -R ". | {name: ., priority: 0, tags: []} | select(.priority == 0) | .name"
+
+
+***** jq / scripting
+****** json structure
+ wmctrl -d | cut -c 33- | jq -R "{name: ., priority: 0, tags: []}" > workspace-dump-wmctrl-to-jq.json
+
+
+
+***** *** creating json from current window list example ***
+wmctrl -d | cut -c 33- | jq -R "{name: ., priority: 0, tags: []}"
+
+***** *** workspaces automation / scripting*** 
+****** type into emacs creating a link with the name
+****** a folder for shell scripts to get executed on workspace launch
+****** rofi / bash interface:
+******* restore all workspaces
+******** get list of currently open workspaces with wmctrl
+******** iterate over each workspace in state file
+******** check if it already exists
+******** if not, open it
+******* create + open new workspace (with state and tag/s)
+******** create directory ~/workspaces/workspacename
+******** copy template over
+********* init.sh
+********** switch to named xmonad layout (use server mode)
+********* workspacename.org
+******** xdotool types to create the workspace
+******** *update* no, we use xmonad servermode:
+******** run init.sh
+~/workspaces/workspacename/init.sh
+******** opens org file
+~/workspaces/name/name.org
+
+******* edit workspace metadata
+******** visibility
+******** tags
+******** priority
+******* switch to workspace (with state and/org tag)
+******* rename current workspace
+******** wmctrl gets the name of the current workspace
+******** this keeps xmonad and script in sync
+******** xdotool calls the rename command on xmonad
+******* display current workspace
+******** xmonad pp could also filter out just the current (use a symbol like &)
+******* import workspace laptop -> desktop
+******* import workspace desktop -> laptop
+****** directory structure
+# ~/workspaces/workspacename/2019-10-07-state
+****** wmctrl commands
+******* save current workspaces to a file
+wmctrl -d | cut -c 33- > ~/workspaces/workspaces
+****** encoding / serialization
+******* lifetime states: urgent, temporary, routine, permanent
+******** these are effectively tags, no need to complicate things by using symbols?
+******* tags: mostly come from top-level columns in todo.org
+******* symbols can encode lifetime states: !@$%^
+******* tags: / can encode
+******* file content for state serialization ideas
+******** tag/workspace
+********* study/serbian
+******** workspace/tag
+********* serbian/study
+******** workspace/tag1/tag2/tag3/tag4
+******** workspace/tag1/lifetime
+********* dj/learn/ongoing
+******* ~/workspaces symlinks -> workspaces-desktop or workspaces-laptop
+******* each workspace gets its own org doc
+******* symlinks can happen within workspaces
+******* working directory
+******** try to set that to the workspace, if possible
+
+
+***** dzen2 as status indicator for workspace names
+***** rofi menu to change scope or search by tag for workspaces
+***** each workspace has a startup script added when it's created
+
+***** launch comms apps separately
+
+***** *** SYNC ***
+****** ~/workspaces/workspacename/{desktop, laptop}/window-id-tabs.txt
+****** ssh script to trigger desktop to run the appropriate commands
+****** provide proper $DISPLAY variable
+****** unison batch mode to sync the files at the end
+
+****** now the other computer can "launch" the browser and emacs files from the laptop
+
+***** wmctrl - activate window
 wmctrl -x -a gvim.Gvim
 
-**** links
+***** links
 https://superuser.com/questions/850145/how-to-use-wmctrl-to-activate-window-of-a-given-class
 https://stackoverflow.com/questions/369758/how-to-trim-whitespace-from-a-bash-variable
 https://wiki.archlinux.org/index.php/Rofi
 
-**** wmctrl example commands~
+***** wmctrl example commands~
 ❯ wmctrl -d | cut -c 33-
 NSP
 camera*
@@ -1341,44 +1290,73 @@ Try 'cut --help' for more information.
 ~
 ❯ 
 
-**** links
+***** links
 https://superuser.com/questions/850145/how-to-use-wmctrl-to-activate-window-of-a-given-class
 https://stackoverflow.com/questions/369758/how-to-trim-whitespace-from-a-bash-variable
 https://wiki.archlinux.org/index.php/Rofi
 
-**** rofi / bash interface:
-***** restore all workspaces
-****** get list of currently open workspaces with wmctrl
-****** iterate over each workspace in state file
-****** check if it already exists
-****** if not, open it
-***** create new workspace (with state and tag/s)
-****** which state? (list)
-****** which tag? (list)
-****** xdotool types to create the workspace
-****** opens emacs with the org file in ~/workspaces/name/name.org
-***** switch to workspace (with state and/org tag)
-***** rename current workspace
-****** wmctrl gets the name of the current workspace
-****** this keeps xmonad and script in sync
-****** xdotool calls the rename command on xmonad
-***** display current workspace
-****** xmonad pp could also filter out just the current (use a symbol like &)
-***** import workspace laptop -> desktop
-***** import workspace desktop -> laptop
+***** rofi / bash interface:
+****** restore all workspaces
+******* get list of currently open workspaces with wmctrl
+******* iterate over each workspace in state file
+******* check if it already exists
+******* if not, open it
+****** create new workspace (with state and tag/s)
+******* which state? (list)
+******* which tag? (list)
+******* xdotool types to create the workspace
+******* opens emacs with the org file in ~/workspaces/name/name.org
+****** switch to workspace (with state and/org tag)
+****** rename current workspace
+******* wmctrl gets the name of the current workspace
+******* this keeps xmonad and script in sync
+******* xdotool calls the rename command on xmonad
+****** display current workspace
+******* xmonad pp could also filter out just the current (use a symbol like &)
+****** import workspace laptop -> desktop
+****** import workspace desktop -> laptop
 
-**** directory structure
+***** directory structure
 # ~/workspaces/workspacename/2019-10-07-state
 
-**** wmctrl commands
-***** save current workspaces to a file
+***** wmctrl commands
+****** save current workspaces to a file
 wmctrl -d | cut -c 33- > ~/workspaces/workspaces
+*** track projects in ctx bar charts perhaps
+*** implement new bar for dwm since we basically replace its workspace handling
+https://github.com/ryanflannery/oxbar
 
-** dwm mods
-*** disable rules
-*** accept integer arg, and use that for selected workspace
-** sqlite-web container: see script in ~/ctx
 
-** misc brainstorming
-*** view dwm tag for context
-*** manage dwm tags (32) <-> active contexts
+
+
+
+
+
+
+
+
+** done
+*** DONE tab groups: links (url, desc, create date, access date); group (creation, access, name, sticky)
+CLOSED: [2023-12-08 Fri 12:57]
+*** DONE handler for "current context menu"
+CLOSED: [2023-12-08 Fri 12:56]
+*** DONE search for "empty" dwm tags (context not active, no dwmtag assigned)
+CLOSED: [2023-12-08 Fri 12:56]
+*** DONE listing recent contexts
+CLOSED: [2023-12-08 Fri 12:57]
+*** DONE tracking which ones are "active" (dwm tag is being used)
+CLOSED: [2023-12-08 Fri 12:57]
+*** DONE esbuild
+CLOSED: [2023-12-08 Fri 12:57]
+*** DONE move window to xyz workspace
+CLOSED: [2023-12-08 Fri 12:57]
+
+
+*** DONE menu handling
+CLOSED: [2023-12-08 Fri 14:45]
+*** DONE context property: active (dwm used)
+CLOSED: [2023-12-08 Fri 14:49]
+*** DONE avy jump to "activity" from org-ql buffer (directly)
+CLOSED: [2024-10-28 Mon 12:43]
+
+
