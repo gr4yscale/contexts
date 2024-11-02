@@ -1,7 +1,6 @@
 import { $ } from "zx";
 import { Activity } from "./state.mts";
 import { formatDistanceToNow } from "date-fns";
-import { rofiSelectItem } from "./menus.mts"
 
 export const rofiListSelect = async (list: string, prompt: string, prefilter?: string) => {
   $.verbose = false;
@@ -11,7 +10,7 @@ export const rofiListSelect = async (list: string, prompt: string, prefilter?: s
   //const filterFlag = prefilter ? `-filter ${prefilter} ` : undefined
 
   const args = ['-monitor',
-    '-1','-normal-window','-disable-history', '-matching fuzzy', '-dmenu', '-no-fixed-num-lines', '-i' ]
+    '-1', '-normal-window', '-disable-history', '-matching fuzzy', '-dmenu', '-no-fixed-num-lines', '-i']
 
   if (prefilter) {
     args.push('-filter')
@@ -27,7 +26,7 @@ export const rofiListSelect = async (list: string, prompt: string, prefilter?: s
 
   //await $`echo ${list} | rofi -monitor -1 -normal-window -disable-history -matching fuzzy ${filterFlag} -dmenu -i -p ${prompt}`.nothrow();
 
-  const sanitized = selection.stdout.trim().replace("*", "").replace("^","").split(" ") ?? [];
+  const sanitized = selection.stdout.trim().replace("*", "").replace("^", "").split(" ") ?? [];
   if (sanitized[0]) {
     return sanitized[0];
   }
@@ -45,7 +44,7 @@ const formatActivitiesList = async (activities: Activity[]) => {
     //        ie, can't deactivate a activity until it is also no longer sticky
 
     let marker = c.active ? "*" : "^";
-   
+
     // if (c.tags.includes('sticky')) {
     //   marker = '%'
     // }
@@ -67,7 +66,7 @@ export const formatActivitiesListExtended = async (activities: Activity[]) => {
     //        ie, can't deactivate a activity until it is also no longer sticky
 
     let marker = c.active ? "*" : "^";
-   
+
     // if (c.tags.includes('sticky')) {
     //   marker = '%'
     // }
@@ -78,7 +77,7 @@ export const formatActivitiesListExtended = async (activities: Activity[]) => {
     //const activityId = c.activityId + marker;
     const tags = c.tags.join(",").substring(0, 32).padEnd(32, ' ')
     //TOFIX absoutely atrocious
-    const lastAccessed = formatDistanceToNow(c.lastAccessed, {includeSeconds: true }).replace('about ', '').replace('days', 'days').replace('day', 'day').replace('minutes', 'mins').replace('minute', 'min').replace('less than a', '<').replace('less than', '<').replace('seconds', 'secs')
+    const lastAccessed = formatDistanceToNow(c.lastAccessed, { includeSeconds: true }).replace('about ', '').replace('days', 'days').replace('day', 'day').replace('minutes', 'mins').replace('minute', 'min').replace('less than a', '<').replace('less than', '<').replace('seconds', 'secs')
 
     return `${display.padEnd(36, " ")}  ${tags}  ${lastAccessed}`;
   });

@@ -1,5 +1,5 @@
 import { parse, stringify } from "yaml";
-import { fs } from "zx";
+import { $, fs } from "zx";
 
 export type ActivityId = string;
 
@@ -125,32 +125,32 @@ export const loadState = async () => {
     activities = parsed.activities.map((c) => {
       c.created = new Date(c.created)
       c.lastAccessed = new Date(c.lastAccessed)
- 
+
       c.emacsWindowBookmarks = c.emacsWindowBookmarks ?? []
       c.emacsWindowBookmarks = c.emacsWindowBookmarks.map((bm) => {
-	bm.created = new Date(bm.created)
-	bm.accessed = new Date(bm.accessed)
-	return bm
+        bm.created = new Date(bm.created)
+        bm.accessed = new Date(bm.accessed)
+        return bm
       })
 
       c.emacsOrgBookmarks = c.emacsOrgBookmarks ?? []
       c.emacsOrgBookmarks = c.emacsOrgBookmarks.map((bm) => {
-	bm.created = new Date(bm.created)
-	bm.accessed = new Date(bm.accessed)
-	return bm
+        bm.created = new Date(bm.created)
+        bm.accessed = new Date(bm.accessed)
+        return bm
       })
 
       c.linkGroups = c.linkGroups ?? []
       c.linkGroups = c.linkGroups.map((lg) => {
-	lg.created= new Date(lg.created)
-	lg.accessed = new Date(lg.accessed)
-	lg.links = lg.links ?? []
-	lg.links = lg.links.map((l) => {
-	  l.created = new Date(l.created)
-	  l.accessed= new Date(l.accessed)
-	  return l
-	})
-	return lg
+        lg.created = new Date(lg.created)
+        lg.accessed = new Date(lg.accessed)
+        lg.links = lg.links ?? []
+        lg.links = lg.links.map((l) => {
+          l.created = new Date(l.created)
+          l.accessed = new Date(l.accessed)
+          return l
+        })
+        return lg
       })
       c.links = c.links ?? []
 
@@ -160,7 +160,7 @@ export const loadState = async () => {
     enabledTags = parsed.enabledTags
 
     //dwmTags.concat(dwmTags)
-    
+
     // todo: fix hacks
     const current = activityById(parsed.currentActivityId);
     if (current) {
@@ -296,7 +296,7 @@ export const buildActivityList = (listTypes: ActivityListType[], activities: Act
   for (const listType of listTypes) {
     const build = activityListBuilders[listType];
     const list = build(activities)
-    list.forEach((e)=> combined.add(e))
+    list.forEach((e) => combined.add(e))
   }
   return Array.from(combined)
 }
