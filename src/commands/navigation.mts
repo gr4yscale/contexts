@@ -9,16 +9,17 @@ import {
   updatePreviousActivity,
   activityById,
   activityByOrgId,
-  buildActivityList,
   Activity,
   ActivityId,
 } from "../state.mts";
 
+import { buildActivityList, formatActivitiesListExtended } from "../activityList.mts";
+import { rofiListSelectRecentActivities } from "../selection.mts";
+
+
 import { buildMenu } from "../menus.mts";
 
 import { allocateWorkspace } from "../workspaces.mts";
-
-import { rofiListSelectRecentActivities , formatActivitiesListExtended} from "../selection.mts";
 
 
 /** build lists of activities for each of the ListTypes
@@ -37,16 +38,16 @@ export const switchActivity = async () => {
     display: prompt,
     builder: () => formatted.map((line: string) => {
       return {
-	display: line,
-	handler: async (selectionIndex?: number) => {
-	  if (selectionIndex === undefined) {
-	    console.log(`no selectionIndex for ${line}`);
-	    return;
-	  }
-	  const activity = sorted[selectionIndex];
-	  await activateActivity(activity.activityId);
-	  return;
-	}
+        display: line,
+        handler: async (selectionIndex?: number) => {
+          if (selectionIndex === undefined) {
+            console.log(`no selectionIndex for ${line}`);
+            return;
+          }
+          const activity = sorted[selectionIndex];
+          await activateActivity(activity.activityId);
+          return;
+        }
       }
     })
   })
@@ -64,7 +65,7 @@ export const activateActivity = async (id: ActivityId) => {
     $`notify-send "Created new activity: ${id}"`;
   }
 
-  if(await allocateWorkspace(activity)) {
+  if (await allocateWorkspace(activity)) {
     // todo: indempotency
     updateCurrentActivity(activity);
     updatePreviousActivity(previousActivity);
@@ -75,17 +76,17 @@ export const activateActivity = async (id: ActivityId) => {
 };
 
 export const toggleActivity = async (id: ActivityId) => {
-   if (id !== getState().currentActivity.activityId) {
-     await activateActivity(id)    
-   }
+  if (id !== getState().currentActivity.activityId) {
+    await activateActivity(id)
+  }
 }
 
 const slugify = (str: string) => {
   str = str.replace(/^\s+|\s+$/g, ''); // trim leading/trailing white space
   str = str.toLowerCase(); // convert string to lowercase
   str = str.replace(/[^a-z0-9 -]/g, '') // remove any non-alphanumeric characters
-           .replace(/\s+/g, '-') // replace spaces with hyphens
-           .replace(/-+/g, '-'); // remove consecutive hyphens
+    .replace(/\s+/g, '-') // replace spaces with hyphens
+    .replace(/-+/g, '-'); // remove consecutive hyphens
   return str;
 }
 
@@ -96,7 +97,7 @@ export const activateActivityForOrgId = async (args: string) => {
   const { orgId, orgText } = JSON.parse(args)
 
   // new way
-  
+
   // create an org id if it doesn't exist 
   // pass orgId and orgtText in to command to createActivity
   // create an activity with orgId set; sluggify activity text, include orgId at the end, add orgItem tag
@@ -104,7 +105,7 @@ export const activateActivityForOrgId = async (args: string) => {
   // set activityID property on org element
 
   // old way
-  
+
   // prompt the user for final title / confirm (get from org element text)
   // create an activityID based on slugified title
   // get the activityID back from contextc
@@ -126,10 +127,10 @@ export const activateActivityForOrgId = async (args: string) => {
 
   // get the response by a client that closes the connection after a response, or
   // shelling to emacs from contexts, to find an org element and update activityId property
-  
+
   // return the activityId to emacs somehow - check how we get the response from handleCommand
 
-  if(await allocateWorkspace(activity)) {
+  if (await allocateWorkspace(activity)) {
     // todo: indempotency
     updateCurrentActivity(activity);
     updatePreviousActivity(previousActivity);
@@ -161,20 +162,20 @@ export const sendWindowToAnotherActivity = async () => {
     display: prompt,
     builder: () => formatted.map((line: string) => {
       return {
-	display: line,
-	handler: async (selectionIndex?: number) => {
-	  if (selectionIndex === undefined) {
-	    console.log(`no selectionIndex for ${line}`);
-	    return;
-	  }
-	  const activity = sorted[selectionIndex];
+        display: line,
+        handler: async (selectionIndex?: number) => {
+          if (selectionIndex === undefined) {
+            console.log(`no selectionIndex for ${line}`);
+            return;
+          }
+          const activity = sorted[selectionIndex];
 
-    	  console.log(`sending window to ${activity.dwmTag}: ${activity.activityId}`);
-	  await $`dwmc tagex ${activity.dwmTag}`;
-	  activity.lastAccessed = new Date();
+          console.log(`sending window to ${activity.dwmTag}: ${activity.activityId}`);
+          await $`dwmc tagex ${activity.dwmTag}`;
+          activity.lastAccessed = new Date();
 
-	  return;
-	}
+          return;
+        }
       }
     })
   })

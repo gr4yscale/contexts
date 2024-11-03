@@ -1,6 +1,6 @@
 import { $ } from "zx";
 import { Activity } from "./state.mts";
-import { formatDistanceToNow } from "date-fns";
+import { formatActivitiesListExtended } from "./activityList.mts";
 
 export const rofiListSelect = async (list: string, prompt: string, prefilter?: string) => {
   $.verbose = false;
@@ -32,58 +32,6 @@ export const rofiListSelect = async (list: string, prompt: string, prefilter?: s
   }
 };
 
-const formatActivitiesList = async (activities: Activity[]) => {
-  // TOFIX: abstract sorting and filtering into a reuseable module; check for query lang libs
-  const sorted = activities.sort(
-    (l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime(),
-  );
-  const mapped = sorted.map((c) => {
-    // TOFIX: consider & for sticky activities
-    //        but then what about active *and* sticky activities?
-    //        maybe sticky activities *must* be initialized to be valid?
-    //        ie, can't deactivate a activity until it is also no longer sticky
-
-    let marker = c.active ? "*" : "^";
-
-    // if (c.tags.includes('sticky')) {
-    //   marker = '%'
-    // }
-    const activityId = c.activityId + marker;
-    const tags = c.tags.join(",");
-    return `${activityId.padEnd(80, " ")}  ${tags}`;
-  });
-  return mapped.length > 0
-    ? mapped.reduce((prev, item) => prev + "\n" + item)
-    : "";
-};
-
-export const formatActivitiesListExtended = async (activities: Activity[]) => {
-  // TOFIX: abstract sorting and filtering into a reuseable module; check for query lang libs
-  const mapped = activities.map((c) => {
-    // TOFIX: consider & for sticky activities
-    //        but then what about active *and* sticky activities?
-    //        maybe sticky activities *must* be initialized to be valid?
-    //        ie, can't deactivate a activity until it is also no longer sticky
-
-    let marker = c.active ? "*" : "^";
-
-    // if (c.tags.includes('sticky')) {
-    //   marker = '%'
-    // }
-
-    //
-
-    const display = c.name ? c.name : c.activityId + marker;
-    //const activityId = c.activityId + marker;
-    const tags = c.tags.join(",").substring(0, 32).padEnd(32, ' ')
-    //TOFIX absoutely atrocious
-    const lastAccessed = formatDistanceToNow(c.lastAccessed, { includeSeconds: true }).replace('about ', '').replace('days', 'days').replace('day', 'day').replace('minutes', 'mins').replace('minute', 'min').replace('less than a', '<').replace('less than', '<').replace('seconds', 'secs')
-
-    return `${display.padEnd(36, " ")}  ${tags}  ${lastAccessed}`;
-  });
-
-  return mapped
-};
 
 export const rofiListSelectRecentActivities = async (
   activities: Activity[],

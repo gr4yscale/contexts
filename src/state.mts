@@ -1,5 +1,6 @@
 import { parse, stringify } from "yaml";
-import { $, fs } from "zx";
+import { fs } from "zx";
+import { ActivityListType } from "./activityList.mts";
 
 export type ActivityId = string;
 
@@ -76,17 +77,7 @@ export type YamlDoc = {
   //dwmTags: ActivityId[]; 
 };
 
-export enum ActivityListType {
-  All = "all",
-  Active = "active",
-  EnabledTags = "enabledTags",
-  OrgIds = "orgIds"
-  // selected,
-  // transient,
-  // recent?
-}
 
-type ActivityListBuilder = (activities: Activity[]) => Activity[]
 
 let activities: Activity[] = [];
 let currentActivity: Activity;
@@ -173,7 +164,7 @@ export const loadState = async () => {
     if (previous) {
       previousActivity = previous;
     } else {
-      console.error("expected to find current activity");
+      console.error("expected to find previous activity");
     }
 
     return { currentActivity, previousActivity, activities, enabledTags };
@@ -263,44 +254,6 @@ export const updatePreviousActivity = (activity: Activity) => {
   previousActivity = activity;
 };
 
-
-
-// activities lists
-
-export const activitiesAll = (a: Activity[]) => a
-
-export const activitiesActive = (a: Activity[]) => a.filter((c) => c.active === true);
-
-export const activitiesEnabledTags = (activities: Activity[]) => {
-  const filtered = new Set<Activity>()
-  enabledTags.forEach((t) => {
-    const matches = activities.filter((a) => a.tags.includes(t))
-    matches.forEach((m) => filtered.add(m))
-  })
-  return Array.from(filtered)
-}
-
-export const activitiesOrgIds = (activities: Activity[]) => {
-  return activities.filter((a) => a.tags.includes('orgTask'))
-}
-
-const activityListBuilders: Record<ActivityListType, ActivityListBuilder> = {
-  [ActivityListType.All]: activitiesAll,
-  [ActivityListType.Active]: activitiesActive,
-  [ActivityListType.EnabledTags]: activitiesEnabledTags,
-  [ActivityListType.OrgIds]: activitiesOrgIds,
-};
-
-export const buildActivityList = (listTypes: ActivityListType[], activities: Activity[]) => {
-  const combined = new Set<Activity>()
-  for (const listType of listTypes) {
-    const build = activityListBuilders[listType];
-    const list = build(activities)
-    list.forEach((e) => combined.add(e))
-  }
-  return Array.from(combined)
-}
-
 // tofix: dealing with an array of enumeration values rather than strings here
 export const toggleActivityListTypeEnabled = (l: ActivityListType) => {
   if (enabledActivityListTypes.includes(l)) {
@@ -310,3 +263,7 @@ export const toggleActivityListTypeEnabled = (l: ActivityListType) => {
     enabledActivityListTypes.push(l)
   }
 }
+
+
+
+

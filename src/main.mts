@@ -3,7 +3,8 @@
 import { createServer, Socket } from "net";
 import { $, fs } from "zx";
 
-import { activitiesActive, getState, loadState } from "./state.mts";
+import { getState, loadState } from "./state.mts";
+import { activitiesActive } from "./activityList.mts";
 import { handleCommand } from "./handleCommand.mts";
 import { syncWorkspaces } from "./workspaces.mts";
 
