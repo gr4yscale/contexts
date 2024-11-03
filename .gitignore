@@ -17,3 +17,6 @@ node_modules
 /contexts.yml
 /activities.yml
 .aider*
+.env
+.python-version
+uv.lock
