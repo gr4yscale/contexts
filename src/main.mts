@@ -8,24 +8,24 @@ import { activitiesActive } from "./activityList.mts";
 import { handleCommand } from "./handleCommand.mts";
 import { syncWorkspaces } from "./workspaces.mts";
 
-fs.removeSync('/tmp/contexts.sock')
+fs.removeSync("/tmp/contexts.sock");
 
 const server = createServer((socket: Socket) => {
   socket.setEncoding("utf8");
   socket.on("data", async (data: string) => {
     try {
-      let response
+      let response;
       // TOFIX: lock while existing command is being handled
-      if (data.includes('|')) {
-        const cmd = data.split('|')[0]
-        const args = data.split('|')[1]
+      if (data.includes("|")) {
+        const cmd = data.split("|")[0];
+        const args = data.split("|")[1];
         response = await handleCommand(cmd, args);
       } else {
         response = await handleCommand(data);
       }
       if (response) {
-        console.log(response)
-        socket.write(response)
+        console.log(response);
+        socket.write(response);
       }
 
       //const activeActivities = activitiesActive(getState().activities)
@@ -35,9 +35,8 @@ const server = createServer((socket: Socket) => {
       //console.log(activityIds)
 
       //console.log(' dwmTags:    *****')
-      const dwmTags = getState().dwmTags.toString()
-      console.log(dwmTags)
-
+      const dwmTags = getState().dwmTags.toString();
+      console.log(dwmTags);
     } catch (e) {
       const msg = `Activities: Error handling command ${data}!`;
       $`notify-send "${msg}"`;
@@ -54,7 +53,7 @@ server.listen("/tmp/contexts.sock", () => {
 try {
   await loadState();
   // TODO
-  const activeActivities = activitiesActive(getState().activities)
+  const activeActivities = activitiesActive(getState().activities);
   syncWorkspaces(activeActivities);
 } catch (e) {
   $`notify-send "Activities: unhandled error occurred."`;

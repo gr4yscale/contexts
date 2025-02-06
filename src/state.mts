@@ -95,7 +95,7 @@ export const activityByOrgId = (orgId: string) =>
   activities.find((c) => c.orgId === orgId);
 
 
-enabledActivityListTypes.push(ActivityListType.Active)
+enabledActivityListTypes.push(ActivityListType.Active);
 
 export const getState = () => {
   return {
@@ -104,7 +104,7 @@ export const getState = () => {
     currentActivity,
     previousActivity,
     dwmTags,
-    enabledTags
+    enabledTags,
   };
 };
 
@@ -114,36 +114,36 @@ export const loadState = async () => {
     const parsed = parse(file) as YamlDoc;
 
     activities = parsed.activities.map((c) => {
-      c.created = new Date(c.created)
-      c.lastAccessed = new Date(c.lastAccessed)
+      c.created = new Date(c.created);
+      c.lastAccessed = new Date(c.lastAccessed);
 
-      c.emacsWindowBookmarks = c.emacsWindowBookmarks ?? []
+      c.emacsWindowBookmarks = c.emacsWindowBookmarks ?? [];
       c.emacsWindowBookmarks = c.emacsWindowBookmarks.map((bm) => {
-        bm.created = new Date(bm.created)
-        bm.accessed = new Date(bm.accessed)
-        return bm
-      })
+        bm.created = new Date(bm.created);
+        bm.accessed = new Date(bm.accessed);
+        return bm;
+      });
 
-      c.emacsOrgBookmarks = c.emacsOrgBookmarks ?? []
+      c.emacsOrgBookmarks = c.emacsOrgBookmarks ?? [];
       c.emacsOrgBookmarks = c.emacsOrgBookmarks.map((bm) => {
-        bm.created = new Date(bm.created)
-        bm.accessed = new Date(bm.accessed)
-        return bm
-      })
+        bm.created = new Date(bm.created);
+        bm.accessed = new Date(bm.accessed);
+        return bm;
+      });
 
-      c.linkGroups = c.linkGroups ?? []
+      c.linkGroups = c.linkGroups ?? [];
       c.linkGroups = c.linkGroups.map((lg) => {
-        lg.created = new Date(lg.created)
-        lg.accessed = new Date(lg.accessed)
-        lg.links = lg.links ?? []
+        lg.created = new Date(lg.created);
+        lg.accessed = new Date(lg.accessed);
+        lg.links = lg.links ?? [];
         lg.links = lg.links.map((l) => {
-          l.created = new Date(l.created)
-          l.accessed = new Date(l.accessed)
-          return l
-        })
-        return lg
-      })
-      c.links = c.links ?? []
+          l.created = new Date(l.created);
+          l.accessed = new Date(l.accessed);
+          return l;
+        });
+        return lg;
+      });
+      c.links = c.links ?? [];
 
       return c;
     });
@@ -195,8 +195,8 @@ export const createActivity = (id: ActivityId) => {
   const activity: Activity = {
     activityId: id,
     name: id,
-    orgId: '',
-    orgText: '',
+    orgId: "",
+    orgText: "",
     created: new Date(),
     lastAccessed: new Date(),
     active: false,

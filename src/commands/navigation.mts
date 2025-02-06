@@ -13,7 +13,10 @@ import {
   ActivityId,
 } from "../state.mts";
 
-import { buildActivityList, formatActivitiesListExtended } from "../activityList.mts";
+import {
+  buildActivityList,
+  formatActivitiesListExtended,
+} from "../activityList.mts";
 import { rofiListSelectRecentActivities } from "../selection.mts";
 
 
@@ -28,12 +31,13 @@ import { allocateWorkspace } from "../workspaces.mts";
  *  build menu with handler for item selection
  */
 export const switchActivity = async () => {
-
   const { activities, enabledActivityListTypes } = getState();
   const lists = buildActivityList(enabledActivityListTypes, activities);
-  const sorted = lists.sort((l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime());
+  const sorted = lists.sort(
+    (l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime(),
+  );
   const formatted = await formatActivitiesListExtended(sorted);
-  const prompt = `${Object.values(enabledActivityListTypes).join(', ')}`
+  const prompt = `${Object.values(enabledActivityListTypes).join(", ")}`;
   await buildMenu({
     display: prompt,
     builder: () => formatted.map((line: string) => {
@@ -70,35 +74,35 @@ export const activateActivity = async (id: ActivityId) => {
     updateCurrentActivity(activity);
     updatePreviousActivity(previousActivity);
     activity.lastAccessed = new Date();
-    console.log('activated ' + activity.name)
+    console.log("activated " + activity.name);
     $`notify-send -a activity -t 500 "${activity.dwmTag}: ${activity.name}"`;
   }
 };
 
 export const toggleActivity = async (id: ActivityId) => {
   if (id !== getState().currentActivity.activityId) {
-    await activateActivity(id)
+    await activateActivity(id);
   }
-}
+};
 
 const slugify = (str: string) => {
-  str = str.replace(/^\s+|\s+$/g, ''); // trim leading/trailing white space
+  str = str.replace(/^\s+|\s+$/g, ""); // trim leading/trailing white space
   str = str.toLowerCase(); // convert string to lowercase
-  str = str.replace(/[^a-z0-9 -]/g, '') // remove any non-alphanumeric characters
-    .replace(/\s+/g, '-') // replace spaces with hyphens
-    .replace(/-+/g, '-'); // remove consecutive hyphens
+  str = str
+    .replace(/[^a-z0-9 -]/g, "") // remove any non-alphanumeric characters
+    .replace(/\s+/g, "-") // replace spaces with hyphens
+    .replace(/-+/g, "-"); // remove consecutive hyphens
   return str;
-}
+};
 
 //export const createActivityForOrgItem = async (args: string) => {
 
 export const activateActivityForOrgId = async (args: string) => {
-
-  const { orgId, orgText } = JSON.parse(args)
+  const { orgId, orgText } = JSON.parse(args);
 
   // new way
 
-  // create an org id if it doesn't exist 
+  // create an org id if it doesn't exist
   // pass orgId and orgtText in to command to createActivity
   // create an activity with orgId set; sluggify activity text, include orgId at the end, add orgItem tag
   // get the activityID back from contextc
@@ -112,7 +116,7 @@ export const activateActivityForOrgId = async (args: string) => {
   // set activityID property on org element
 
   const previousActivity = getState().currentActivity;
-  const display = slugify(orgText as string)
+  const display = slugify(orgText as string);
 
   let activity: Activity | undefined;
   activity = activityByOrgId(orgId);
@@ -135,11 +139,11 @@ export const activateActivityForOrgId = async (args: string) => {
     updateCurrentActivity(activity);
     updatePreviousActivity(previousActivity);
     activity.lastAccessed = new Date();
-    console.log('activated ' + activity.name)
+    console.log("activated " + activity.name);
     $`notify-send -a activity -t 500 "${activity.dwmTag}: ${activity.name}"`;
   }
 
-  return `activityId:  ${activity.activityId}  orgId: ${activity.orgId}`
+  return `activityId:  ${activity.activityId}  orgId: ${activity.orgId}`;
 };
 
 export const swapActivity = async () => {
@@ -155,9 +159,11 @@ export const swapActivity = async () => {
 export const sendWindowToAnotherActivity = async () => {
   const { activities, enabledActivityListTypes } = getState();
   const lists = buildActivityList(enabledActivityListTypes, activities);
-  const sorted = lists.sort((l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime());
+  const sorted = lists.sort(
+    (l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime(),
+  );
   const formatted = await formatActivitiesListExtended(sorted);
-  const prompt = `${Object.values(enabledActivityListTypes).join(', ')}`
+  const prompt = `${Object.values(enabledActivityListTypes).join(", ")}`;
   await buildMenu({
     display: prompt,
     builder: () => formatted.map((line: string) => {

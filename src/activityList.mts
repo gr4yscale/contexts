@@ -1,24 +1,21 @@
 import { Activity, toggleActivityListTypeEnabled, getState } from "./state.mts";
 import { formatDistanceToNow } from "date-fns";
 
-
 export enum ActivityListType {
   All = "all",
   Active = "active",
   EnabledTags = "enabledTags",
   OrgIds = "orgIds",
-  CurrentContext = "currentContext"
+  CurrentContext = "currentContext",
   // selected,
   // transient,
   // recent?
 }
 
-type ActivityListBuilder = (activities: Activity[]) => Activity[]
-
-
+type ActivityListBuilder = (activities: Activity[]) => Activity[];
 
 export const menuActivityListTypesToggle = () => {
-  const activityListTypes = Object.values(ActivityListType)
+  const activityListTypes = Object.values(ActivityListType);
 
   const { enabledActivityListTypes } = getState();
   return activityListTypes.map((l) => {
@@ -29,36 +26,41 @@ export const menuActivityListTypesToggle = () => {
     return {
       display,
       handler: async (_?: number) => {
-        toggleActivityListTypeEnabled(l)
+        toggleActivityListTypeEnabled(l);
       },
     };
   });
 };
 
-
-
 // activities lists
 
-export const activitiesAll = (a: Activity[]) => a
+export const activitiesAll = (a: Activity[]) => a;
 
-export const activitiesActive = (a: Activity[]) => a.filter((c) => c.active === true);
+export const activitiesActive = (a: Activity[]) =>
+  a.filter((c) => c.active === true);
 
 export const activitiesEnabledTags = (activities: Activity[]) => {
-  const filtered = new Set<Activity>()
+  const filtered = new Set<Activity>();
   getState().enabledTags.forEach((t) => {
-    const matches = activities.filter((a) => a.tags.includes(t))
-    matches.forEach((m) => filtered.add(m))
-  })
-  return Array.from(filtered)
-}
+    const matches = activities.filter((a) => a.tags.includes(t));
+    matches.forEach((m) => filtered.add(m));
+  });
+  return Array.from(filtered);
+};
+
+export const activitiesPersistent = (activities: Activity[]) => {
+  return activities.filter((a) => a.tags.includes("sticky"));
+};
 
 export const activitiesOrgIds = (activities: Activity[]) => {
-  return activities.filter((a) => a.tags.includes('orgTask'))
-}
+  return activities.filter((a) => a.tags.includes("orgTask"));
+};
 
 export const activitiesCurrentContext = (activities: Activity[]) => {
-  return activities.filter((a) => getState().context.activityIds.includes(a.activityId))
-}
+  return activities.filter((a) =>
+    getState().currentContext.activityIds.includes(a.activityId),
+  );
+};
 
 const activityListBuilders: Record<ActivityListType, ActivityListBuilder> = {
   [ActivityListType.All]: activitiesAll,
@@ -66,18 +68,21 @@ const activityListBuilders: Record<ActivityListType, ActivityListBuilder> = {
   [ActivityListType.EnabledTags]: activitiesEnabledTags,
   [ActivityListType.OrgIds]: activitiesOrgIds,
   [ActivityListType.CurrentContext]: activitiesCurrentContext,
+  [ActivityListType.Persistent]: activitiesPersistent,
 };
 
-export const buildActivityList = (listTypes: ActivityListType[], activities: Activity[]) => {
-  const combined = new Set<Activity>()
+export const buildActivityList = (
+  listTypes: ActivityListType[],
+  activities: Activity[],
+) => {
+  const combined = new Set<Activity>();
   for (const listType of listTypes) {
     const build = activityListBuilders[listType];
-    const list = build(activities)
-    list.forEach((e) => combined.add(e))
+    const list = build(activities);
+    list.forEach((e) => combined.add(e));
   }
-  return Array.from(combined)
-}
-
+  return Array.from(combined);
+};
 
 export const formatActivitiesList = async (activities: Activity[]) => {
   // TOFIX: abstract sorting and filtering into a reuseable module; check for query lang libs
@@ -122,12 +127,22 @@ export const formatActivitiesListExtended = async (activities: Activity[]) => {
 
     const display = c.name ? c.name : c.activityId + marker;
     //const activityId = c.activityId + marker;
-    const tags = c.tags.join(",").substring(0, 32).padEnd(32, ' ')
+    const tags = c.tags.join(",").substring(0, 32).padEnd(32, " ");
     //TOFIX absoutely atrocious
-    const lastAccessed = formatDistanceToNow(c.lastAccessed, { includeSeconds: true }).replace('about ', '').replace('days', 'days').replace('day', 'day').replace('minutes', 'mins').replace('minute', 'min').replace('less than a', '<').replace('less than', '<').replace('seconds', 'secs')
+    const lastAccessed = formatDistanceToNow(c.lastAccessed, {
+      includeSeconds: true,
+    })
+      .replace("about ", "")
+      .replace("days", "days")
+      .replace("day", "day")
+      .replace("minutes", "mins")
+      .replace("minute", "min")
+      .replace("less than a", "<")
+      .replace("less than", "<")
+      .replace("seconds", "secs");
 
     return `${display.padEnd(36, " ")}  ${tags}  ${lastAccessed}`;
   });
 
-  return mapped
+  return mapped;
 };
