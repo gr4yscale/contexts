@@ -129,7 +129,7 @@ export const getState = () => {
 export const loadState = async () => {
   try {
     const file = fs.readFileSync("./state.yml", "utf8");
-    const parsed = parse(file) as YamlDoc;
+    const parsed = parse(file, { maxAliasCount: -1 }) as YamlDoc;
     contexts = parsed.contexts.map((c) => {
       c.created = new Date(c.created);
       c.accessed = new Date(c.accessed);
