@@ -19,11 +19,9 @@ import {
 } from "../activityList.mts";
 import { rofiListSelectRecentActivities } from "../selection.mts";
 
-
 import { buildMenu } from "../menus.mts";
 
 import { allocateWorkspace } from "../workspaces.mts";
-
 
 /** build lists of activities for each of the ListTypes
  *  append them to a combined list, sort by recent access
@@ -40,22 +38,27 @@ export const switchActivity = async () => {
   const prompt = `${Object.values(enabledActivityListTypes).join(", ")}`;
   await buildMenu({
     display: prompt,
-    builder: () => formatted.map((line: string) => {
-      return {
-        display: line,
-        handler: async (selectionIndex?: number) => {
-          if (selectionIndex === undefined) {
-            console.log(`no selectionIndex for ${line}`);
+    builder: () =>
+      formatted.map((line: string) => {
+        return {
+          display: line,
+          handler: async (selectionIndex?: number) => {
+            if (selectionIndex === undefined) {
+              console.log(`no selectionIndex for ${line}`);
+              return;
+            }
+            const activity = sorted[selectionIndex];
+            // TOFIX run actions here
+
+            // for activity.actions ... run
+
+            await activateActivity(activity.activityId);
             return;
-          }
-          const activity = sorted[selectionIndex];
-          await activateActivity(activity.activityId);
-          return;
-        }
-      }
-    })
-  })
-}
+          },
+        };
+      }),
+  });
+};
 
 // todo: overload this with activityId or Activity
 export const activateActivity = async (id: ActivityId) => {
@@ -153,7 +156,6 @@ export const swapActivity = async () => {
 
 // windows
 
-
 // tofix: refactor activity list / menu builder; it's cloned from switchActivity
 
 export const sendWindowToAnotherActivity = async () => {
@@ -166,27 +168,29 @@ export const sendWindowToAnotherActivity = async () => {
   const prompt = `${Object.values(enabledActivityListTypes).join(", ")}`;
   await buildMenu({
     display: prompt,
-    builder: () => formatted.map((line: string) => {
-      return {
-        display: line,
-        handler: async (selectionIndex?: number) => {
-          if (selectionIndex === undefined) {
-            console.log(`no selectionIndex for ${line}`);
+    builder: () =>
+      formatted.map((line: string) => {
+        return {
+          display: line,
+          handler: async (selectionIndex?: number) => {
+            if (selectionIndex === undefined) {
+              console.log(`no selectionIndex for ${line}`);
+              return;
+            }
+            const activity = sorted[selectionIndex];
+
+            console.log(
+              `sending window to ${activity.dwmTag}: ${activity.activityId}`,
+            );
+            await $`dwmc tagex ${activity.dwmTag}`;
+            activity.lastAccessed = new Date();
+
             return;
-          }
-          const activity = sorted[selectionIndex];
-
-          console.log(`sending window to ${activity.dwmTag}: ${activity.activityId}`);
-          await $`dwmc tagex ${activity.dwmTag}`;
-          activity.lastAccessed = new Date();
-
-          return;
-        }
-      }
-    })
-  })
+          },
+        };
+      }),
+  });
 };
-
 
 // tofix: update this to use newer menu builder functions
 // export const sendWindowToAnotherActivity = async () => {
@@ -206,7 +210,7 @@ const selectRecentActivityId = async (prompt: string, prefilter?: string) => {
   return await rofiListSelectRecentActivities(
     activities,
     prompt ?? "recent activity: ",
-    prefilter
+    prefilter,
   );
 };
 
@@ -216,9 +220,6 @@ const selectRecentActivity = async (prompt: string) => {
     return activityById(activityId);
   }
 };
-
-
-
 
 // export const activateActivityForOrg = async (id: ActivityId, orgId: string) => {
 //   const previousActivity = getState().currentActivity;
@@ -240,9 +241,3 @@ const selectRecentActivity = async (prompt: string) => {
 //     $`notify-send -a activity -t 500 "${activity.dwmTag}: ${activity.name}"`;
 //   }
 // };
-
-
-
-
-
-
