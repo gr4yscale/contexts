@@ -84,6 +84,16 @@ export type YamlDoc = {
   //dwmTags: ActivityId[];
 };
 
+export type State = {
+  currentContext: Context;
+  contexts: Context[];
+  activities: Activity[];
+  enabledActivityListTypes: ActivityListType[];
+  currentActivity: Activity;
+  previousActivity: Activity;
+  dwmTags: Array<ActivityId>;
+  enabledTags: Array<Tag>;
+};
 
 let currentContext: Context = {
   contextId: "default",
@@ -113,7 +123,7 @@ export const activityByOrgId = (orgId: string) =>
 
 enabledActivityListTypes.push(ActivityListType.Active);
 
-export const getState = () => {
+export const getState = (): State => {
   return {
     currentContext,
     contexts,
@@ -130,6 +140,7 @@ export const loadState = async () => {
   try {
     const file = fs.readFileSync("./state.yml", "utf8");
     const parsed = parse(file, { maxAliasCount: -1 }) as YamlDoc;
+
     contexts = parsed.contexts.map((c) => {
       c.created = new Date(c.created);
       c.accessed = new Date(c.accessed);
@@ -196,6 +207,8 @@ export const loadState = async () => {
     } else {
       console.error("expected to find previous activity");
     }
+
+    // actions should be loaded and stored
 
     return { currentActivity, previousActivity, activities, enabledTags };
   } catch (e) {
