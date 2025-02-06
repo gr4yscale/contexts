@@ -59,3 +59,12 @@ try {
   $`notify-send "Activities: unhandled error occurred."`;
   console.error(e);
 }
+
+// handleCommand("storeBrowserStates");
+
+// setInterval(
+//   () => {
+//     handleCommand("storeBrowserStates");
+//   },
+//   15 * 60 * 1000,
+// );

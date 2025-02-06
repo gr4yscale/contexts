@@ -100,9 +100,21 @@ export const handleCommand = async (
       storeState();
       break;
     }
+    case "storeBrowserStates": {
+      await storeBrowserStates();
+      storeState();
+      break;
+    }
+    case "loadBrowserStates": {
+      await loadLastBrowserStateForActiveActivities();
+      storeState();
+      break;
+    }
+
     case "hydrateActivities": {
       // do this for 'active' activities (ones that i last had open), which also have an 'init action'
 
+      // wmctrl -l | g "Firefox"
 
       for (const activity in activitiesActive(getState().activities)) {
         // todo need to block / wait here... even with setInterval etc

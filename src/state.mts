@@ -1,6 +1,7 @@
 import { parse, stringify } from "yaml";
 import { fs } from "zx";
 import { ActivityListType } from "./activityList.mts";
+import { BrowserState } from "./browser.mts";
 
 export type ActivityId = string;
 export type ContextId = string;
@@ -39,6 +40,7 @@ export type Activity = {
   linkGroups: LinkGroup[];
   links: Link[];
   actions: string[];
+  browserStates: BrowserState[];
 };
 
 export type Tag = string;
@@ -167,6 +169,14 @@ export const loadState = async () => {
       c.links = c.links ?? [];
 
       c.actions = c.actions ?? [];
+
+      c.browserStates = c.browserStates.slice(-3) ?? [];
+      c.browserStates = c.browserStates.map((bs) => {
+        bs.created = new Date(bs.created);
+        bs.accessed = new Date(bs.accessed);
+        return bs;
+      });
+
       return c;
     });
 
@@ -233,6 +243,7 @@ export const createActivity = (id: ActivityId) => {
     linkGroups: [],
     links: [],
     actions: [],
+    browserStates: [],
   };
   activities.push(activity);
   return activity;
