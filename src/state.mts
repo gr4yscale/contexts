@@ -38,23 +38,9 @@ export type Activity = {
   parentActivityId?: string;
   linkGroups: LinkGroup[];
   links: Link[];
+  actions: string[];
 };
 
-// export type Mode = {
-//   id: string;
-//   title: string;
-//   created: Date;
-//   accessed: Date;
-// };
-
-
-export type Action = {
-  actionId: string;
-  name: string;
-  created: Date;
-  accessed: Date;
-  tasks: string[];
-};
 export type Tag = string;
 
 export type Link = {
@@ -180,12 +166,11 @@ export const loadState = async () => {
       });
       c.links = c.links ?? [];
 
+      c.actions = c.actions ?? [];
       return c;
     });
 
-    enabledTags = parsed.enabledTags
-
-    //dwmTags.concat(dwmTags)
+    enabledTags = parsed.enabledTags;
 
     // todo: fix hacks
     const current = activityById(parsed.currentActivityId);
@@ -221,9 +206,13 @@ export const storeState = () => {
     currentContextId: currentContext.contextId,
   };
 
-  const stringified = stringify(state);
-  //TOFIX
   // https://joeattardi.dev/customizing-jsonparse-and-jsonstringify#heading-adding-a-reviver-function
+
+  // const stringified = stringify(state, (key, value) =>
+  //   key === "actions" ? [] : value,
+  // );
+
+  const stringified = stringify(state);
   fs.writeFileSync("./state.yml", stringified);
 };
 
@@ -243,6 +232,7 @@ export const createActivity = (id: ActivityId) => {
     tags: [],
     linkGroups: [],
     links: [],
+    actions: [],
   };
   activities.push(activity);
   return activity;

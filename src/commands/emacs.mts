@@ -105,7 +105,6 @@ export const viewEmacsOrgBookmarks = () => {
   }
 };
 
-
 export const menuEmacsOrgBookmarks = () => {
   const { currentActivity } = getState();
   return currentActivity.emacsOrgBookmarks.map((bm) => {
@@ -121,3 +120,25 @@ export const menuEmacsOrgBookmarks = () => {
     };
   });
 };
+
+export const viewEmacsSession = (id: string) => {
+  const evalArg = '(easysession-switch-to "z-' + id + '")';
+  const child = spawn(
+    `/usr/bin/emacsclient`,
+    ["-c", "-s", `z-${id}`, "--eval", evalArg],
+    { detached: true, stdio: "ignore" },
+  );
+  // const child = spawn(`/usr/bin/emacsclient`, ["-c", "-s", `z-${id}`], {
+  //   detached: true,
+  //   stdio: "ignore",
+  // });
+  child.unref();
+};
+
+// for saving emacs session, we're not gauranteed to be in the right emacs daemon for the activity
+
+// we should call easysession-save-as on the current window
+
+// we need a save func to persist activities automatically
+
+// for persisting activities automation, we would iterate through activities's workspaces, and if emacs windows in this workspace === 1, save session

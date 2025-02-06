@@ -100,6 +100,18 @@ export const handleCommand = async (
       storeState();
       break;
     }
+    case "hydrateActivities": {
+      // do this for 'active' activities (ones that i last had open), which also have an 'init action'
+
+
+      for (const activity in activitiesActive(getState().activities)) {
+        // todo need to block / wait here... even with setInterval etc
+        runInitActionsForActivity(activity);
+
+      }
+      storeState();
+      break;
+    }
 
     // keybindings
     case "leaderKey": {
