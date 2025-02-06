@@ -1,9 +1,10 @@
 import React from "react";
-import { useInput, Text, Box } from "ink";
-import { State } from "../state.mts";
+import { useInput, Box } from "ink";
+import { getState } from "../state.mts";
 import useRoutes from "./useRoutes.mts";
 import SelectableList from "./SelectableList.tsx";
 import { Hi, Test } from "./test.tsx";
+import { Provider } from "./Context.mts";
 
 // Menu 1 (wm navigation)
 // list of contexts [select] -> list of activities, dwm workspaces
@@ -26,11 +27,7 @@ const routes = [
   { path: "/select", component: SelectableList },
 ];
 
-interface Props {
-  state: State;
-}
-
-const Root: React.FC<Props> = ({ state }) => {
+const Root: React.FC = () => {
   const { Component, navigate, currentPath } = useRoutes(routes);
 
   //console.log(state.currentActivity.activityId);
@@ -80,7 +77,11 @@ const Root: React.FC<Props> = ({ state }) => {
 
   console.log(currentPath);
 
-  return <Box>{Component && <Component navigate={navigate} />}</Box>;
+  return (
+    <Provider value={{ state: getState() }}>
+      <Box>{Component && <Component navigate={navigate} />}</Box>
+    </Provider>
+  );
 };
 
 export default Root;

@@ -2,15 +2,15 @@
 
 import { createServer, Socket } from "net";
 import { $, fs } from "zx";
-// import React from "react";
-// import { render } from "ink";
+import { createElement } from "react";
+import { render } from "ink";
 
 import { getState, loadState } from "./state.mts";
 import { activitiesActive } from "./activityList.mts";
 import { handleCommand } from "./handleCommand.mts";
 import { syncWorkspaces } from "./workspaces.mts";
 
-// import Root from "./ui/Root.tsx";
+import Root from "./ui/Root.tsx";
 
 fs.removeSync("/tmp/contexts.sock");
 
@@ -73,5 +73,5 @@ try {
 //   15 * 60 * 1000,
 // );
 
-//const el = React.createElement(Root, { state: getState() }, null);
-//render(el);
+const el = createElement(Root, null);
+render(el);

@@ -1,8 +1,10 @@
 import React from "react";
 import { useInput, Text, Box } from "ink";
+import { Consumer } from "./Context.mts";
 
-import { State } from "../state.mts";
 import useSelectableList from "./useSelectableList.mts";
+import { activitiesActive } from "../activityList.mts";
+import { Activity } from "../types.mts";
 
 // modes
 // render highlighted state different (bold?)
@@ -61,15 +63,22 @@ const SelectableList: React.FC<Props> = ({ navigate }) => {
   });
 
   return (
-    <Box flexDirection="column">
-      <Box flexDirection="column">
-        {items.map((item) => (
-          <Box key={item} paddingLeft={2}>
-            <Text>{item}</Text>
+    <Consumer>
+      {({ state }) => (
+        <Box flexDirection="column">
+          <Box flexDirection="column">
+            {state &&
+              activitiesActive(state.activities).map((a: Activity) => (
+                <Box key={a.activityId} paddingLeft={2}>
+                  <Text>
+                    {a.activityId} - {a.lastAccessed.toString()}
+                  </Text>
+                </Box>
+              ))}
           </Box>
-        ))}
-      </Box>
-    </Box>
+        </Box>
+      )}
+    </Consumer>
   );
 };
 
