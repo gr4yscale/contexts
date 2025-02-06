@@ -255,12 +255,16 @@ export const createActivity = (id: ActivityId) => {
 // convenient keybinding for searching current buffer
 // prune activities
 
-export const createActivityForOrgId = (id: ActivityId, orgId: string, orgText: string) => {
-  const activity = createActivity(id)
-  activity.orgId = orgId
-  activity.orgText = orgText
-  activity.name = orgText
-  activity.tags.push('orgTask')
+export const createActivityForOrgId = (
+  id: ActivityId,
+  orgId: string,
+  orgText: string,
+) => {
+  const activity = createActivity(id);
+  activity.orgId = orgId;
+  activity.orgText = orgText;
+  activity.name = orgText;
+  activity.tags.push("orgTask");
   return activity;
 };
 
