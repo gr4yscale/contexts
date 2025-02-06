@@ -8,6 +8,9 @@ import { activitiesActive } from "./activityList.mts";
 import { handleCommand } from "./handleCommand.mts";
 import { syncWorkspaces } from "./workspaces.mts";
 
+import React from "react";
+import { render } from "ink";
+import Root from "./ui/Root.tsx";
 fs.removeSync("/tmp/contexts.sock");
 
 const server = createServer((socket: Socket) => {
@@ -68,3 +71,6 @@ try {
 //   },
 //   15 * 60 * 1000,
 // );
+
+//const el = React.createElement(Root, { state: getState() }, null);
+//render(el);
