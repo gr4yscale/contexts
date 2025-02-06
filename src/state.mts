@@ -120,6 +120,8 @@ export const activityById = (id: ActivityId) =>
 export const activityByOrgId = (orgId: string) =>
   activities.find((c) => c.orgId === orgId);
 
+export const activityByDwmTag = (dwmTag: number) =>
+  activities.find((c) => c.dwmTag === dwmTag);
 
 enabledActivityListTypes.push(ActivityListType.Active);
 
