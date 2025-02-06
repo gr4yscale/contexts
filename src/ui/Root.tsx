@@ -4,6 +4,13 @@ import { State } from "../state.mts";
 import useRoutes from "./useRoutes.mts";
 import SelectableList from "./SelectableList.tsx";
 import { Hi, Test } from "./test.tsx";
+
+// Menu 1 (wm navigation)
+// list of contexts [select] -> list of activities, dwm workspaces
+
+// Menu 2 (resources, actions)
+// generate for global vs activity-specific
+
 // modes
 // render highlighted state different (bold?)
 // render selected state different (bg color?)
