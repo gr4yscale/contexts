@@ -3,10 +3,27 @@ import { fs } from "zx";
 import { ActivityListType } from "./activityList.mts";
 
 export type ActivityId = string;
+export type ContextId = string;
+export type OrgId = string;
 
+
+export type Context = {
+  contextId: ContextId;
+  name: string;
+  created: Date;
+  accessed: Date;
+
+  actions?: string[]; // global actions?
+
+  activityIds: ActivityId[];
+  orgIds: OrgId[]; // IDs to toggle outside of query
+  orgQueries?: string[]; // UI to select-to-view org headlines and queries for context
+
+  resources?: string[]; // instead of breaking them into differnt fields
+};
 export type Activity = {
   activityId: ActivityId;
-  orgId: string;
+  orgId: OrgId;
   orgText: string;
   name: string;
   dwmTag?: number;
@@ -30,7 +47,6 @@ export type Activity = {
 //   accessed: Date;
 // };
 
-export type Tag = string
 
 export type Action = {
   actionId: string;
@@ -39,6 +55,7 @@ export type Action = {
   accessed: Date;
   tasks: string[];
 };
+export type Tag = string;
 
 export type Link = {
   id: string;
@@ -70,15 +87,26 @@ export type EmacsBookmark = {
 };
 
 export type YamlDoc = {
+  contexts: Context[];
+  currentContextId: ContextId;
   activities: Activity[];
   enabledTags: Tag[];
   currentActivityId: ActivityId;
   previousActivityId: ActivityId;
-  //dwmTags: ActivityId[]; 
+  //dwmTags: ActivityId[];
 };
 
 
+let currentContext: Context = {
+  contextId: "default",
+  name: "default",
+  created: new Date(),
+  accessed: new Date(),
+  activityIds: ["home", "emacs-config"],
+  orgIds: ["20bc22d6-f5c7-4058-a3ae-2d1f390f9ee7"],
+};
 
+let contexts: Context[] = [];
 let activities: Activity[] = [];
 let currentActivity: Activity;
 let previousActivity: Activity;
@@ -99,6 +127,8 @@ enabledActivityListTypes.push(ActivityListType.Active);
 
 export const getState = () => {
   return {
+    currentContext,
+    contexts,
     activities,
     enabledActivityListTypes,
     currentActivity,
@@ -112,6 +142,11 @@ export const loadState = async () => {
   try {
     const file = fs.readFileSync("./state.yml", "utf8");
     const parsed = parse(file) as YamlDoc;
+    contexts = parsed.contexts.map((c) => {
+      c.created = new Date(c.created);
+      c.accessed = new Date(c.accessed);
+      return c;
+    });
 
     activities = parsed.activities.map((c) => {
       c.created = new Date(c.created);
@@ -181,7 +216,9 @@ export const storeState = () => {
     //dwmTags,
     enabledTags,
     //enabledActivityListTypes,
-    activities
+    activities,
+    contexts,
+    currentContextId: currentContext.contextId,
   };
 
   const stringified = stringify(state);
@@ -205,7 +242,7 @@ export const createActivity = (id: ActivityId) => {
     emacsOrgBookmarks: [],
     tags: [],
     linkGroups: [],
-    links: []
+    links: [],
   };
   activities.push(activity);
   return activity;
@@ -241,9 +278,9 @@ export const toggleTagEnabled = (t: string) => {
     const index = enabledTags.indexOf(t);
     if (~index) enabledTags.splice(index, 1);
   } else {
-    enabledTags.push(t)
+    enabledTags.push(t);
   }
-}
+};
 
 // todo replace with a stack
 export const updateCurrentActivity = (activity: Activity) => {
@@ -260,10 +297,23 @@ export const toggleActivityListTypeEnabled = (l: ActivityListType) => {
     const index = enabledActivityListTypes.indexOf(l);
     if (~index) enabledActivityListTypes.splice(index, 1);
   } else {
-    enabledActivityListTypes.push(l)
+    enabledActivityListTypes.push(l);
   }
-}
+};
 
+// contexts
 
+export const createContext = (id: ContextId, name: string) => {
+  const context: Context = {
+    contextId: id,
+    name,
+    created: new Date(),
+    accessed: new Date(),
+    activityIds: [],
+    orgIds: [],
+  };
+  contexts.push(context);
+  return context;
+};
 
 
