@@ -1,5 +1,10 @@
-import { Activity, toggleActivityListTypeEnabled, getState } from "./state.mts";
 import { formatDistanceToNow } from "date-fns";
+import { getState } from "./state.mts";
+import { Activity, Tag } from "./types.mts";
+
+/**
+ *  Activity List types
+ */
 
 export enum ActivityListType {
   All = "all",
@@ -7,17 +12,24 @@ export enum ActivityListType {
   EnabledTags = "enabledTags",
   OrgIds = "orgIds",
   CurrentContext = "currentContext",
+  Persistent = "persistent",
   // selected,
   // transient,
   // recent?
 }
 
-type ActivityListBuilder = (activities: Activity[]) => Activity[];
+export const toggleActivityListTypeEnabled = (l: ActivityListType) => {
+  if (enabledActivityListTypes.includes(l)) {
+    const index = enabledActivityListTypes.indexOf(l);
+    if (~index) enabledActivityListTypes.splice(index, 1);
+  } else {
+    enabledActivityListTypes.push(l);
+  }
+};
 
 export const menuActivityListTypesToggle = () => {
   const activityListTypes = Object.values(ActivityListType);
 
-  const { enabledActivityListTypes } = getState();
   return activityListTypes.map((l) => {
     let marker = enabledActivityListTypes.includes(l) ? "*" : "";
     const withMarker = l + marker;
@@ -32,7 +44,16 @@ export const menuActivityListTypesToggle = () => {
   });
 };
 
-// activities lists
+/**
+ *  State
+ */
+
+export let enabledActivityListTypes: ActivityListType[] = [];
+enabledActivityListTypes.push(ActivityListType.Active);
+
+/**
+ *  Activity List filters
+ */
 
 export const activitiesAll = (a: Activity[]) => a;
 
@@ -41,7 +62,7 @@ export const activitiesActive = (a: Activity[]) =>
 
 export const activitiesEnabledTags = (activities: Activity[]) => {
   const filtered = new Set<Activity>();
-  getState().enabledTags.forEach((t) => {
+  enabledTags.forEach((t) => {
     const matches = activities.filter((a) => a.tags.includes(t));
     matches.forEach((m) => filtered.add(m));
   });
@@ -61,6 +82,12 @@ export const activitiesCurrentContext = (activities: Activity[]) => {
     getState().currentContext.activityIds.includes(a.activityId),
   );
 };
+
+/**
+ *  Activity List Builders
+ */
+
+type ActivityListBuilder = (activities: Activity[]) => Activity[];
 
 const activityListBuilders: Record<ActivityListType, ActivityListBuilder> = {
   [ActivityListType.All]: activitiesAll,
@@ -83,6 +110,30 @@ export const buildActivityList = (
   }
   return Array.from(combined);
 };
+
+/**
+ *  Tags
+ */
+
+// Tags management
+export let enabledTags: Tag[] = [];
+
+export const toggleTagEnabled = (t: string) => {
+  if (enabledTags.includes(t)) {
+    const index = enabledTags.indexOf(t);
+    if (~index) enabledTags.splice(index, 1);
+  } else {
+    enabledTags.push(t);
+  }
+};
+
+export const availableTags = () => {
+  return new Set<Tag>(getState().activities.flatMap((a) => a.tags));
+};
+
+/**
+ *  UI helpers for displaying a list of Activities, and toggling builders
+ */
 
 export const formatActivitiesList = async (activities: Activity[]) => {
   // TOFIX: abstract sorting and filtering into a reuseable module; check for query lang libs

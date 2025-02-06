@@ -1,8 +1,11 @@
-import { availableTags, toggleTagEnabled, getState } from "../state.mts";
+import {
+  enabledTags,
+  availableTags,
+  toggleTagEnabled,
+} from "../activityList.mts";
 
 export const menuTagsToggle = () => {
-  const tags = Array.from(availableTags())
-  const { enabledTags } = getState();
+  const tags = Array.from(availableTags());
   return tags.map((t) => {
     let marker = enabledTags.includes(t) ? "*" : "";
     const withMarker = t + marker;
@@ -11,13 +14,12 @@ export const menuTagsToggle = () => {
     return {
       display,
       handler: async (_?: number) => {
-        toggleTagEnabled(t)
+        toggleTagEnabled(t);
       },
     };
   });
 };
 
 export const listEnabledTags = async () => {
-  const { enabledTags } = getState();
-  return enabledTags.join(',')
-}
+  return enabledTags.join(",");
+};

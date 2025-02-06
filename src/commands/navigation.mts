@@ -1,6 +1,8 @@
 import { $ } from "zx";
 import { nanoid } from "nanoid";
 
+import { Activity, ActivityId } from "../types.mts";
+
 import {
   getState,
   createActivity,
@@ -9,13 +11,12 @@ import {
   updatePreviousActivity,
   activityById,
   activityByOrgId,
-  Activity,
-  ActivityId,
 } from "../state.mts";
 
 import {
   buildActivityList,
   formatActivitiesListExtended,
+  enabledActivityListTypes,
 } from "../activityList.mts";
 import { rofiListSelectRecentActivities } from "../selection.mts";
 
@@ -29,7 +30,7 @@ import { allocateWorkspace } from "../workspaces.mts";
  *  build menu with handler for item selection
  */
 export const switchActivity = async () => {
-  const { activities, enabledActivityListTypes } = getState();
+  const { activities } = getState();
   const lists = buildActivityList(enabledActivityListTypes, activities);
   const sorted = lists.sort(
     (l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime(),
@@ -159,7 +160,7 @@ export const swapActivity = async () => {
 // tofix: refactor activity list / menu builder; it's cloned from switchActivity
 
 export const sendWindowToAnotherActivity = async () => {
-  const { activities, enabledActivityListTypes } = getState();
+  const { activities } = getState();
   const lists = buildActivityList(enabledActivityListTypes, activities);
   const sorted = lists.sort(
     (l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime(),

@@ -1,99 +1,14 @@
 import { parse, stringify } from "yaml";
 import { fs } from "zx";
-import { ActivityListType } from "./activityList.mts";
-import { BrowserState } from "./browser.mts";
-
-export type ActivityId = string;
-export type ContextId = string;
-export type OrgId = string;
-
-export type Context = {
-  contextId: ContextId;
-  name: string;
-  created: Date;
-  accessed: Date;
-
-  actions?: string[]; // global actions?
-
-  activityIds: ActivityId[];
-  orgIds: OrgId[]; // IDs to toggle outside of query
-  orgQueries?: string[]; // UI to select-to-view org headlines and queries for context
-
-  resources?: string[]; // instead of breaking them into differnt fields
-};
-
-export type Activity = {
-  activityId: ActivityId;
-  orgId: OrgId;
-  orgText: string;
-  name: string;
-  dwmTag?: number;
-  created: Date;
-  lastAccessed: Date;
-  active: boolean;
-  scripts: string[];
-  emacsWindowBookmarks: EmacsBookmark[];
-  emacsOrgBookmarks: EmacsBookmark[];
-  tags: string[];
-  //sticky: boolean; use tag?
-  parentActivityId?: string;
-  linkGroups: LinkGroup[];
-  links: Link[];
-  actions: string[];
-  browserStates: BrowserState[];
-};
-
-export type Tag = string;
-
-export type Link = {
-  id: string;
-  url: string;
-  title: string;
-  description?: string;
-  created: Date;
-  accessed: Date;
-  sticky: boolean;
-};
-
-export type LinkGroup = {
-  id: string;
-  name: string; // default to created time, plus details of parent activity?
-  description?: string;
-  created: Date;
-  accessed: Date;
-  links: Link[];
-};
-
-export type EmacsBookmark = {
-  id: string;
-  title: string;
-  env: string;
-  url?: string;
-  created: Date;
-  accessed: Date;
-  sticky: boolean;
-};
-
-export type YamlDoc = {
-  contexts: Context[];
-  currentContextId: ContextId;
-  activities: Activity[];
-  enabledTags: Tag[];
-  currentActivityId: ActivityId;
-  previousActivityId: ActivityId;
-  //dwmTags: ActivityId[];
-};
-
-export type State = {
-  currentContext: Context;
-  contexts: Context[];
-  activities: Activity[];
-  enabledActivityListTypes: ActivityListType[];
-  currentActivity: Activity;
-  previousActivity: Activity;
-  dwmTags: Array<ActivityId>;
-  enabledTags: Array<Tag>;
-};
+import {
+  ActivityId,
+  ContextId,
+  Context,
+  Activity,
+  Tag,
+  YamlDoc,
+  State,
+} from "./types.mts";
 
 let currentContext: Context = {
   contextId: "default",
@@ -109,9 +24,6 @@ let activities: Activity[] = [];
 let currentActivity: Activity;
 let previousActivity: Activity;
 
-let enabledActivityListTypes: ActivityListType[] = [];
-let enabledTags: Tag[] = [];
-
 const dwmTags = new Array<ActivityId>(32); // dwm uses a bitmask to store what "tags" a window (client) is visible on
 
 export const activityById = (id: ActivityId) =>
@@ -123,18 +35,14 @@ export const activityByOrgId = (orgId: string) =>
 export const activityByDwmTag = (dwmTag: number) =>
   activities.find((c) => c.dwmTag === dwmTag);
 
-enabledActivityListTypes.push(ActivityListType.Active);
-
 export const getState = (): State => {
   return {
     currentContext,
     contexts,
     activities,
-    enabledActivityListTypes,
     currentActivity,
     previousActivity,
     dwmTags,
-    enabledTags,
   };
 };
 
@@ -193,7 +101,7 @@ export const loadState = async () => {
       return c;
     });
 
-    enabledTags = parsed.enabledTags;
+    //enabledTags = parsed.enabledTags;
 
     // todo: fix hacks
     const current = activityById(parsed.currentActivityId);
@@ -212,9 +120,9 @@ export const loadState = async () => {
 
     // actions should be loaded and stored
 
-    return { currentActivity, previousActivity, activities, enabledTags };
+    return { currentActivity, previousActivity, activities };
   } catch (e) {
-    console.error("Error occured while oading state from YAML");
+    console.error("Error occured while loading state from YAML");
     console.error(e);
   }
 };
@@ -224,8 +132,6 @@ export const storeState = () => {
     currentActivityId: currentActivity.activityId,
     previousActivityId: previousActivity.activityId,
     //dwmTags,
-    enabledTags,
-    //enabledActivityListTypes,
     activities,
     contexts,
     currentContextId: currentContext.contextId,
@@ -288,20 +194,6 @@ export const filteredActivities = () => {
   return activities;
 };
 
-// TODO: needs memoization
-export const availableTags = () => {
-  return new Set<Tag>(activities.flatMap((a) => a.tags));
-};
-
-export const toggleTagEnabled = (t: string) => {
-  if (enabledTags.includes(t)) {
-    const index = enabledTags.indexOf(t);
-    if (~index) enabledTags.splice(index, 1);
-  } else {
-    enabledTags.push(t);
-  }
-};
-
 // todo replace with a stack
 export const updateCurrentActivity = (activity: Activity) => {
   currentActivity = activity;
@@ -312,14 +204,6 @@ export const updatePreviousActivity = (activity: Activity) => {
 };
 
 // tofix: dealing with an array of enumeration values rather than strings here
-export const toggleActivityListTypeEnabled = (l: ActivityListType) => {
-  if (enabledActivityListTypes.includes(l)) {
-    const index = enabledActivityListTypes.indexOf(l);
-    if (~index) enabledActivityListTypes.splice(index, 1);
-  } else {
-    enabledActivityListTypes.push(l);
-  }
-};
 
 // contexts
 

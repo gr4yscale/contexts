@@ -4,7 +4,9 @@ import clipboard from "clipboardy";
 import { nanoid } from "nanoid";
 import { formatDistanceToNow } from "date-fns";
 
-import { getState, Activity, EmacsBookmark } from "../state.mts";
+import { getState } from "../state.mts";
+
+import { Activity, EmacsBookmark } from "../types.mts";
 
 export const viewEmacsWindowBookmark = (bookmark: EmacsBookmark) => {
   const evalArg = '(burly-open-bookmark "' + bookmark.id + '")';
