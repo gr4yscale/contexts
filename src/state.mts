@@ -7,7 +7,6 @@ export type ActivityId = string;
 export type ContextId = string;
 export type OrgId = string;
 
-
 export type Context = {
   contextId: ContextId;
   name: string;
@@ -22,6 +21,7 @@ export type Context = {
 
   resources?: string[]; // instead of breaking them into differnt fields
 };
+
 export type Activity = {
   activityId: ActivityId;
   orgId: OrgId;
@@ -335,5 +335,3 @@ export const createContext = (id: ContextId, name: string) => {
   contexts.push(context);
   return context;
 };
-
-

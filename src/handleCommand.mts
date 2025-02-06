@@ -8,13 +8,8 @@ import {
   sendWindowToAnotherActivity,
   activateActivityForOrgId,
 } from "./commands/navigation.mts";
-import {
-  linkGroupStore,
-  linkGroupQutebrowserStore,
-  stickyLinkStore,
-} from "./commands/links.mts";
+import { linkGroupStore, stickyLinkStore } from "./commands/links.mts";
 import { saveEmacsWindowBookmark } from "./commands/emacs.mts";
-import { listEnabledTags } from "./commands/tags.mts";
 import {
   buildMenuCurrentActivity,
   buildMenuTagsToggle,
@@ -119,7 +114,6 @@ export const handleCommand = async (
       for (const activity in activitiesActive(getState().activities)) {
         // todo need to block / wait here... even with setInterval etc
         runInitActionsForActivity(activity);
-
       }
       storeState();
       break;

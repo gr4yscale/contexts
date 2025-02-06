@@ -2,15 +2,16 @@
 
 import { createServer, Socket } from "net";
 import { $, fs } from "zx";
+// import React from "react";
+// import { render } from "ink";
 
 import { getState, loadState } from "./state.mts";
 import { activitiesActive } from "./activityList.mts";
 import { handleCommand } from "./handleCommand.mts";
 import { syncWorkspaces } from "./workspaces.mts";
 
-import React from "react";
-import { render } from "ink";
-import Root from "./ui/Root.tsx";
+// import Root from "./ui/Root.tsx";
+
 fs.removeSync("/tmp/contexts.sock");
 
 const server = createServer((socket: Socket) => {
