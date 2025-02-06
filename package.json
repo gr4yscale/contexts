@@ -1,24 +1,46 @@
 {
-  "name": "contexts",
-  "version": "1.0.0",
-  "description": "",
-  "main": "main.mts",
-  "scripts": {
-    "start": "tsx src/main.mts",
-    "build": "esbuild src/main.mts --bundle --platform=node --format=esm --packages=external --outfile=build.mjs"
-  },
-  "keywords": [],
-  "author": "gr4yscale",
-  "license": "Fair",
-  "devDependencies": {
-    "esbuild": "0.19.8",
-    "prettier": "3.1.0",
-    "tsx": "^4.4.0",
-    "zx": "^7.2.3"
-  },
-  "dependencies": {
-    "clipboardy": "^4.0.0",
-    "date-fns": "^2.30.0",
-    "nanoid": "^5.0.4"
-  }
+    "name": "contexts",
+    "version": "1.0.0",
+    "description": "",
+    "main": "main.mts",
+    "type": "module",
+    "scripts": {
+        "start": "tsx src/main.mts",
+        "test": "tsx src/SelectableListExample.tsx",
+        "build": "esbuild src/main.mts --bundle --platform=node --format=esm --packages=external --outfile=build.mjs"
+    },
+    "keywords": [],
+    "author": "gr4yscale",
+    "license": "Fair",
+    "devDependencies": {
+        "@types/ink": "^2.0.3",
+        "@types/react": "^19.0.8",
+        "@types/react-reconciler": "^0.28.2",
+        "esbuild": "0.19.8",
+        "prettier": "3.1.0",
+        "tsx": "^4.4.0",
+        "zx": "^7.2.3"
+    },
+    "dependencies": {
+        "clipboardy": "^4.0.0",
+        "date-fns": "^2.30.0",
+        "ink": "^5.1.0",
+        "nanoid": "^5.0.4",
+        "react": "^18.0.0",
+        "react-reconciler": "^0.28.0",
+        "ts-retry-promise": "^0.8.1"
+    },
+    "peerDependencies": {
+        "@types/react": ">=18.0.0",
+        "react": ">=18.0.0",
+        "react-devtools-core": "^4.19.1"
+    },
+    "peerDependenciesMeta": {
+        "@types/react": {
+            "optional": true
+        },
+        "react-devtools-core": {
+            "optional": true
+        }
+    }
 }
