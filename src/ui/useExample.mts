@@ -16,7 +16,7 @@ type UseExampleReturn<T> = {
   // state
   items: T[];
   mode: string;
-  selectedIndices: Set<number>;
+
   searchString: string;
   // search
   filterBySearchString: (searchString: string) => void;
@@ -39,25 +39,27 @@ type UseExampleReturn<T> = {
 function useExample<T extends Item>({
   initialItems,
 }: UseExampleProps<T>): UseExampleReturn<T> {
-  const [items, setItems] = useState<T[]>(initialItems);
+  const [items, setItems] = useState<T[]>(
+    initialItems.map((item) => ({ ...item, selected: false })),
+  );
   const [mode, setMode] = useState<"find" | "select" | "commit">("find");
 
-  const [selectedIndices, setSelectedIndices] = useState<Set<number>>(
-    new Set(),
-  );
   const [searchString, setSearchString] = useState<string>("");
-  const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(0);
 
   // Select or deselect an item by index
   const selectByIndex = (index: number): void => {
     if (index >= 0 && index < items.length) {
-      const newSelectedIndices = new Set(selectedIndices);
-      if (newSelectedIndices.has(index)) {
-        newSelectedIndices.delete(index);
-      } else {
-        newSelectedIndices.add(index);
-      }
-      setSelectedIndices(newSelectedIndices);
+      const updatedItems = items.map((item, i) => {
+        if (i === index) {
+          return {
+            ...item,
+            selected: !item.selected,
+          };
+        }
+        return item;
+      });
+      setItems(updatedItems);
     } else {
       throw new Error("Index out of bounds");
     }
@@ -68,32 +70,39 @@ function useExample<T extends Item>({
     return items.map((item, index) => ({
       ...item,
       highlighted: index === highlightedIndex,
-      selected: selectedIndices.has(index)
     })) as T[];
   };
 
   // Filter items by search string
-  const filterBySearchString = (
-    nextString: string): void => {
-    setSearchString(searchString + nextString);
+  const filterBySearchString = (nextString: string): void => {
+    const newSearchString = searchString + nextString;
 
-    const filteredItems = initialItems.filter((item: Item) => item.display.toLowerCase().includes(searchString.toLowerCase()))
+    const filteredItems = initialItems
+      .filter((item: Item) =>
+        item.display.toLowerCase().includes(newSearchString.toLowerCase()),
+      )
+      .map((item) => ({
+        ...item,
+        selected: false,
+      }));
+
+    setSearchString(newSearchString);
     setItems(filteredItems);
-    setHighlightedIndex(null); // Reset highlight when filtering
+    setHighlightedIndex(0); // Reset highlight when filtering
   };
 
   // Clear the search string and reset the list
   const clearSearchString = (): void => {
     setSearchString("");
-    setItems(initialItems);
-    setHighlightedIndex(null); // Reset highlight when clearing
+    setItems(initialItems.map((item) => ({ ...item, selected: false })));
+    setHighlightedIndex(0); // Reset highlight when clearing
   };
 
   // Move highlight down
   const highlightDown = (): void => {
     if (items.length === 0) return;
     setHighlightedIndex((prev) =>
-      prev === null || prev === items.length - 1 ? 0 : prev + 1
+      prev === null || prev === items.length - 1 ? 0 : prev + 1,
     );
   };
 
@@ -101,15 +110,13 @@ function useExample<T extends Item>({
   const highlightUp = (): void => {
     if (items.length === 0) return;
     setHighlightedIndex((prev) =>
-      prev === null || prev === 0 ? items.length - 1 : prev - 1
+      prev === null || prev === 0 ? items.length - 1 : prev - 1,
     );
   };
 
   // Select the item at the highlighted index
   const selectAtHighlightedIndex = (): void => {
-    if (highlightedIndex !== null) {
-      selectByIndex(highlightedIndex);
-    }
+    selectByIndex(highlightedIndex);
   };
 
   // modes
@@ -121,21 +128,26 @@ function useExample<T extends Item>({
   };
   // Get only the selected items
   const getSelectedItems = (): T[] => {
-    return Array.from(selectedIndices)
-      .map(index => items[index])
-      .filter((item): item is T => item !== undefined);
+    return items.filter((item) => item.selected);
   };
 
   const commitMode = (): void => {
     setMode("commit");
-    console.log('changed to commit mode')
   };
 
   const trimLastCharacter = (): void => {
-    setSearchString(searchString.slice(0, -1));
-    const filteredItems = initialItems.filter((item: Item) => 
-      item.display.toLowerCase().includes(searchString.slice(0, -1).toLowerCase())
-    );
+    const newSearchString = searchString.slice(0, -1);
+    setSearchString(newSearchString);
+
+    const filteredItems = initialItems
+      .filter((item: Item) =>
+        item.display.toLowerCase().includes(newSearchString.toLowerCase()),
+      )
+      .map((item) => ({
+        ...item,
+        selected: false,
+      }));
+
     setItems(filteredItems);
   };
 
@@ -146,7 +158,6 @@ function useExample<T extends Item>({
   return {
     items,
     mode,
-    selectedIndices,
     searchString,
     filterBySearchString,
     appendSearchString,

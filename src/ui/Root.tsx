@@ -4,12 +4,12 @@ import { getState } from "../state.mts";
 import useRoutes from "./useRoutes.mts";
 import { Provider } from "./Context.mts";
 
-import Example from "./Example.tsx";
+import ActivitySearch from "./ActivitySearch.tsx";
 import { Hi, Test } from "./test.tsx";
 
 const routes = [
-  { path: "/", component: Example},
-  { path: "/activities", component: Example},
+  { path: "/", component: ActivitySearch },
+  { path: "/activities", component: ActivitySearch },
   { path: "/hi", component: Hi },
   { path: "/test", component: Test },
 ];
@@ -43,7 +43,7 @@ const Root: React.FC = () => {
   //   { isActive: currentPath !== "/" },
   // );
 
-  console.log(currentPath);
+  //console.log(currentPath);
 
   return (
     <Provider value={{ state: getState() }}>
