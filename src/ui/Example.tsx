@@ -20,10 +20,12 @@ const Example: React.FC<Props> = ({}) => {
   ];
 
   const {
-    items,
     mode,
+    getItems,
+    getSelectedItems,
     selectMode,
     findMode,
+    commitMode,
     filterBySearchString,
     trimLastCharacter,
     clearSearchString,
@@ -35,35 +37,51 @@ const Example: React.FC<Props> = ({}) => {
   });
 
   useInput(async (input, key) => {
-    console.log(key)
-    if (mode === "find") {
-      if (key.leftArrow) {
-        trimLastCharacter();
-      } else if (key.rightArrow) {
-        selectMode();
-      } else if (key.return) {
-        selectMode();
-      } else if (key.delete) {
-        clearSearchString();
-      } else {
-        filterBySearchString(input);
+    switch (mode) {
+      case "find": {
+        if (key.leftArrow) {
+          trimLastCharacter();
+        } else if (key.rightArrow) {
+          selectMode();
+        } else if (key.return) {
+          selectMode();
+        } else if (key.delete) {
+          clearSearchString();
+        } else {
+          filterBySearchString(input);
+        }
+        break;
       }
-    } else {
-      // select mode
-      switch (input) {
-        case "i":
-          findMode();
-          return;
-        case "j":
-          highlightDown();
-          return;
-        case "k":
-          highlightUp();
-          return;
-        case " ":
-          selectAtHighlightedIndex();
-          return;
-          // J, K - scroll faster
+      case "select": {
+        switch (input) {
+          case "i":
+            findMode();
+            return;
+          case "j":
+            highlightDown();
+            return;
+          case "k":
+            highlightUp();
+            return;
+          case " ":
+            selectAtHighlightedIndex();
+            return;
+            // J, K - scroll faster
+        }
+        if (key.return) {
+          commitMode();
+        }
+        break
+      }
+      case "commit": {
+        switch (input) {
+          case "y":
+            // return a promise or callback for the selected items
+            return;
+          case "n":
+            return;
+        }
+        break
       }
     }
   });
@@ -72,9 +90,9 @@ const Example: React.FC<Props> = ({}) => {
     <Consumer>
       {() => (
         <Box flexDirection="column">
-          {items.map((i: Item) => (
+          {getItems().map((i: Item) => (
             <Box key={i.id} paddingLeft={2}>
-              <Text>{i.display}</Text>
+              <Text>{i.highlighted ? "> " : "  "}{i.selected ? "* " : "  "}{i.display}</Text>
             </Box>
           ))}
         </Box>

@@ -5,6 +5,7 @@ export type Item = {
   display: string;
   data: any;
   highlighted?: boolean;
+  selected?: boolean;
 };
 
 type UseExampleProps<T> = {
@@ -23,6 +24,7 @@ type UseExampleReturn<T> = {
   clearSearchString: () => void;
   // selection
   selectByIndex: (index: number) => void;
+  getItems: () => T[];
   getSelectedItems: () => T[];
   highlightDown: () => void;
   highlightUp: () => void;
@@ -30,6 +32,7 @@ type UseExampleReturn<T> = {
   // modes
   findMode: () => void;
   selectMode: () => void;
+  commitMode: () => void;
   trimLastCharacter: () => void;
 };
 
@@ -37,7 +40,7 @@ function useExample<T extends Item>({
   initialItems,
 }: UseExampleProps<T>): UseExampleReturn<T> {
   const [items, setItems] = useState<T[]>(initialItems);
-  const [mode, setMode] = useState<"find" | "select">("find");
+  const [mode, setMode] = useState<"find" | "select" | "commit">("find");
 
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(
     new Set(),
@@ -60,9 +63,13 @@ function useExample<T extends Item>({
     }
   };
 
-  // Get the list of selected items
-  const getSelectedItems = (): T[] => {
-    return Array.from(selectedIndices).map((index) => items[index]) as T[];
+  // Get all items with their current states (selected and highlighted)
+  const getItems = (): T[] => {
+    return items.map((item, index) => ({
+      ...item,
+      highlighted: index === highlightedIndex,
+      selected: selectedIndices.has(index)
+    })) as T[];
   };
 
   // Filter items by search string
@@ -86,7 +93,7 @@ function useExample<T extends Item>({
   const highlightDown = (): void => {
     if (items.length === 0) return;
     setHighlightedIndex((prev) =>
-      prev === null || prev === items.length - 1 ? 0 : prev + 1,
+      prev === null || prev === items.length - 1 ? 0 : prev + 1
     );
   };
 
@@ -94,7 +101,7 @@ function useExample<T extends Item>({
   const highlightUp = (): void => {
     if (items.length === 0) return;
     setHighlightedIndex((prev) =>
-      prev === null || prev === 0 ? items.length - 1 : prev - 1,
+      prev === null || prev === 0 ? items.length - 1 : prev - 1
     );
   };
 
@@ -111,6 +118,17 @@ function useExample<T extends Item>({
   };
   const selectMode = (): void => {
     setMode("select");
+  };
+  // Get only the selected items
+  const getSelectedItems = (): T[] => {
+    return Array.from(selectedIndices)
+      .map(index => items[index])
+      .filter((item): item is T => item !== undefined);
+  };
+
+  const commitMode = (): void => {
+    setMode("commit");
+    console.log('changed to commit mode')
   };
 
   const trimLastCharacter = (): void => {
@@ -134,12 +152,14 @@ function useExample<T extends Item>({
     appendSearchString,
     selectByIndex,
     clearSearchString,
+    getItems,
     getSelectedItems,
     highlightDown,
     highlightUp,
     selectAtHighlightedIndex,
     findMode,
     selectMode,
+    commitMode,
     trimLastCharacter,
   };
 }
