@@ -39,19 +39,19 @@ const server = createServer((socket: Socket) => {
       //console.log(activityIds)
 
       //console.log(' dwmTags:    *****')
-      const dwmTags = getState().dwmTags.toString();
-      console.log(dwmTags);
+      //const dwmTags = getState().dwmTags.toString();
+      //console.error(dwmTags);
     } catch (e) {
       const msg = `Activities: Error handling command ${data}!`;
       $`notify-send "${msg}"`;
-      console.error(msg);
-      console.error(e);
+      //console.error(msg);
+      //console.error(e);
     }
   });
 });
 
 server.listen("/tmp/contexts.sock", () => {
-  console.log("Server is listening");
+  //console.error("Server is listening");
 });
 
 try {

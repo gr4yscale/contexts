@@ -45,7 +45,7 @@ export const switchActivity = async () => {
           display: line,
           handler: async (selectionIndex?: number) => {
             if (selectionIndex === undefined) {
-              console.log(`no selectionIndex for ${line}`);
+              //console.log(`no selectionIndex for ${line}`);
               return;
             }
             const activity = sorted[selectionIndex];
@@ -68,7 +68,7 @@ export const activateActivity = async (id: ActivityId) => {
   let activity: Activity | undefined;
   activity = activityById(id);
   if (!activity) {
-    console.log(`activity not found, creating for id: ${id}`);
+    //console.log(`activity not found, creating for id: ${id}`);
     activity = createActivity(id);
     $`notify-send "Created new activity: ${id}"`;
   }
@@ -78,7 +78,7 @@ export const activateActivity = async (id: ActivityId) => {
     updateCurrentActivity(activity);
     updatePreviousActivity(previousActivity);
     activity.lastAccessed = new Date();
-    console.log("activated " + activity.name);
+    //console.log("activated " + activity.name);
     $`notify-send -a activity -t 500 "${activity.dwmTag}: ${activity.name}"`;
   }
 };
@@ -126,7 +126,7 @@ export const activateActivityForOrgId = async (args: string) => {
   activity = activityByOrgId(orgId);
 
   if (!activity) {
-    console.log(`activity not found, creating for id: ${orgId}`);
+    //console.log(`activity not found, creating for id: ${orgId}`);
     // try-catch? storeState?
     activity = createActivityForOrgId(nanoid(), orgId, display);
     // SET ORGTASK TAG HERE
@@ -143,7 +143,7 @@ export const activateActivityForOrgId = async (args: string) => {
     updateCurrentActivity(activity);
     updatePreviousActivity(previousActivity);
     activity.lastAccessed = new Date();
-    console.log("activated " + activity.name);
+    //console.log("activated " + activity.name);
     $`notify-send -a activity -t 500 "${activity.dwmTag}: ${activity.name}"`;
   }
 
@@ -175,14 +175,14 @@ export const sendWindowToAnotherActivity = async () => {
           display: line,
           handler: async (selectionIndex?: number) => {
             if (selectionIndex === undefined) {
-              console.log(`no selectionIndex for ${line}`);
+              //console.log(`no selectionIndex for ${line}`);
               return;
             }
             const activity = sorted[selectionIndex];
 
-            console.log(
-              `sending window to ${activity.dwmTag}: ${activity.activityId}`,
-            );
+            // console.log(
+            //   `sending window to ${activity.dwmTag}: ${activity.activityId}`,
+            // );
             await $`dwmc tagex ${activity.dwmTag}`;
             activity.lastAccessed = new Date();
 

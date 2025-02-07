@@ -36,7 +36,7 @@ export const handleCommand = async (
     console.error("Error: You must specify a command.");
     return Promise.resolve("error");
   }
-  console.log(`handling command ${command}`);
+  //console.error(`handling command ${command}`);
 
   const currentActivity = getState().currentActivity;
 
