@@ -1,30 +1,44 @@
 import { useState } from "react";
 
-type UseSelectableListProps<T> = {
+export type Item = {
+  id: string;
+  display: string;
+  data: any;
+  highlighted?: boolean;
+};
+
+type UseExampleProps<T> = {
   initialItems: T[];
 };
 
-type UseSelectableListReturn<T> = {
+type UseExampleReturn<T> = {
+  // state
   items: T[];
+  mode: string;
   selectedIndices: Set<number>;
   searchString: string;
-  highlightedIndex: number | null;
-  selectByIndex: (index: number) => void;
-  filterBySearchString: (
-    searchString: string,
-    matchFn: (item: T, searchString: string) => boolean,
-  ) => void;
+  // search
+  filterBySearchString: (searchString: string) => void;
+  appendSearchString: (append: string) => void;
   clearSearchString: () => void;
+  // selection
+  selectByIndex: (index: number) => void;
   getSelectedItems: () => T[];
   highlightDown: () => void;
   highlightUp: () => void;
   selectAtHighlightedIndex: () => void;
+  // modes
+  findMode: () => void;
+  selectMode: () => void;
+  trimLastCharacter: () => void;
 };
 
-function useSelectableList<T>({
+function useExample<T extends Item>({
   initialItems,
-}: UseSelectableListProps<T>): UseSelectableListReturn<T> {
+}: UseExampleProps<T>): UseExampleReturn<T> {
   const [items, setItems] = useState<T[]>(initialItems);
+  const [mode, setMode] = useState<"find" | "select">("find");
+
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(
     new Set(),
   );
@@ -46,15 +60,17 @@ function useSelectableList<T>({
     }
   };
 
+  // Get the list of selected items
+  const getSelectedItems = (): T[] => {
+    return Array.from(selectedIndices).map((index) => items[index]) as T[];
+  };
+
   // Filter items by search string
   const filterBySearchString = (
-    searchString: string,
-    matchFn: (item: T, searchString: string) => boolean,
-  ): void => {
-    setSearchString(searchString);
-    const filteredItems = initialItems.filter((item) =>
-      matchFn(item, searchString),
-    );
+    nextString: string): void => {
+    setSearchString(searchString + nextString);
+
+    const filteredItems = initialItems.filter((item: Item) => item.display.toLowerCase().includes(searchString.toLowerCase()))
     setItems(filteredItems);
     setHighlightedIndex(null); // Reset highlight when filtering
   };
@@ -64,11 +80,6 @@ function useSelectableList<T>({
     setSearchString("");
     setItems(initialItems);
     setHighlightedIndex(null); // Reset highlight when clearing
-  };
-
-  // Get the list of selected items
-  const getSelectedItems = (): T[] => {
-    return Array.from(selectedIndices).map((index) => items[index]) as T[];
   };
 
   // Move highlight down
@@ -94,19 +105,43 @@ function useSelectableList<T>({
     }
   };
 
+  // modes
+  const findMode = (): void => {
+    setMode("find");
+  };
+  const selectMode = (): void => {
+    setMode("select");
+  };
+
+  const trimLastCharacter = (): void => {
+    setSearchString(searchString.slice(0, -1));
+    const filteredItems = initialItems.filter((item: Item) => 
+      item.display.toLowerCase().includes(searchString.slice(0, -1).toLowerCase())
+    );
+    setItems(filteredItems);
+  };
+
+  const appendSearchString = (append: string): void => {
+    setSearchString(searchString + append);
+  };
+
   return {
     items,
+    mode,
     selectedIndices,
     searchString,
-    highlightedIndex,
-    selectByIndex,
     filterBySearchString,
+    appendSearchString,
+    selectByIndex,
     clearSearchString,
     getSelectedItems,
     highlightDown,
     highlightUp,
     selectAtHighlightedIndex,
+    findMode,
+    selectMode,
+    trimLastCharacter,
   };
 }
 
-export default useSelectableList;
+export default useExample;
