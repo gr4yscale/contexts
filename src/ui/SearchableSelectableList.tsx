@@ -1,7 +1,9 @@
 import React from "react";
 import { Text, Box } from "ink";
 import { Consumer } from "./Context.mts";
-import useExample, { Item } from "./useExample.mts";
+import useSearchableSelectableList, {
+  Item,
+} from "./useSearchableSelectableList.mts";
 import { KeyMapConfig, key } from "./useKeyMap.ts";
 import { InteractiveComponent } from "./InteractiveComponent.tsx";
 
@@ -11,7 +13,10 @@ interface Props {
   navigate?: (path: any) => void;
 }
 
-const Example: React.FC<Props> = ({ initialItems, callback }) => {
+const SearchableSelectableList: React.FC<Props> = ({
+  initialItems,
+  callback,
+}) => {
   const {
     mode,
     getItems,
@@ -25,7 +30,7 @@ const Example: React.FC<Props> = ({ initialItems, callback }) => {
     selectAtHighlightedIndex,
     highlightDown,
     highlightUp,
-  } = useExample<Item>({
+  } = useSearchableSelectableList<Item>({
     initialItems,
   });
 
@@ -36,6 +41,35 @@ const Example: React.FC<Props> = ({ initialItems, callback }) => {
   let keymapConfig: KeyMapConfig = [];
 
   switch (mode) {
+    case "find":
+      keymapConfig = [
+        {
+          sequence: [key("\r", "return")],
+          description: "Enter select mode",
+          command: {
+            name: "selectMode",
+            handler: selectMode,
+          },
+        },
+        {
+          sequence: [key("", "delete")],
+          description: "Clear search string",
+          command: {
+            name: "clearSearch",
+            handler: clearSearchString,
+          },
+        },
+        {
+          sequence: [key("", "pageUp")],
+          description: "Trim last character",
+          command: {
+            name: "trimLast",
+            handler: trimLastCharacter,
+          },
+        },
+      ];
+      break;
+
     case "select":
       keymapConfig = [
         {
@@ -72,7 +106,15 @@ const Example: React.FC<Props> = ({ initialItems, callback }) => {
         },
         {
           sequence: [key("\r", "return")],
-          description: "Enter commit mode or return items",
+          description: "Enter commit mode",
+          command: {
+            name: "commit",
+            handler: commitMode,
+          },
+        },
+        {
+          sequence: [key("y")],
+          description: "Enter commit mode",
           command: {
             name: "commit",
             handler: commitMode,
@@ -90,6 +132,8 @@ const Example: React.FC<Props> = ({ initialItems, callback }) => {
             name: "yes",
             handler: () => {
               callback && callback(getSelectedItems());
+              findMode();
+              clearSearchString();
             },
           },
         },
@@ -125,18 +169,9 @@ const Example: React.FC<Props> = ({ initialItems, callback }) => {
       {() => (
         <InteractiveComponent
           keyMapConfig={keymaps}
-          onUnhandledInput={(input, key) => {
-            // TOFIX: create a keymap for find mode, checking for return, delete, and pageUp keys. Leave the filterBySearch in onUnhandledInput.
+          onUnhandledInput={(input) => {
             if (mode === "find") {
-              if (key.return) {
-                selectMode();
-              } else if (key.delete) {
-                clearSearchString();
-              } else if (key.pageUp) {
-                trimLastCharacter();
-              } else {
-                filterBySearchString(input);
-              }
+              filterBySearchString(input);
             }
           }}
         >
@@ -158,4 +193,4 @@ const Example: React.FC<Props> = ({ initialItems, callback }) => {
   );
 };
 
-export default Example;
+export default SearchableSelectableList;
