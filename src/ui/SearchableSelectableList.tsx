@@ -4,7 +4,7 @@ import { Consumer } from "./Context.mts";
 import useSearchableSelectableList, {
   Item,
 } from "./useSearchableSelectableList.mts";
-import { KeyMapConfig, key } from "./useKeyMap.ts";
+import { KeyMapConfig, key } from "./useKeyMap.mts";
 import { InteractiveComponent } from "./InteractiveComponent.tsx";
 
 interface Props {

@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, useInput, Key } from "ink";
-import { useKeyMap, KeyMapConfig } from "./useKeyMap.ts";
+import { useKeyMap, KeyMapConfig } from "./useKeyMap.mts";
 
 interface Props {
   keyMapConfig: KeyMapConfig;
