@@ -35,7 +35,7 @@ const SearchableSelectableList: React.FC<Props> = ({
   });
 
   // adding multiple keymaps (for global / shared vs submenu)
-  // move the keymap definitions in Example.tsx to exampleKeymaps.tsx
+  // move the keymap definitions in SearchableSelectableList.tsx to searchableSelectableListKeymaps.tsx
   // make a "perform actions on current activity" menu; review handleCommand
 
   let keymapConfig: KeyMapConfig = [];

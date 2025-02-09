@@ -4,6 +4,8 @@ import { getState, Activity } from "./state.mts";
 
 const { dwmTags } = getState();
 
+$.verbose = false;
+
 export const findEmptyWorkspace = () => {
   for (let i = 1; i < dwmTags.length; i++) {
     if (!dwmTags[i] || dwmTags[i] === "available") {
