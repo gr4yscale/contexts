@@ -30,9 +30,7 @@ const SearchableSelectableList: React.FC<Props> = ({
     selectAtHighlightedIndex,
     highlightDown,
     highlightUp,
-  } = useSearchableSelectableList<Item>({
-    initialItems,
-  });
+  } = useSearchableSelectableList<Item>({ initialItems });
 
   // adding multiple keymaps (for global / shared vs submenu)
   // move the keymap definitions in SearchableSelectableList.tsx to searchableSelectableListKeymaps.tsx
@@ -48,7 +46,11 @@ const SearchableSelectableList: React.FC<Props> = ({
           description: "Enter select mode",
           command: {
             name: "selectMode",
-            handler: selectMode,
+            handler: () => {
+              selectMode();
+              highlightDown();
+              selectAtHighlightedIndex();
+            },
           },
         },
         {
@@ -109,7 +111,11 @@ const SearchableSelectableList: React.FC<Props> = ({
           description: "Enter commit mode",
           command: {
             name: "commit",
-            handler: commitMode,
+            handler: () => {
+              if (getSelectedItems().length > 0) {
+                commitMode();
+              }
+            },
           },
         },
         {
@@ -117,7 +123,11 @@ const SearchableSelectableList: React.FC<Props> = ({
           description: "Enter commit mode",
           command: {
             name: "commit",
-            handler: commitMode,
+            handler: () => {
+              if (getSelectedItems().length > 0) {
+                commitMode();
+              }
+            },
           },
         },
       ];
