@@ -218,6 +218,35 @@ export async function deleteActivity(activityId: string): Promise<void> {
   }
 }
 
+export async function getActiveActivities(): Promise<ActivityDTO[]> {
+  try {
+    const result = await connection.run("SELECT * FROM activities WHERE active = true;");
+    const rows = await result.fetchAllChunks();
+
+    if (rows.length === 0) {
+      return [];
+    }
+
+    return rows[0].getRows().map((row) => ({
+      activityId: row[0],
+      orgId: row[1],
+      orgText: row[2],
+      name: row[3],
+      dwmTag: row[4],
+      created: new Date(row[5]),
+      lastAccessed: new Date(row[6]),
+      active: row[7],
+      scripts: JSON.parse(row[8]),
+      tags: JSON.parse(row[9]),
+      links: JSON.parse(row[10]),
+      actions: JSON.parse(row[11]),
+    }));
+  } catch (error) {
+    console.error("Error getting active activities:", error);
+    throw error;
+  }
+}
+
 // Close database connection
 export async function closeDB(): Promise<void> {
   try {

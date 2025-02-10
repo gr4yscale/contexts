@@ -1,25 +1,35 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Box } from "ink";
-import { getState } from "../state.mts";
-import { activitiesActive } from "../activityList.mts";
-//import { Activity } from "../types.mts";
+import { getActiveActivities, ActivityDTO } from "../db.mts";
 import { handleCommand } from "../handleCommand.mts";
 import SelectionList from "./common/SelectionList.tsx";
 
 interface Props {
-  //   onActivitySelect?: (activities: Activity[]) => void;
+  //   onActivitySelect?: (activities: ActivityDTO[]) => void;
 }
 
 const ActivitySelect: React.FC<Props> = ({}) => {
-  const state = getState();
-  const activeActivities = activitiesActive(state.activities);
+  const [items, setItems] = useState<
+    Array<{ id: string; display: string; data: ActivityDTO }>
+  >([]);
 
-  // Transform activities to match the Item interface
-  const items = activeActivities.map((activity) => ({
-    id: activity.activityId,
-    display: activity.name,
-    data: activity,
-  }));
+  useEffect(() => {
+    const fetchActiveActivities = async () => {
+      try {
+        const activeActivities = await getActiveActivities();
+        const newItems = activeActivities.map((activity) => ({
+          id: activity.activityId,
+          display: activity.name,
+          data: activity,
+        }));
+        setItems(newItems);
+      } catch (error) {
+        console.error("Error fetching active activities:", error);
+      }
+    };
+
+    fetchActiveActivities();
+  }, []);
 
   return (
     <Box>
