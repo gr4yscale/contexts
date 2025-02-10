@@ -1,90 +1,7 @@
-import { ActivityId, Activity, Tag } from "./types.mts";
+import { Activity, Tag } from "./types.mts";
 
 import { formatDistanceToNow } from "date-fns";
 import { getState } from "./state.mts";
-
-/**
- *  Activity list state
- */
-let activities: Activity[] = [];
-let currentActivity: Activity;
-let previousActivity: Activity;
-
-export const createActivitiesList = () => {
-  return {
-    activities,
-    currentActivity,
-    previousActivity,
-  };
-};
-
-/**
- *  Activity mutations
- */
-
-export const createActivity = (id: ActivityId) => {
-  const activity: Activity = {
-    activityId: id,
-    name: id,
-    orgId: "",
-    orgText: "",
-    created: new Date(),
-    lastAccessed: new Date(),
-    active: false,
-    scripts: [],
-    emacsWindowBookmarks: [],
-    emacsOrgBookmarks: [],
-    tags: [],
-    linkGroups: [],
-    links: [],
-    actions: [],
-    browserStates: [],
-  };
-  activities.push(activity);
-  return activity;
-};
-
-// convenient keybinding for emacs activity activation in agenda and org-mode buffers
-// make name include the orgId
-// deactivate for orgId
-
-// convenient keybinding for searching current buffer
-// prune activities
-
-export const createActivityForOrgId = (
-  id: ActivityId,
-  orgId: string,
-  orgText: string,
-) => {
-  const activity = createActivity(id);
-  activity.orgId = orgId;
-  activity.orgText = orgText;
-  activity.name = orgText;
-  activity.tags.push("orgTask");
-  return activity;
-};
-
-// todo replace with a stack
-export const updateCurrentActivity = (activity: Activity) => {
-  currentActivity = activity;
-};
-
-export const updatePreviousActivity = (activity: Activity) => {
-  previousActivity = activity;
-};
-
-/**
- *  Activity helpers
- */
-
-export const activityById = (id: ActivityId) =>
-  activities.find((c) => c.activityId === id);
-
-export const activityByOrgId = (orgId: string) =>
-  activities.find((c) => c.orgId === orgId);
-
-export const activityByDwmTag = (dwmTag: number) =>
-  activities.find((c) => c.dwmTag === dwmTag);
 
 /**
  *  Activity List types
@@ -95,7 +12,6 @@ export enum ActivityListType {
   Active = "active",
   EnabledTags = "enabledTags",
   OrgIds = "orgIds",
-  CurrentContext = "currentContext",
   Persistent = "persistent",
   // selected,
   // transient,
@@ -128,15 +44,11 @@ export const menuActivityListTypesToggle = () => {
   });
 };
 
-/**
- *  State
- */
-
 export let enabledActivityListTypes: ActivityListType[] = [];
 enabledActivityListTypes.push(ActivityListType.Active);
 
 /**
- *  Activity List filters
+ *  Activity List type filters
  */
 
 export const activitiesAll = (a: Activity[]) => a;
@@ -161,12 +73,6 @@ export const activitiesOrgIds = (activities: Activity[]) => {
   return activities.filter((a) => a.tags.includes("orgTask"));
 };
 
-export const activitiesCurrentContext = (activities: Activity[]) => {
-  return activities.filter((a) =>
-    getState().currentContext.activityIds.includes(a.activityId),
-  );
-};
-
 /**
  *  Activity List Builders
  */
@@ -178,7 +84,6 @@ const activityListBuilders: Record<ActivityListType, ActivityListBuilder> = {
   [ActivityListType.Active]: activitiesActive,
   [ActivityListType.EnabledTags]: activitiesEnabledTags,
   [ActivityListType.OrgIds]: activitiesOrgIds,
-  [ActivityListType.CurrentContext]: activitiesCurrentContext,
   [ActivityListType.Persistent]: activitiesPersistent,
 };
 

@@ -1,11 +1,12 @@
-import { $, sleep } from "zx";
-import { Activity } from "./state.mts";
+// import { $, sleep } from "zx";
+// import { Activity } from "./state.mts";
 import { runInitActionsForActivity } from "./actions.mts";
+import { Activity } from "./types.mts";
 
-import {
-  viewEmacsWindowBookmarks,
-  viewEmacsOrgBookmarks,
-} from "./commands/emacs.mts";
+// import {
+//   viewEmacsWindowBookmarks,
+//   viewEmacsOrgBookmarks,
+// } from "./commands/emacs.mts";
 
 export const initActivity = async (activity: Activity) => {
   //

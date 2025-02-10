@@ -1,4 +1,3 @@
-import { activityById } from "./state.mts";
 import { viewEmacsSession } from "./commands/emacs.mts";
 
 export type ActivityAction = {
@@ -7,7 +6,7 @@ export type ActivityAction = {
   action: (id: string) => void;
 };
 
-type ActionTypes = "emacsLaunch";
+//type ActionTypes = "emacsLaunch";
 
 const actionForType = {
   emacsLaunch: {

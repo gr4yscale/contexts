@@ -1,5 +1,6 @@
-import { $, fs, sleep } from "zx";
-import { activityByDwmTag, ActivityId, getState } from "./state.mts";
+import { $, fs } from "zx";
+import { getState, activityByDwmTag } from "./state.mts";
+import { ActivityId } from "./types.mts";
 import { activitiesActive } from "./activityList.mts";
 import { activateActivity } from "./commands/navigation.mts";
 import { retryAsync, RetryStatus } from "./retry-async.mts";

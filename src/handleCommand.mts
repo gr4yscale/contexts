@@ -174,11 +174,6 @@ export const handleCommand = async (
       storeState();
       break;
     }
-    case "linkGroupQutebrowserStore": {
-      await linkGroupQutebrowserStore();
-      storeState();
-      break;
-    }
     case "stickyLinkStore": {
       await stickyLinkStore();
       storeState();

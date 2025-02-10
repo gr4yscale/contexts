@@ -18,7 +18,8 @@ import {
   formatActivitiesListExtended,
   enabledActivityListTypes,
 } from "../activityList.mts";
-import { rofiListSelectRecentActivities } from "../selection.mts";
+
+//import { rofiListSelectRecentActivities } from "../selection.mts";
 
 import { buildMenu } from "../menus.mts";
 
@@ -49,12 +50,11 @@ export const switchActivity = async () => {
               return;
             }
             const activity = sorted[selectionIndex];
+            if (activity) {
+              await activateActivity(activity.activityId);
+            }
             // TOFIX run actions here
-
             // for activity.actions ... run
-
-            await activateActivity(activity.activityId);
-            return;
           },
         };
       }),
@@ -175,18 +175,16 @@ export const sendWindowToAnotherActivity = async () => {
           display: line,
           handler: async (selectionIndex?: number) => {
             if (selectionIndex === undefined) {
-              //console.log(`no selectionIndex for ${line}`);
               return;
             }
             const activity = sorted[selectionIndex];
-
-            // console.log(
-            //   `sending window to ${activity.dwmTag}: ${activity.activityId}`,
-            // );
-            await $`dwmc tagex ${activity.dwmTag}`;
-            activity.lastAccessed = new Date();
-
-            return;
+            if (activity) {
+              await $`dwmc tagex ${activity.dwmTag}`;
+              activity.lastAccessed = new Date();
+              // console.log(
+              //   `sent window to ${activity.dwmTag}: ${activity.activityId}`,
+              // );
+            }
           },
         };
       }),
@@ -206,21 +204,21 @@ export const sendWindowToAnotherActivity = async () => {
 // monitor selection
 
 // util
-const selectRecentActivityId = async (prompt: string, prefilter?: string) => {
-  const { activities } = getState();
-  return await rofiListSelectRecentActivities(
-    activities,
-    prompt ?? "recent activity: ",
-    prefilter,
-  );
-};
+// const selectRecentActivityId = async (prompt: string, prefilter?: string) => {
+//   const { activities } = getState();
+//   return await rofiListSelectRecentActivities(
+//     activities,
+//     prompt ?? "recent activity: ",
+//     prefilter,
+//   );
+// };
 
-const selectRecentActivity = async (prompt: string) => {
-  const activityId = await selectRecentActivityId(prompt);
-  if (activityId) {
-    return activityById(activityId);
-  }
-};
+// const selectRecentActivity = async (prompt: string) => {
+//   const activityId = await selectRecentActivityId(prompt);
+//   if (activityId) {
+//     return activityById(activityId);
+//   }
+// };
 
 // export const activateActivityForOrg = async (id: ActivityId, orgId: string) => {
 //   const previousActivity = getState().currentActivity;
