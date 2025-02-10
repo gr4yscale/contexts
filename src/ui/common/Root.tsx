@@ -1,17 +1,14 @@
 import React from "react";
 import { Box } from "ink";
-import { getState } from "../state.mts";
+import { getState } from "../../state.mts";
 import useRoutes from "./useRoutes.mts";
 import { Provider } from "./Context.mts";
 
-import ActivitySearch from "./ActivitySearch.tsx";
-import { Hi, Test } from "./test.tsx";
+import ActivitySelect from "../ActivitySelect.tsx";
 
 const routes = [
-  { path: "/", component: ActivitySearch },
-  { path: "/activities", component: ActivitySearch },
-  { path: "/hi", component: Hi },
-  { path: "/test", component: Test },
+  { path: "/", component: ActivitySelect },
+  { path: "/activities", component: ActivitySelect },
 ];
 
 const Root: React.FC = () => {

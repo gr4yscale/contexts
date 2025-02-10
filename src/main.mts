@@ -10,7 +10,7 @@ import { activitiesActive } from "./activityList.mts";
 import { handleCommand } from "./handleCommand.mts";
 import { syncWorkspaces } from "./workspaces.mts";
 
-import Root from "./ui/Root.tsx";
+import Root from "./ui/common/Root.tsx";
 
 fs.removeSync("/tmp/contexts.sock");
 
@@ -73,5 +73,4 @@ try {
 //   15 * 60 * 1000,
 // );
 
-const el = createElement(Root, null);
-render(el);
+render(createElement(Root, null));

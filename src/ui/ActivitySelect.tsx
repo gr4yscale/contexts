@@ -3,14 +3,14 @@ import { Box } from "ink";
 import { getState } from "../state.mts";
 import { activitiesActive } from "../activityList.mts";
 //import { Activity } from "../types.mts";
-import SelectionList from "./SelectionList.tsx";
 import { handleCommand } from "../handleCommand.mts";
+import SelectionList from "./common/SelectionList.tsx";
 
 interface Props {
   //   onActivitySelect?: (activities: Activity[]) => void;
 }
 
-const ActivitySearch: React.FC<Props> = ({}) => {
+const ActivitySelect: React.FC<Props> = ({}) => {
   const state = getState();
   const activeActivities = activitiesActive(state.activities);
 
@@ -39,4 +39,4 @@ const ActivitySearch: React.FC<Props> = ({}) => {
   );
 };
 
-export default ActivitySearch;
+export default ActivitySelect;

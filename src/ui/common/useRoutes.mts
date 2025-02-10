@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const useRoutes = (routes) => {
   const [currentPath, setCurrentPath] = useState("/");
