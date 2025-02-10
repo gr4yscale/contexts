@@ -5,10 +5,13 @@ import { $, fs } from "zx";
 import { createElement } from "react";
 import { render } from "ink";
 
-import { getState, loadState } from "./state.mts";
-import { activitiesActive } from "./activityList.mts";
+import { initializeDB } from "./db.mts";
 import { handleCommand } from "./handleCommand.mts";
-import { syncWorkspaces } from "./workspaces.mts";
+
+// import { getState, loadState } from "./state.mts";
+// import { activitiesActive } from "./activityList.mts";
+
+//import { syncWorkspaces } from "./workspaces.mts";
 
 import Root from "./ui/common/Root.tsx";
 
@@ -55,10 +58,11 @@ server.listen("/tmp/contexts.sock", () => {
 });
 
 try {
-  await loadState();
-  // TODO
-  const activeActivities = activitiesActive(getState().activities);
-  syncWorkspaces(activeActivities);
+  await initializeDB();
+  // await loadState();
+  // // TODO
+  // const activeActivities = activitiesActive(getState().activities);
+  // syncWorkspaces(activeActivities);
 } catch (e) {
   $`notify-send "Activities: unhandled error occurred."`;
   console.error(e);

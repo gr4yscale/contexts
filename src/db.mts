@@ -1,29 +1,16 @@
 import { DuckDBInstance } from "@duckdb/node-api";
 
 // Types
-export type Link = {
-  id: string;
-  url: string;
-  title: string;
-  description?: string;
-  created: Date;
-  accessed: Date;
-  sticky: boolean;
-};
 
 export type ActivityDTO = {
   activityId: string;
-  orgId: string;
-  orgText: string;
+  orgId?: string;
+  orgText?: string;
   name: string;
   dwmTag?: number;
   created: Date;
   lastAccessed: Date;
   active: boolean;
-  scripts: string[];
-  tags: string[];
-  links: Link[];
-  actions: string[];
 };
 
 // Database initialization
@@ -39,17 +26,13 @@ export async function initializeDB() {
     await connection.run(`
             CREATE TABLE IF NOT EXISTS activities (
                 activityId VARCHAR PRIMARY KEY,
-                orgId VARCHAR,
-                orgText TEXT,
+                orgId VARCHAR NULL,
+                orgText VARCHAR NULL,
                 name VARCHAR,
-                dwmTag INTEGER,
+                dwmTag INTEGER NULL,
                 created TIMESTAMP,
                 lastAccessed TIMESTAMP,
                 active BOOLEAN,
-                scripts JSON,
-                tags JSON,
-                links JSON,
-                actions JSON
             );
         `);
 
@@ -71,10 +54,6 @@ export async function createActivity(activity: ActivityDTO): Promise<void> {
     created,
     lastAccessed,
     active,
-    scripts,
-    tags,
-    links,
-    actions,
   } = activity;
 
   try {
@@ -82,26 +61,25 @@ export async function createActivity(activity: ActivityDTO): Promise<void> {
       `
             INSERT INTO activities (
                 activityId, orgId, orgText, name, dwmTag, created, lastAccessed,
-                active, scripts, tags, links, actions
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                active
+            ) VALUES 
+            (?, ?, ?, ?, ?, ?, ?, ?);
         `,
       [
         activityId,
-        orgId,
-        orgText,
+        orgId ?? "",
+        orgText ?? "",
         name,
-        dwmTag,
-        created,
-        lastAccessed,
+        dwmTag ?? 100,
+        created.toISOString(),
+        lastAccessed.toISOString(),
         active,
-        JSON.stringify(scripts),
-        JSON.stringify(tags),
-        JSON.stringify(links),
-        JSON.stringify(actions),
       ],
     );
   } catch (error) {
-    console.error("Error creating activity:", error);
+    //console.error("Error creating activity:", error);
+
+    console.log(activity);
     throw error;
   }
 }
@@ -130,10 +108,6 @@ export async function getActivityById(
       created: new Date(row[5]),
       lastAccessed: new Date(row[6]),
       active: row[7],
-      scripts: JSON.parse(row[8]),
-      tags: JSON.parse(row[9]),
-      links: JSON.parse(row[10]),
-      actions: JSON.parse(row[11]),
     };
   } catch (error) {
     console.error("Error getting activity:", error);
@@ -159,10 +133,6 @@ export async function getAllActivities(): Promise<ActivityDTO[]> {
       created: new Date(row[5]),
       lastAccessed: new Date(row[6]),
       active: row[7],
-      scripts: JSON.parse(row[8]),
-      tags: JSON.parse(row[9]),
-      links: JSON.parse(row[10]),
-      actions: JSON.parse(row[11]),
     }));
   } catch (error) {
     console.error("Error getting all activities:", error);
@@ -180,11 +150,7 @@ export async function updateActivity(activity: ActivityDTO): Promise<void> {
                 name = ?,
                 dwmTag = ?,
                 lastAccessed = ?,
-                active = ?,
-                scripts = ?,
-                tags = ?,
-                links = ?,
-                actions = ?
+                active = ?
             WHERE activityId = ?;
         `,
       [
@@ -194,10 +160,6 @@ export async function updateActivity(activity: ActivityDTO): Promise<void> {
         activity.dwmTag,
         activity.lastAccessed,
         activity.active,
-        JSON.stringify(activity.scripts),
-        JSON.stringify(activity.tags),
-        JSON.stringify(activity.links),
-        JSON.stringify(activity.actions),
         activity.activityId,
       ],
     );
@@ -220,7 +182,9 @@ export async function deleteActivity(activityId: string): Promise<void> {
 
 export async function getActiveActivities(): Promise<ActivityDTO[]> {
   try {
-    const result = await connection.run("SELECT * FROM activities WHERE active = true;");
+    const result = await connection.run(
+      "SELECT * FROM activities WHERE active = true;",
+    );
     const rows = await result.fetchAllChunks();
 
     if (rows.length === 0) {
@@ -236,10 +200,6 @@ export async function getActiveActivities(): Promise<ActivityDTO[]> {
       created: new Date(row[5]),
       lastAccessed: new Date(row[6]),
       active: row[7],
-      scripts: JSON.parse(row[8]),
-      tags: JSON.parse(row[9]),
-      links: JSON.parse(row[10]),
-      actions: JSON.parse(row[11]),
     }));
   } catch (error) {
     console.error("Error getting active activities:", error);
