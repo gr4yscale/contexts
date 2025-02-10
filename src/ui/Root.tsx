@@ -1,5 +1,5 @@
 import React from "react";
-import { useInput, Box } from "ink";
+import { Box } from "ink";
 import { getState } from "../state.mts";
 import useRoutes from "./useRoutes.mts";
 import { Provider } from "./Context.mts";

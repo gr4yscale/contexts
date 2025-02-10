@@ -1,9 +1,7 @@
 import React from "react";
 import { Text, Box } from "ink";
 import { Consumer } from "./Context.mts";
-import useSearchableSelectableList, {
-  Item,
-} from "./useSearchableSelectableList.mts";
+import useSelectionList, { Item } from "./useSelectionList.mts";
 import { KeyMapConfig, key } from "./useKeyMap.mts";
 import { InteractiveComponent } from "./InteractiveComponent.tsx";
 
@@ -13,10 +11,7 @@ interface Props {
   navigate?: (path: any) => void;
 }
 
-const SearchableSelectableList: React.FC<Props> = ({
-  initialItems,
-  callback,
-}) => {
+const SelectionList: React.FC<Props> = ({ initialItems, callback }) => {
   const {
     mode,
     getItems,
@@ -30,7 +25,7 @@ const SearchableSelectableList: React.FC<Props> = ({
     selectAtHighlightedIndex,
     highlightDown,
     highlightUp,
-  } = useSearchableSelectableList<Item>({ initialItems });
+  } = useSelectionList<Item>({ initialItems });
 
   // adding multiple keymaps (for global / shared vs submenu)
   // move the keymap definitions in SearchableSelectableList.tsx to searchableSelectableListKeymaps.tsx
@@ -203,4 +198,4 @@ const SearchableSelectableList: React.FC<Props> = ({
   );
 };
 
-export default SearchableSelectableList;
+export default SelectionList;

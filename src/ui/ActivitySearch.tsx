@@ -3,7 +3,7 @@ import { Box } from "ink";
 import { getState } from "../state.mts";
 import { activitiesActive } from "../activityList.mts";
 //import { Activity } from "../types.mts";
-import SearchableSelectableList from "./SearchableSelectableList.tsx";
+import SelectionList from "./SelectionList.tsx";
 import { handleCommand } from "../handleCommand.mts";
 
 interface Props {
@@ -23,7 +23,7 @@ const ActivitySearch: React.FC<Props> = ({}) => {
 
   return (
     <Box>
-      <SearchableSelectableList
+      <SelectionList
         initialItems={items}
         callback={async (items) => {
           const activities = items.map((item) => item.data);
