@@ -1,13 +1,12 @@
 import { parse, stringify } from "yaml";
 import { fs } from "zx";
 import { Activity, ActivityId, YamlDoc, State } from "./types.mts";
+import { updateActivityState } from "./db.mts";
 
 /**
  *  Activity list
  */
 let activities: Activity[] = [];
-let currentActivity: Activity;
-let previousActivity: Activity;
 
 /**
  *  DWM "Workspaces" (tags)
@@ -15,11 +14,9 @@ let previousActivity: Activity;
 
 const dwmTags = new Array<ActivityId>(32); // dwm uses a bitmask to store what "tags" a window (client) is visible on
 
-export const getState = (): State => {
+export const getState = async (): State => {
   return {
     activities,
-    currentActivity,
-    previousActivity,
     dwmTags,
   };
 };
@@ -73,26 +70,7 @@ export const loadState = async () => {
       return c;
     });
 
-    //enabledTags = parsed.enabledTags;
-
-    // todo: fix hacks
-    const current = activityById(parsed.currentActivityId);
-    if (current) {
-      currentActivity = current;
-    } else {
-      console.error("expected to find current activity");
-    }
-
-    const previous = activityById(parsed.previousActivityId);
-    if (previous) {
-      previousActivity = previous;
-    } else {
-      console.error("expected to find previous activity");
-    }
-
-    // actions should be loaded and stored
-
-    return { currentActivity, previousActivity, activities };
+    return { activities };
   } catch (e) {
     console.error("Error occured while loading state from YAML");
     console.error(e);
@@ -101,17 +79,11 @@ export const loadState = async () => {
 
 export const storeState = () => {
   const state: YamlDoc = {
-    currentActivityId: currentActivity.activityId,
-    previousActivityId: previousActivity.activityId,
+    //currentActivityId: currentActivity.activityId,
+    //previousActivityId: previousActivity.activityId,
     //dwmTags,
     activities,
   };
-
-  // https://joeattardi.dev/customizing-jsonparse-and-jsonstringify#heading-adding-a-reviver-function
-
-  // const stringified = stringify(state, (key, value) =>
-  //   key === "actions" ? [] : value,
-  // );
 
   const stringified = stringify(state);
   fs.writeFileSync("./state.yml", stringified);
@@ -178,9 +150,9 @@ export const createActivityForOrgId = (
 
 // todo replace with a stack
 export const updateCurrentActivity = (activity: Activity) => {
-  currentActivity = activity;
+  updateActivityState(activity.activityId, "something");
 };
 
 export const updatePreviousActivity = (activity: Activity) => {
-  previousActivity = activity;
+  updateActivityState("something", activity.activityId);
 };

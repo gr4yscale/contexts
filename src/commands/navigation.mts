@@ -4,14 +4,18 @@ import { nanoid } from "nanoid";
 import { Activity, ActivityId } from "../types.mts";
 
 import {
-  getState,
   createActivity,
   createActivityForOrgId,
-  updateCurrentActivity,
-  updatePreviousActivity,
   activityById,
   activityByOrgId,
 } from "../state.mts";
+
+import {
+  getAllActivities,
+  getCurrentActivity,
+  getPreviousActivity,
+  updateActivityState,
+} from "../db.mts";
 
 import {
   buildActivityList,
@@ -31,7 +35,8 @@ import { allocateWorkspace } from "../workspaces.mts";
  *  build menu with handler for item selection
  */
 export const switchActivity = async () => {
-  const { activities } = getState();
+  //TOFIX
+  const activities = await getAllActivities();
   const lists = buildActivityList(enabledActivityListTypes, activities);
   const sorted = lists.sort(
     (l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime(),
@@ -63,8 +68,6 @@ export const switchActivity = async () => {
 
 // todo: overload this with activityId or Activity
 export const activateActivity = async (id: ActivityId) => {
-  const previousActivity = getState().currentActivity;
-
   let activity: Activity | undefined;
   activity = activityById(id);
   if (!activity) {
@@ -75,8 +78,11 @@ export const activateActivity = async (id: ActivityId) => {
 
   if (await allocateWorkspace(activity)) {
     // todo: indempotency
-    updateCurrentActivity(activity);
-    updatePreviousActivity(previousActivity);
+    const previousActivity = await getPreviousActivity();
+    if (previousActivity) {
+      updateActivityState(activity.activityId, previousActivity.activityId);
+    }
+    //TOFIX
     activity.lastAccessed = new Date();
     //console.log("activated " + activity.name);
     $`notify-send -a activity -t 500 "${activity.dwmTag}: ${activity.name}"`;
@@ -84,7 +90,8 @@ export const activateActivity = async (id: ActivityId) => {
 };
 
 export const toggleActivity = async (id: ActivityId) => {
-  if (id !== getState().currentActivity.activityId) {
+  const currentActivity = await getCurrentActivity();
+  if (!currentActivity || id !== currentActivity.activityId) {
     await activateActivity(id);
   }
 };
@@ -119,7 +126,6 @@ export const activateActivityForOrgId = async (args: string) => {
   // get the activityID back from contextc
   // set activityID property on org element
 
-  const previousActivity = getState().currentActivity;
   const display = slugify(orgText as string);
 
   let activity: Activity | undefined;
@@ -139,9 +145,12 @@ export const activateActivityForOrgId = async (args: string) => {
   // return the activityId to emacs somehow - check how we get the response from handleCommand
 
   if (await allocateWorkspace(activity)) {
-    // todo: indempotency
-    updateCurrentActivity(activity);
-    updatePreviousActivity(previousActivity);
+    const previousActivity = await getPreviousActivity();
+    if (previousActivity) {
+      updateActivityState(activity.activityId, previousActivity.activityId);
+    }
+
+    //TOFIX
     activity.lastAccessed = new Date();
     //console.log("activated " + activity.name);
     $`notify-send -a activity -t 500 "${activity.dwmTag}: ${activity.name}"`;
@@ -151,8 +160,10 @@ export const activateActivityForOrgId = async (args: string) => {
 };
 
 export const swapActivity = async () => {
-  const { previousActivity } = getState();
-  await activateActivity(previousActivity.activityId);
+  const previousActivity = await getPreviousActivity();
+  if (previousActivity) {
+    await activateActivity(previousActivity.activityId);
+  }
 };
 
 // windows
@@ -160,7 +171,7 @@ export const swapActivity = async () => {
 // tofix: refactor activity list / menu builder; it's cloned from switchActivity
 
 export const sendWindowToAnotherActivity = async () => {
-  const { activities } = getState();
+  const activities = await getAllActivities();
   const lists = buildActivityList(enabledActivityListTypes, activities);
   const sorted = lists.sort(
     (l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime(),
@@ -190,53 +201,3 @@ export const sendWindowToAnotherActivity = async () => {
       }),
   });
 };
-
-// tofix: update this to use newer menu builder functions
-// export const sendWindowToAnotherActivity = async () => {
-//   const activity = await selectRecentActivity("send to activity:");
-//   if (activity) {
-//     console.log(`sending window to ${activity.dwmTag}: ${activity.activityId}`);
-//     await $`dwmc tagex ${activity.dwmTag}`;
-//     activity.lastAccessed = new Date();
-//   }
-// };
-
-// monitor selection
-
-// util
-// const selectRecentActivityId = async (prompt: string, prefilter?: string) => {
-//   const { activities } = getState();
-//   return await rofiListSelectRecentActivities(
-//     activities,
-//     prompt ?? "recent activity: ",
-//     prefilter,
-//   );
-// };
-
-// const selectRecentActivity = async (prompt: string) => {
-//   const activityId = await selectRecentActivityId(prompt);
-//   if (activityId) {
-//     return activityById(activityId);
-//   }
-// };
-
-// export const activateActivityForOrg = async (id: ActivityId, orgId: string) => {
-//   const previousActivity = getState().currentActivity;
-
-//   let activity: Activity | undefined;
-//   activity = activityByOrgId(orgId);
-//   if (!activity) {
-//     console.log(`activity not found, creating for id: ${id} orgId: ${orgId}`);
-//     activity = createActivityForOrgId(orgId);
-//     $`notify-send "Created new activity: ${id}"`;
-//   }
-
-//   if(await allocateWorkspace(activity)) {
-//     // todo: indempotency
-//     updateCurrentActivity(activity);
-//     updatePreviousActivity(previousActivity);
-//     activity.lastAccessed = new Date();
-//     console.log('activated ' + activity.name)
-//     $`notify-send -a activity -t 500 "${activity.dwmTag}: ${activity.name}"`;
-//   }
-// };

@@ -3,36 +3,42 @@ import clipboard from "clipboardy";
 import { nanoid } from "nanoid";
 import { formatDistanceToNow } from "date-fns";
 
-import { getState } from "../state.mts";
-
 import { rofiListSelect } from "../selection.mts";
 import { MenuItem } from "../menus.mts";
+import { getCurrentActivity } from "../db.mts";
 
 // fetching links metadata w/ requests?
 const extractLink = (line: string) => {
   const parts = line.split("](") ?? [];
   if (parts.length === 2) {
     // tab discard extension puts this unicode character (zzz) for sleeping tabs; sanitize
-    const title = parts[0].replace(/💤/g, ' ').substring(3).trim()
+    const title = parts[0].replace(/💤/g, " ").substring(3).trim();
     const url = parts[1].slice(0, -1);
-    return { url, title, id: nanoid(), created: new Date(), accessed: new Date(), sticky: false };
+    return {
+      url,
+      title,
+      id: nanoid(),
+      created: new Date(),
+      accessed: new Date(),
+      sticky: false,
+    };
   } else {
     //TOFIX throw error here
     $`notify-send "Error parsing link"`;
   }
   return {
-	url: "unknown",
-	title: "unknown",
-	id: nanoid(),
-        created: new Date(),
-	accessed: new Date(),
-	sticky: false
-    };
+    url: "unknown",
+    title: "unknown",
+    id: nanoid(),
+    created: new Date(),
+    accessed: new Date(),
+    sticky: false,
+  };
 };
 
 // links, link groups
 export const linkLoad = async () => {
-  const { currentActivity } = getState();
+  const currentActivity = await getCurrentActivity();
   if (!currentActivity || !currentActivity.linkGroups[0]) {
     return;
   }
@@ -53,28 +59,28 @@ export const linkStore = async () => {
 };
 
 export const stickyLinkStore = async () => {
-  const { currentActivity } = getState();
-    await sleep(500); //TOFIX sleep
-    await $`xdotool key "Control_L+Shift+F12"`;
-    await sleep(100);
-  const clipboardSelection = clipboard.readSync() ?? '';
-  const link = extractLink(clipboardSelection)
-  link.sticky = true
-  currentActivity.links.push(link)
-  const msg = "Stored link " + link.title
-   $`notify-send ${msg}`;
+  const currentActivity = await getCurrentActivity();
+  await sleep(500); //TOFIX sleep
+  await $`xdotool key "Control_L+Shift+F12"`;
+  await sleep(100);
+  const clipboardSelection = clipboard.readSync() ?? "";
+  const link = extractLink(clipboardSelection);
+  link.sticky = true;
+  currentActivity.links.push(link);
+  const msg = "Stored link " + link.title;
+  $`notify-send ${msg}`;
 };
 
 export const linkGroupLoad = async (id: string) => {
-  const { currentActivity } = getState();
+  const currentActivity = await getCurrentActivity();
   if (!currentActivity || !currentActivity.linkGroups) {
     console.log("no link groups or activity");
     $`notify-send "Link Group not found."`;
     return;
   }
- 
+
   // select link group, or is there a "selected link group?" state for current activity?
-  const linkGroup = currentActivity.linkGroups.find((lg) => (lg.id === id));
+  const linkGroup = currentActivity.linkGroups.find((lg) => lg.id === id);
   if (linkGroup) {
     const mapped = linkGroup.links.map((l) => l.url);
     await $`firefox -url ${mapped}`;
@@ -82,7 +88,7 @@ export const linkGroupLoad = async (id: string) => {
 };
 
 export const linkGroupStore = async () => {
-  const { currentActivity } = getState();
+  const currentActivity = await getCurrentActivity();
   if (!currentActivity) {
     return;
   }
@@ -95,16 +101,16 @@ export const linkGroupStore = async () => {
 
     const links = clipboardContent.map((link) => extractLink(link));
     if (links.length > 0) {
-      const name = `${links[0].title}`
+      const name = `${links[0].title}`;
       const lg = {
-	id: nanoid(),
-	name,
-	created: new Date(),
-	accessed: new Date(),
-	links
-      }
-      currentActivity.linkGroups.push(lg)
-      const msg = "Stored link group (" + links.length + ") " + lg.name
+        id: nanoid(),
+        name,
+        created: new Date(),
+        accessed: new Date(),
+        links,
+      };
+      currentActivity.linkGroups.push(lg);
+      const msg = "Stored link group (" + links.length + ") " + lg.name;
       $`notify-send ${msg}`;
       console.log(`stored linkgroup ${lg.name}`);
     }
@@ -113,21 +119,26 @@ export const linkGroupStore = async () => {
   }
 };
 
-export const menuLinks = () => {
-  const { currentActivity } = getState();
+export const menuLinks = async () => {
+  const currentActivity = await getCurrentActivity();
   if (!currentActivity || !currentActivity.linkGroups[0]) {
     return [];
   }
 
   const links = currentActivity.linkGroups
     .sort((l, r) => r.created.getTime() - l.created.getTime())
-    .flatMap(lg => lg.links)
+    .flatMap((lg) => lg.links);
 
   return links.map((l) => {
     //TOFIX
-    const timeAgo = formatDistanceToNow(l.created, {includeSeconds: true }).replace('about ', '').replace(' hours', 'h').replace(' days', 'd').replace(' day', 'd').replace(' hour', 'h')
-    const title = l.title.substring(0, 100).padEnd(100, ' ')
-    const display = `${title}   ${timeAgo} ago`
+    const timeAgo = formatDistanceToNow(l.created, { includeSeconds: true })
+      .replace("about ", "")
+      .replace(" hours", "h")
+      .replace(" days", "d")
+      .replace(" day", "d")
+      .replace(" hour", "h");
+    const title = l.title.substring(0, 100).padEnd(100, " ");
+    const display = `${title}   ${timeAgo} ago`;
 
     const menuItem: MenuItem = {
       display,
@@ -146,7 +157,7 @@ export const menuLinks = () => {
 };
 
 export const menuLinkGroups = () => {
-  const { currentActivity } = getState();
+  const currentActivity = await getCurrentActivity();
 
   const sorted = currentActivity.linkGroups.sort(
     (l, r) => r.created.getTime() - l.created.getTime(),
@@ -155,8 +166,11 @@ export const menuLinkGroups = () => {
   return sorted.map((lg) => {
     const linkCount = lg.links ? lg.links.length : 0;
     const created = lg.created ?? new Date(); //TOFIX hack
-    const createdString = formatDistanceToNow(created, {includeSeconds: true }).replace('about ', '').replace(' hours', 'h').replace(' days', 'd')
-    const title = lg.name.substring(0, 100).padEnd(100, ' ')
+    const createdString = formatDistanceToNow(created, { includeSeconds: true })
+      .replace("about ", "")
+      .replace(" hours", "h")
+      .replace(" days", "d");
+    const title = lg.name.substring(0, 100).padEnd(100, " ");
     return {
       display: `${linkCount.toString()} - ${title}   ${createdString} ago`,
       //display: `${linkCount.toString()} - ${lg.name}`,

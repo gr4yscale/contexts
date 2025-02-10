@@ -117,7 +117,10 @@ export const toggleTagEnabled = (t: string) => {
 };
 
 export const availableTags = () => {
-  return new Set<Tag>(getState().activities.flatMap((a) => a.tags));
+  //TOFIX
+  console.log("de-implemented temporarily for sql integration");
+  //return new Set<Tag>(getState().activities.flatMap((a) => a.tags));
+  return new Set<Tag>();
 };
 
 /**

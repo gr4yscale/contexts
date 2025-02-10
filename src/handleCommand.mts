@@ -1,4 +1,7 @@
 import { getState, storeState } from "./state.mts";
+
+import { getCurrentActivity, getActiveActivities } from "./db.mts";
+
 import { allocateWorkspace, deallocateWorkspace } from "./workspaces.mts";
 import {
   activateActivity,
@@ -38,7 +41,7 @@ export const handleCommand = async (
   }
   //console.error(`handling command ${command}`);
 
-  const currentActivity = getState().currentActivity;
+  const currentActivity = await getCurrentActivity();
 
   switch (command) {
     // switchActivity
@@ -78,8 +81,9 @@ export const handleCommand = async (
     }
     // TODO: cleanup
     case "deactivateWorkspace": {
+      console.log("commented. need to transform/merge ActivityDTO -> Activity");
       //TOFIX: confirmation
-      await deallocateWorkspace(currentActivity);
+      //await deallocateWorkspace(currentActivity);
       storeState();
       break;
     }
@@ -90,8 +94,9 @@ export const handleCommand = async (
     //   return await listEnabledTags(); // returns comma-separated string of enabled modes
     // }
     case "initActivity": {
-      await allocateWorkspace(currentActivity);
-      await initActivity(currentActivity);
+      console.log("commented. need to transform/merge ActivityDTO -> Activity");
+      //await allocateWorkspace(currentActivity);
+      //await initActivity(currentActivity);
       storeState();
       break;
     }
@@ -111,7 +116,8 @@ export const handleCommand = async (
 
       // wmctrl -l | g "Firefox"
 
-      for (const activity in activitiesActive(getState().activities)) {
+      const activeActivities = await getActiveActivities();
+      for (const activity in activeActivities) {
         // todo need to block / wait here... even with setInterval etc
         runInitActionsForActivity(activity);
       }
@@ -181,8 +187,9 @@ export const handleCommand = async (
     }
     // emacs bookmarks + capture
     case "emacsWindowBookmarkStore": {
-      await saveEmacsWindowBookmark(currentActivity);
-      storeState();
+      console.log("commented. need to transform/merge ActivityDTO -> Activity");
+      //await saveEmacsWindowBookmark(currentActivity);
+      //storeState();
       break;
     }
     case "emacsOrgBookmarkStore": {

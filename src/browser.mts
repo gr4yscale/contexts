@@ -1,9 +1,9 @@
 import { $, fs } from "zx";
-import { getState, activityByDwmTag } from "./state.mts";
+import { activityByDwmTag } from "./state.mts";
 import { ActivityId } from "./types.mts";
-import { activitiesActive } from "./activityList.mts";
 import { activateActivity } from "./commands/navigation.mts";
 import { retryAsync, RetryStatus } from "./retry-async.mts";
+import { getActiveActivities } from "./db.mts";
 
 // make action for storing browser snapshots to all activities
 // ui for executing global actions can be copied from linkgroups
@@ -81,7 +81,8 @@ const mapWindowsToActivities = async (): Promise<Window[]> => {
 export const storeBrowserStates = async () => {
   const windows = await mapWindowsToActivities();
 
-  for (const activity of activitiesActive(getState().activities)) {
+  const activeActivities = await getActiveActivities();
+  for (const activity of activeActivities) {
     const windowsForActivity = windows.filter(
       (w) => w.activityId === activity.activityId,
     );
@@ -161,7 +162,8 @@ export const loadLastBrowserStateForActiveActivities = async () => {
   //   timeout: 5 * 1000,
   // });
 
-  for (const activity of activitiesActive(getState().activities)) {
+  const activeActivities = await getActiveActivities();
+  for (const activity of activeActivities) {
     const [lastBrowserState] = activity.browserStates.slice(-1);
     // open windows which haven't already been opened in this activity
     for (const window of lastBrowserState.windows) {

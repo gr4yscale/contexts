@@ -36,6 +36,15 @@ export async function initializeDB() {
             );
         `);
 
+    // Create activity state table
+    await connection.run(`
+            CREATE TABLE IF NOT EXISTS activity_state (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                currentActivityId VARCHAR,
+                previousActivityId VARCHAR
+            );
+        `);
+
     console.log("Database initialized successfully");
   } catch (error) {
     console.error("Error initializing database:", error);
@@ -124,7 +133,7 @@ export async function getAllActivities(): Promise<ActivityDTO[]> {
       return [];
     }
 
-    return rows[0].getRows().map((row) => ({
+    return rows[0].getRows().map((row: any) => ({
       activityId: row[0],
       orgId: row[1],
       orgText: row[2],
@@ -191,7 +200,7 @@ export async function getActiveActivities(): Promise<ActivityDTO[]> {
       return [];
     }
 
-    return rows[0].getRows().map((row) => ({
+    return rows[0].getRows().map((row: any) => ({
       activityId: row[0],
       orgId: row[1],
       orgText: row[2],
@@ -203,6 +212,54 @@ export async function getActiveActivities(): Promise<ActivityDTO[]> {
     }));
   } catch (error) {
     console.error("Error getting active activities:", error);
+    throw error;
+  }
+}
+
+// Function to update activity state in the database
+export async function updateActivityState(
+  currentActivityId: string,
+  previousActivityId: string,
+): Promise<void> {
+  try {
+    await connection.run(
+      `
+            INSERT INTO activity_state (currentActivityId, previousActivityId) VALUES (?, ?);
+        `,
+      [currentActivityId, previousActivityId],
+    );
+  } catch (error) {
+    console.error("Error updating activity state:", error);
+    throw error;
+  }
+}
+
+// Function to get the current activity
+export async function getCurrentActivity(): Promise<ActivityDTO | null> {
+  try {
+    const result = await connection.get(`
+      SELECT a.* FROM activities a
+      JOIN activity_state s ON a.activityId = s.currentActivityId
+      WHERE s.id = (SELECT MIN(id) FROM activity_state);
+    `);
+    return result ? result : null;
+  } catch (error) {
+    console.error("Error retrieving current activity:", error);
+    throw error;
+  }
+}
+
+// Function to get the previous activity
+export async function getPreviousActivity(): Promise<ActivityDTO | null> {
+  try {
+    const result = await connection.get(`
+      SELECT a.* FROM activities a
+      JOIN activity_state s ON a.activityId = s.previousActivityId
+      WHERE s.id = (SELECT MIN(id) FROM activity_state);
+    `);
+    return result ? result : null;
+  } catch (error) {
+    console.error("Error retrieving previous activity:", error);
     throw error;
   }
 }
