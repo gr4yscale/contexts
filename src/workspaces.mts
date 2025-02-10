@@ -1,6 +1,7 @@
 import { $ } from "zx";
 
-import { getState, Activity } from "./state.mts";
+import { getState } from "./state.mts";
+import { Activity } from "./types.mts";
 
 const { dwmTags } = getState();
 

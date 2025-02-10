@@ -97,16 +97,12 @@ export type EmacsBookmark = {
 };
 
 export type YamlDoc = {
-  contexts: Context[];
-  currentContextId: ContextId;
   activities: Activity[];
   currentActivityId: ActivityId;
   previousActivityId: ActivityId;
 };
 
 export type State = {
-  currentContext: Context;
-  contexts: Context[];
   activities: Activity[];
   currentActivity: Activity;
   previousActivity: Activity;

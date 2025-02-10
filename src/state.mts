@@ -1,44 +1,14 @@
 import { parse, stringify } from "yaml";
 import { fs } from "zx";
-import {
-  ActivityId,
-  ContextId,
-  Context,
-  Activity,
-  Tag,
-  YamlDoc,
-  State,
-} from "./types.mts";
+import { ActivityId, YamlDoc, State } from "./types.mts";
+import { createActivitiesList, activityById } from "./activityList.mts";
 
-let currentContext: Context = {
-  contextId: "default",
-  name: "default",
-  created: new Date(),
-  accessed: new Date(),
-  activityIds: ["home", "emacs-config"],
-  orgIds: ["20bc22d6-f5c7-4058-a3ae-2d1f390f9ee7"],
-};
-
-let contexts: Context[] = [];
-let activities: Activity[] = [];
-let currentActivity: Activity;
-let previousActivity: Activity;
+let { activities, currentActivity, previousActivity } = createActivitiesList();
 
 const dwmTags = new Array<ActivityId>(32); // dwm uses a bitmask to store what "tags" a window (client) is visible on
 
-export const activityById = (id: ActivityId) =>
-  activities.find((c) => c.activityId === id);
-
-export const activityByOrgId = (orgId: string) =>
-  activities.find((c) => c.orgId === orgId);
-
-export const activityByDwmTag = (dwmTag: number) =>
-  activities.find((c) => c.dwmTag === dwmTag);
-
 export const getState = (): State => {
   return {
-    currentContext,
-    contexts,
     activities,
     currentActivity,
     previousActivity,
@@ -50,12 +20,6 @@ export const loadState = async () => {
   try {
     const file = fs.readFileSync("./state.yml", "utf8");
     const parsed = parse(file, { maxAliasCount: -1 }) as YamlDoc;
-
-    contexts = parsed.contexts.map((c) => {
-      c.created = new Date(c.created);
-      c.accessed = new Date(c.accessed);
-      return c;
-    });
 
     activities = parsed.activities.map((c) => {
       c.created = new Date(c.created);
@@ -133,8 +97,6 @@ export const storeState = () => {
     previousActivityId: previousActivity.activityId,
     //dwmTags,
     activities,
-    contexts,
-    currentContextId: currentContext.contextId,
   };
 
   // https://joeattardi.dev/customizing-jsonparse-and-jsonstringify#heading-adding-a-reviver-function
@@ -145,77 +107,4 @@ export const storeState = () => {
 
   const stringified = stringify(state);
   fs.writeFileSync("./state.yml", stringified);
-};
-
-export const createActivity = (id: ActivityId) => {
-  console.log(`creating activity: ${id}`);
-  const activity: Activity = {
-    activityId: id,
-    name: id,
-    orgId: "",
-    orgText: "",
-    created: new Date(),
-    lastAccessed: new Date(),
-    active: false,
-    scripts: [],
-    emacsWindowBookmarks: [],
-    emacsOrgBookmarks: [],
-    tags: [],
-    linkGroups: [],
-    links: [],
-    actions: [],
-    browserStates: [],
-  };
-  activities.push(activity);
-  return activity;
-};
-
-// convenient keybinding for emacs activity activation in agenda and org-mode buffers
-// make name include the orgId
-// deactivate for orgId
-
-// convenient keybinding for searching current buffer
-// prune activities
-
-export const createActivityForOrgId = (
-  id: ActivityId,
-  orgId: string,
-  orgText: string,
-) => {
-  const activity = createActivity(id);
-  activity.orgId = orgId;
-  activity.orgText = orgText;
-  activity.name = orgText;
-  activity.tags.push("orgTask");
-  return activity;
-};
-
-export const filteredActivities = () => {
-  return activities;
-};
-
-// todo replace with a stack
-export const updateCurrentActivity = (activity: Activity) => {
-  currentActivity = activity;
-};
-
-export const updatePreviousActivity = (activity: Activity) => {
-  previousActivity = activity;
-};
-
-// tofix: dealing with an array of enumeration values rather than strings here
-
-// contexts
-
-export const createContext = (id: ContextId, name: string) => {
-  const context: Context = {
-    contextId: id,
-    name,
-    created: new Date(),
-    accessed: new Date(),
-    activityIds: [],
-    orgIds: [],
-  };
-  contexts.push(context);
-  return context;
 };
