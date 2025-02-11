@@ -1,7 +1,6 @@
 import { parse, stringify } from "yaml";
 import { fs } from "zx";
 import { Activity, ActivityId, YamlDoc, State } from "./types.mts";
-import { updateActivityState } from "./db.mts";
 
 /**
  *  Activity list
@@ -147,13 +146,4 @@ export const createActivityForOrgId = (
   //TOFIX
   //activity.tags.push("orgTask");
   return activity;
-};
-
-// todo replace with a stack
-export const updateCurrentActivity = (activity: Activity) => {
-  updateActivityState(activity.activityId, "something");
-};
-
-export const updatePreviousActivity = (activity: Activity) => {
-  updateActivityState("something", activity.activityId);
 };

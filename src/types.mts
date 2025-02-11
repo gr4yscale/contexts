@@ -94,7 +94,5 @@ export type YamlDoc = {
 
 export type State = {
   activities: Activity[];
-  currentActivity: Activity;
-  previousActivity: Activity;
   dwmTags: Array<ActivityId>;
 };

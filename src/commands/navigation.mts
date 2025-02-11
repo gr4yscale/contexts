@@ -6,15 +6,16 @@ import { Activity, ActivityId } from "../types.mts";
 import {
   createActivity,
   createActivityForOrgId,
-  activityById,
   activityByOrgId,
 } from "../state.mts";
 
 import {
+  getActivityById,
   getAllActivities,
   getCurrentActivity,
   getPreviousActivity,
-  updateActivityState,
+  updateActivity,
+  updateActivityHistory,
 } from "../db.mts";
 
 import {
@@ -27,7 +28,7 @@ import {
 
 import { buildMenu } from "../menus.mts";
 
-import { allocateWorkspace } from "../workspaces.mts";
+import { viewWorkspace } from "../workspaces.mts";
 
 /** build lists of activities for each of the ListTypes
  *  append them to a combined list, sort by recent access
@@ -68,32 +69,39 @@ export const switchActivity = async () => {
 
 // todo: overload this with activityId or Activity
 export const activateActivity = async (id: ActivityId) => {
-  let activity: Activity | undefined;
-  activity = activityById(id);
+  let activity: Activity | null;
+  activity = await getActivityById(id);
+
+  const previousActivity = await getCurrentActivity();
+  if (previousActivity && activity) {
+    await updateActivityHistory(id, previousActivity.activityId);
+  }
+
+  //TOFIX make activity creation explicit
+
   if (!activity) {
     //console.log(`activity not found, creating for id: ${id}`);
     activity = createActivity(id);
     $`notify-send "Created new activity: ${id}"`;
   }
 
-  if (await allocateWorkspace(activity)) {
-    // todo: indempotency
-    const previousActivity = await getPreviousActivity();
-    if (previousActivity) {
-      updateActivityState(activity.activityId, previousActivity.activityId);
-    }
-    //TOFIX
-    activity.lastAccessed = new Date();
-    //console.log("activated " + activity.name);
-    $`notify-send -a activity -t 500 "${activity.dwmTag}: ${activity.name}"`;
-  }
+  //TOFIX update activity
+  //const lastAccessed = new Date();
+  //updateActivity({ lastAccessed });
+  //console.log("activated " + activity.name);
+
+  $`notify-send -a activity -t 500 "${activity.dwmTag}: ${activity.name}"`;
+
+  // TOFIX was allocateWorkspace
+  return await viewWorkspace(activity);
 };
 
 export const toggleActivity = async (id: ActivityId) => {
-  const currentActivity = await getCurrentActivity();
-  if (!currentActivity || id !== currentActivity.activityId) {
-    await activateActivity(id);
-  }
+  console.log("not implemented");
+  // const currentActivity = await getCurrentActivity();
+  // if (!currentActivity || id !== currentActivity.activityId) {
+  //   await activateActivity(id);
+  // }
 };
 
 const slugify = (str: string) => {
@@ -144,10 +152,11 @@ export const activateActivityForOrgId = async (args: string) => {
 
   // return the activityId to emacs somehow - check how we get the response from handleCommand
 
-  if (await allocateWorkspace(activity)) {
+  //TODO was allocateWorkspcae
+  if (await viewWorkspace(activity)) {
     const previousActivity = await getPreviousActivity();
     if (previousActivity) {
-      updateActivityState(activity.activityId, previousActivity.activityId);
+      updateActivityHistory(activity.activityId, previousActivity.activityId);
     }
 
     //TOFIX

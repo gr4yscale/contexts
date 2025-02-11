@@ -1,6 +1,15 @@
 import { DuckDBInstance } from "@duckdb/node-api";
 import { Activity } from "./types.mts";
 
+// Hack
+import { fs } from "zx";
+import { parse, stringify } from "yaml";
+
+export type ActivityHistoryDoc = {
+  currentActivityId: string;
+  previousActivityId: string;
+};
+
 // Database initialization
 let instance: DuckDBInstance;
 let connection: any;
@@ -21,15 +30,6 @@ export async function initializeDB() {
                 created TIMESTAMP,
                 lastAccessed TIMESTAMP,
                 active BOOLEAN,
-            );
-        `);
-
-    // Create activity state table
-    await connection.run(`
-            CREATE TABLE IF NOT EXISTS activity_state (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                currentActivityId VARCHAR,
-                previousActivityId VARCHAR
             );
         `);
 
@@ -204,48 +204,39 @@ export async function getActiveActivities(): Promise<Activity[]> {
   }
 }
 
-// Function to update activity state in the database
-export async function updateActivityState(
+// TOFIX hack
+export async function updateActivityHistory(
   currentActivityId: string,
   previousActivityId: string,
 ): Promise<void> {
   try {
-    await connection.run(
-      `
-            INSERT INTO activity_state (currentActivityId, previousActivityId) VALUES (?, ?);
-        `,
-      [currentActivityId, previousActivityId],
-    );
+    const state: ActivityHistoryDoc = { currentActivityId, previousActivityId };
+    const stringified = stringify(state);
+    fs.writeFileSync("./state-mini.yml", stringified);
   } catch (error) {
     console.error("Error updating activity state:", error);
     throw error;
   }
 }
 
-// Function to get the current activity
 export async function getCurrentActivity(): Promise<Activity | null> {
   try {
-    const result = await connection.get(`
-      SELECT a.* FROM activities a
-      JOIN activity_state s ON a.activityId = s.currentActivityId
-      WHERE s.id = (SELECT MIN(id) FROM activity_state);
-    `);
-    return result ? result : null;
+    const file = fs.readFileSync("./state-mini.yml", "utf8");
+    const parsed = parse(file) as ActivityHistoryDoc;
+    const currentActivityId = parsed["currentActivityId"] as string;
+    return getActivityById(currentActivityId);
   } catch (error) {
     console.error("Error retrieving current activity:", error);
     throw error;
   }
 }
 
-// Function to get the previous activity
 export async function getPreviousActivity(): Promise<Activity | null> {
   try {
-    const result = await connection.get(`
-      SELECT a.* FROM activities a
-      JOIN activity_state s ON a.activityId = s.previousActivityId
-      WHERE s.id = (SELECT MIN(id) FROM activity_state);
-    `);
-    return result ? result : null;
+    const file = fs.readFileSync("./state-mini.yml", "utf8");
+    const parsed = parse(file) as ActivityHistoryDoc;
+    const previousActivityId = parsed["previousActivityId"] as string;
+    return getActivityById(previousActivityId);
   } catch (error) {
     console.error("Error retrieving previous activity:", error);
     throw error;
