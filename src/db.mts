@@ -34,7 +34,6 @@ export async function getConnection(): Promise<any> {
   return connection;
 }
 
-// Close database connection
 export async function closeDB(): Promise<void> {
   try {
     if (connection) {

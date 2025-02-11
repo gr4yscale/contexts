@@ -1,7 +1,5 @@
 import { getState, storeState } from "./state.mts";
 
-import { getCurrentActivity, getActiveActivities } from "./db.mts";
-
 import { allocateWorkspace, deallocateWorkspace } from "./workspaces.mts";
 import {
   activateActivity,
@@ -31,6 +29,8 @@ import {
   loadLastBrowserStateForActiveActivities,
 } from "./browser.mts";
 
+import activityDTO from "./models/activity.mts";
+const { getCurrentActivity, getActiveActivities } = await activityDTO();
 export const handleCommand = async (
   command: string | undefined,
   args?: string,
@@ -41,7 +41,8 @@ export const handleCommand = async (
   }
   //console.error(`handling command ${command}`);
 
-  //const currentActivity = await getCurrentActivity();
+  const currentActivity = await getCurrentActivity();
+
 
   switch (command) {
     // switchActivity
