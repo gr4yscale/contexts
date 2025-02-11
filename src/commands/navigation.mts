@@ -10,15 +10,6 @@ import {
 } from "../state.mts";
 
 import {
-  getActivityById,
-  getAllActivities,
-  getCurrentActivity,
-  getPreviousActivity,
-  updateActivity,
-  updateActivityHistory,
-} from "../db.mts";
-
-import {
   buildActivityList,
   formatActivitiesListExtended,
   enabledActivityListTypes,
@@ -29,6 +20,16 @@ import {
 import { buildMenu } from "../menus.mts";
 
 import { viewWorkspace } from "../workspaces.mts";
+
+import activityDTO from "../models/activity.mts";
+
+const {
+  getActivityById,
+  getAllActivities,
+  getCurrentActivity,
+  getPreviousActivity,
+  updateActivityHistory,
+} = await activityDTO();
 
 /** build lists of activities for each of the ListTypes
  *  append them to a combined list, sort by recent access

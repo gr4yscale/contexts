@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Box } from "ink";
-import { getActiveActivities } from "../db.mts";
 import { Activity } from "../types.mts";
 import { handleCommand } from "../handleCommand.mts";
 import SelectionList from "./common/SelectionList.tsx";
+
+import activityDTO from "../models/activity.mts";
+
+const { getActiveActivities } = await activityDTO();
 
 interface Props {
   //   onActivitySelect?: (activities: ActivityDTO[]) => void;
