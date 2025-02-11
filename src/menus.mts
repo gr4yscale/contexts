@@ -43,7 +43,7 @@ export const buildMenu = async (item: MenuItem) => {
     //console.log(`${item.display} has builder, generating child items`);
     const items = item.builder();
     const selected = await rofiSelectItem(items, item.display);
-    selected && await buildMenu(selected);
+    selected && (await buildMenu(selected));
   } else if (item.handler) {
     // console.log(
     //   `item ${item.display} with selectionIndex ${item.selectionIndex} has a handler; calling`,

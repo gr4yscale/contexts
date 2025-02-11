@@ -74,9 +74,7 @@ export async function createActivity(activity: Activity): Promise<void> {
       ],
     );
   } catch (error) {
-    //console.error("Error creating activity:", error);
-
-    console.log(activity);
+    console.error("Error creating activity:", error);
     throw error;
   }
 }
