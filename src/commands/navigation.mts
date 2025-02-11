@@ -29,6 +29,7 @@ const {
   getCurrentActivity,
   getPreviousActivity,
   updateActivityHistory,
+  updateActivity,
 } = await activityDTO();
 
 /** build lists of activities for each of the ListTypes
@@ -79,17 +80,14 @@ export const activateActivity = async (id: ActivityId) => {
   }
 
   //TOFIX make activity creation explicit
-
   if (!activity) {
     //console.log(`activity not found, creating for id: ${id}`);
     activity = createActivity(id);
     $`notify-send "Created new activity: ${id}"`;
   }
 
-  //TOFIX update activity
-  //const lastAccessed = new Date();
-  //updateActivity({ lastAccessed });
-  //console.log("activated " + activity.name);
+  const lastAccessed = new Date();
+  await updateActivity({ activityId: id, lastAccessed });
 
   $`notify-send -a activity -t 500 "${activity.dwmTag}: ${activity.name}"`;
 
@@ -161,8 +159,9 @@ export const activateActivityForOrgId = async (args: string) => {
     }
 
     //TOFIX
-    activity.lastAccessed = new Date();
-    //console.log("activated " + activity.name);
+    const lastAccessed = new Date();
+    await updateActivity({ lastAccessed });
+
     $`notify-send -a activity -t 500 "${activity.dwmTag}: ${activity.name}"`;
   }
 

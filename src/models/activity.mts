@@ -104,29 +104,41 @@ export default async function activityDTO() {
     }
   }
 
-  async function updateActivity(activity: Activity): Promise<void> {
+  async function updateActivity(activity: Partial<Activity>): Promise<void> {
     try {
-      await connection.run(
-        `
-              UPDATE activities SET
-                  orgId = ?,
-                  orgText = ?,
-                  name = ?,
-                  dwmTag = ?,
-                  lastAccessed = ?,
-                  active = ?
-              WHERE activityId = ?;
-          `,
-        [
-          activity.orgId,
-          activity.orgText,
-          activity.name,
-          activity.dwmTag,
-          activity.lastAccessed,
-          activity.active,
-          activity.activityId,
-        ],
-      );
+      const fields: string[] = [];
+      const values: any[] = [];
+
+      const { orgId, orgText, name, dwmTag, lastAccessed, active, activityId } =
+        activity;
+
+      const fieldMappings: [string, any][] = [
+        ["orgId = ?", orgId],
+        ["orgText = ?", orgText],
+        ["name = ?", name],
+        ["dwmTag = ?", dwmTag],
+        ["lastAccessed = ?", lastAccessed?.toISOString()],
+        ["active = ?", active],
+      ];
+
+      fieldMappings.forEach(([field, value]) => {
+        if (value !== undefined) {
+          fields.push(field);
+          values.push(value);
+        }
+      });
+
+      if (fields.length === 0) {
+        throw new Error("No fields to update");
+      }
+
+      values.push(activityId);
+
+      const query = `UPDATE activities SET ${fields.join(
+        ", ",
+      )} WHERE activityId = ?;`;
+
+      await connection.run(query, values);
     } catch (error) {
       console.error("Error updating activity:", error);
       throw error;
