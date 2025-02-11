@@ -1,6 +1,6 @@
 import { parse } from "yaml";
 import { fs } from "zx";
-import { initializeDB, createActivity, ActivityDTO } from "../db.mts";
+import { initializeDB, createActivity, Activity } from "../db.mts";
 import { YamlDoc } from "../types.mts";
 
 async function importActivities() {
@@ -17,7 +17,7 @@ async function importActivities() {
     // Convert and import each activity
     for (const activity of parsed.activities) {
       try {
-        const activityDTO: ActivityDTO = {
+        const activityDTO: Activity = {
           activityId: activity.activityId,
           orgId: activity.orgId,
           orgText: activity.orgText,

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Box } from "ink";
-import { getActiveActivities, ActivityDTO } from "../db.mts";
+import { getActiveActivities } from "../db.mts";
+import { Activity } from "../types.mts";
 import { handleCommand } from "../handleCommand.mts";
 import SelectionList from "./common/SelectionList.tsx";
 
@@ -10,7 +11,7 @@ interface Props {
 
 const ActivitySelect: React.FC<Props> = ({}) => {
   const [items, setItems] = useState<
-    Array<{ id: string; display: string; data: ActivityDTO }>
+    Array<{ id: string; display: string; data: Activity }>
   >([]);
 
   useEffect(() => {

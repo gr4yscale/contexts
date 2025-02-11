@@ -10,24 +10,36 @@ export type OrgId = string;
  * Activities can contain window configurations, bookmarks, links, and other resources
  * needed to work on a specific task or project.
  */
+
 export type Activity = {
-  activityId: ActivityId;
-  orgId: OrgId;
-  orgText: string;
+  activityId: string;
+  orgId?: string;
+  orgText?: string;
   name: string;
   dwmTag?: number;
   created: Date;
   lastAccessed: Date;
   active: boolean;
-  scripts: string[];
-  emacsWindowBookmarks: EmacsBookmark[];
-  emacsOrgBookmarks: EmacsBookmark[];
-  tags: string[];
-  linkGroups: LinkGroup[];
-  links: Link[];
-  actions: string[];
-  browserStates: BrowserState[];
 };
+
+// export type Activity = {
+//   activityId: ActivityId;
+//   orgId: OrgId;
+//   orgText: string;
+//   name: string;
+//   dwmTag?: number;
+//   created: Date;
+//   lastAccessed: Date;
+//   active: boolean;
+//   scripts: string[];
+//   emacsWindowBookmarks: EmacsBookmark[];
+//   emacsOrgBookmarks: EmacsBookmark[];
+//   tags: string[];
+//   linkGroups: LinkGroup[];
+//   links: Link[];
+//   actions: string[];
+//   browserStates: BrowserState[];
+// };
 
 export type Tag = string;
 

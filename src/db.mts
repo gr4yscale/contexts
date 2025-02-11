@@ -1,17 +1,5 @@
 import { DuckDBInstance } from "@duckdb/node-api";
-
-// Types
-
-export type ActivityDTO = {
-  activityId: string;
-  orgId?: string;
-  orgText?: string;
-  name: string;
-  dwmTag?: number;
-  created: Date;
-  lastAccessed: Date;
-  active: boolean;
-};
+import { Activity } from "./types.mts";
 
 // Database initialization
 let instance: DuckDBInstance;
@@ -53,7 +41,7 @@ export async function initializeDB() {
 }
 
 // Activity DTO methods
-export async function createActivity(activity: ActivityDTO): Promise<void> {
+export async function createActivity(activity: Activity): Promise<void> {
   const {
     activityId,
     orgId,
@@ -95,7 +83,7 @@ export async function createActivity(activity: ActivityDTO): Promise<void> {
 
 export async function getActivityById(
   activityId: string,
-): Promise<ActivityDTO | null> {
+): Promise<Activity | null> {
   try {
     const result = await connection.run(
       "SELECT * FROM activities WHERE activityId = ?;",
@@ -124,7 +112,7 @@ export async function getActivityById(
   }
 }
 
-export async function getAllActivities(): Promise<ActivityDTO[]> {
+export async function getAllActivities(): Promise<Activity[]> {
   try {
     const result = await connection.run("SELECT * FROM activities;");
     const rows = await result.fetchAllChunks();
@@ -149,7 +137,7 @@ export async function getAllActivities(): Promise<ActivityDTO[]> {
   }
 }
 
-export async function updateActivity(activity: ActivityDTO): Promise<void> {
+export async function updateActivity(activity: Activity): Promise<void> {
   try {
     await connection.run(
       `
@@ -189,7 +177,7 @@ export async function deleteActivity(activityId: string): Promise<void> {
   }
 }
 
-export async function getActiveActivities(): Promise<ActivityDTO[]> {
+export async function getActiveActivities(): Promise<Activity[]> {
   try {
     const result = await connection.run(
       "SELECT * FROM activities WHERE active = true;",
@@ -235,7 +223,7 @@ export async function updateActivityState(
 }
 
 // Function to get the current activity
-export async function getCurrentActivity(): Promise<ActivityDTO | null> {
+export async function getCurrentActivity(): Promise<Activity | null> {
   try {
     const result = await connection.get(`
       SELECT a.* FROM activities a
@@ -250,7 +238,7 @@ export async function getCurrentActivity(): Promise<ActivityDTO | null> {
 }
 
 // Function to get the previous activity
-export async function getPreviousActivity(): Promise<ActivityDTO | null> {
+export async function getPreviousActivity(): Promise<Activity | null> {
   try {
     const result = await connection.get(`
       SELECT a.* FROM activities a
