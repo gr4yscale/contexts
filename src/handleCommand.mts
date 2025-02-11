@@ -31,6 +31,9 @@ import {
 
 import activityDTO from "./models/activity.mts";
 const { getCurrentActivity, getActiveActivities } = await activityDTO();
+
+import { createWorkspaceForActivity } from "./models/workspace.mts";
+
 export const handleCommand = async (
   command: string | undefined,
   args?: string,
@@ -43,11 +46,20 @@ export const handleCommand = async (
 
   const currentActivity = await getCurrentActivity();
 
+  // switchActivity
+  // toggle enabledActivityListTypes
+  // toggle enabledTags
+  // activity lifecycle
 
   switch (command) {
-    // switchActivity
-    // toggle enabledActivityListTypes
-    // toggle enabledTags
+    case "createWorkspaceForCurrentActivity": {
+      if (currentActivity) {
+        const ws = await createWorkspaceForActivity(currentActivity.activityId);
+        console.log("ws");
+        console.log(ws.id);
+      }
+      break;
+    }
 
     // navigation
     case "switchActivity": {
