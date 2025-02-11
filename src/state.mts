@@ -23,52 +23,52 @@ export const getState = async (): State => {
 
 export const loadState = async () => {
   try {
-    const file = fs.readFileSync("./state.yml", "utf8");
-    const parsed = parse(file, { maxAliasCount: -1 }) as YamlDoc;
+    //const file = fs.readFileSync("./state.yml", "utf8");
+    //const parsed = parse(file, { maxAliasCount: -1 }) as YamlDoc;
 
-    activities = parsed.activities.map((c) => {
-      c.created = new Date(c.created);
-      c.lastAccessed = new Date(c.lastAccessed);
+    // activities = parsed.activities.map((c) => {
+    //   c.created = new Date(c.created);
+    //   c.lastAccessed = new Date(c.lastAccessed);
 
-      c.emacsWindowBookmarks = c.emacsWindowBookmarks ?? [];
-      c.emacsWindowBookmarks = c.emacsWindowBookmarks.map((bm) => {
-        bm.created = new Date(bm.created);
-        bm.accessed = new Date(bm.accessed);
-        return bm;
-      });
+    //   c.emacsWindowBookmarks = c.emacsWindowBookmarks ?? [];
+    //   c.emacsWindowBookmarks = c.emacsWindowBookmarks.map((bm) => {
+    //     bm.created = new Date(bm.created);
+    //     bm.accessed = new Date(bm.accessed);
+    //     return bm;
+    //   });
 
-      c.emacsOrgBookmarks = c.emacsOrgBookmarks ?? [];
-      c.emacsOrgBookmarks = c.emacsOrgBookmarks.map((bm) => {
-        bm.created = new Date(bm.created);
-        bm.accessed = new Date(bm.accessed);
-        return bm;
-      });
+    //   c.emacsOrgBookmarks = c.emacsOrgBookmarks ?? [];
+    //   c.emacsOrgBookmarks = c.emacsOrgBookmarks.map((bm) => {
+    //     bm.created = new Date(bm.created);
+    //     bm.accessed = new Date(bm.accessed);
+    //     return bm;
+    //   });
 
-      c.linkGroups = c.linkGroups ?? [];
-      c.linkGroups = c.linkGroups.map((lg) => {
-        lg.created = new Date(lg.created);
-        lg.accessed = new Date(lg.accessed);
-        lg.links = lg.links ?? [];
-        lg.links = lg.links.map((l) => {
-          l.created = new Date(l.created);
-          l.accessed = new Date(l.accessed);
-          return l;
-        });
-        return lg;
-      });
-      c.links = c.links ?? [];
+    //   c.linkGroups = c.linkGroups ?? [];
+    //   c.linkGroups = c.linkGroups.map((lg) => {
+    //     lg.created = new Date(lg.created);
+    //     lg.accessed = new Date(lg.accessed);
+    //     lg.links = lg.links ?? [];
+    //     lg.links = lg.links.map((l) => {
+    //       l.created = new Date(l.created);
+    //       l.accessed = new Date(l.accessed);
+    //       return l;
+    //     });
+    //     return lg;
+    //   });
+    //   c.links = c.links ?? [];
 
-      c.actions = c.actions ?? [];
+    //   c.actions = c.actions ?? [];
 
-      c.browserStates = c.browserStates.slice(-3) ?? [];
-      c.browserStates = c.browserStates.map((bs) => {
-        bs.created = new Date(bs.created);
-        bs.accessed = new Date(bs.accessed);
-        return bs;
-      });
+    //   c.browserStates = c.browserStates.slice(-3) ?? [];
+    //   c.browserStates = c.browserStates.map((bs) => {
+    //     bs.created = new Date(bs.created);
+    //     bs.accessed = new Date(bs.accessed);
+    //     return bs;
+    //   });
 
-      return c;
-    });
+    //   return c;
+    // });
 
     return { activities };
   } catch (e) {
@@ -115,14 +115,14 @@ export const createActivity = (id: ActivityId) => {
     created: new Date(),
     lastAccessed: new Date(),
     active: false,
-    scripts: [],
-    emacsWindowBookmarks: [],
-    emacsOrgBookmarks: [],
-    tags: [],
-    linkGroups: [],
-    links: [],
-    actions: [],
-    browserStates: [],
+    // scripts: [],
+    // emacsWindowBookmarks: [],
+    // emacsOrgBookmarks: [],
+    // tags: [],
+    // linkGroups: [],
+    // links: [],
+    // actions: [],
+    // browserStates: [],
   };
   activities.push(activity);
   return activity;
