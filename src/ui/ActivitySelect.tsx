@@ -17,21 +17,24 @@ const ActivitySelect: React.FC<Props> = ({}) => {
     Array<{ id: string; display: string; data: Activity }>
   >([]);
 
-  useEffect(() => {
-    const fetchActiveActivities = async () => {
-      try {
-        const activeActivities = await getActiveActivities();
-        const newItems = activeActivities.map((activity) => ({
-          id: activity.activityId,
-          display: activity.name,
-          data: activity,
-        }));
-        setItems(newItems);
-      } catch (error) {
-        console.error("Error fetching active activities:", error);
-      }
-    };
+  const fetchActiveActivities = async () => {
+    try {
+      const activeActivities = await getActiveActivities();
+      const sorted = activeActivities.sort(
+        (l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime(),
+      );
+      const newItems = sorted.map((activity) => ({
+        id: activity.activityId,
+        display: activity.name,
+        data: activity,
+      }));
+      setItems(newItems);
+    } catch (error) {
+      console.error("Error fetching active activities:", error);
+    }
+  };
 
+  useEffect(() => {
     fetchActiveActivities();
   }, []);
 
@@ -44,6 +47,7 @@ const ActivitySelect: React.FC<Props> = ({}) => {
           const firstActivity = activities[0];
           if (firstActivity) {
             await handleCommand("activateActivity", firstActivity.activityId);
+            fetchActiveActivities();
             // runAction("switchActivity", firstActivity.activityId);
           }
           //onActivitySelect?.(activities);
