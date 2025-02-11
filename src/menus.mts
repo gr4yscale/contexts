@@ -26,7 +26,7 @@ const rofiSelectItem = async (items: MenuItem[], prompt: string) => {
   //console.log(rofi.stdout.trim())
 
   if (rofi.stdout.trim() === "") {
-    return
+    return;
   }
 
   const selectionIndex = parseInt(rofi.stdout.trim());

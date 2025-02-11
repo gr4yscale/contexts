@@ -41,7 +41,7 @@ export const handleCommand = async (
   }
   //console.error(`handling command ${command}`);
 
-  const currentActivity = await getCurrentActivity();
+  //const currentActivity = await getCurrentActivity();
 
   switch (command) {
     // switchActivity
@@ -97,17 +97,19 @@ export const handleCommand = async (
       console.log("commented. need to transform/merge ActivityDTO -> Activity");
       //await allocateWorkspace(currentActivity);
       //await initActivity(currentActivity);
-      storeState();
+      //storeState();
       break;
     }
     case "storeBrowserStates": {
-      await storeBrowserStates();
-      storeState();
+      console.log("commented. need to transform/merge ActivityDTO -> Activity");
+      //await storeBrowserStates();
+      //storeState();
       break;
     }
     case "loadBrowserStates": {
-      await loadLastBrowserStateForActiveActivities();
-      storeState();
+      console.log("commented. need to transform/merge ActivityDTO -> Activity");
+      //await loadLastBrowserStateForActiveActivities();
+      //storeState();
       break;
     }
 
@@ -116,12 +118,13 @@ export const handleCommand = async (
 
       // wmctrl -l | g "Firefox"
 
-      const activeActivities = await getActiveActivities();
-      for (const activity in activeActivities) {
-        // todo need to block / wait here... even with setInterval etc
-        runInitActionsForActivity(activity);
-      }
-      storeState();
+      console.log("commented. need to transform/merge ActivityDTO -> Activity");
+      // const activeActivities = await getActiveActivities();
+      // for (const activity in activeActivities) {
+      //   // todo need to block / wait here... even with setInterval etc
+      //   runInitActionsForActivity(activity);
+      // }
+      // storeState();
       break;
     }
 
@@ -134,7 +137,7 @@ export const handleCommand = async (
       // home = show plan activity (emacs + current orgql query)
 
       //await leaderKey();
-      storeState();
+      //storeState();
       break;
     }
     case "localLeaderKey": {
@@ -146,18 +149,20 @@ export const handleCommand = async (
       // end = show activities list
 
       //await localLeaderKey();
-      storeState();
+      //storeState();
       break;
     }
     // UI: tags/modes, global context
     case "menuActivityListTypesToggle": {
-      await buildMenuActivityListTypesToggle();
-      storeState();
+      console.log("commented. need to transform/merge ActivityDTO -> Activity");
+      //await buildMenuActivityListTypesToggle();
+      //storeState();
       break;
     }
     case "menuTagsToggle": {
-      await buildMenuTagsToggle();
-      storeState();
+      console.log("commented. need to transform/merge ActivityDTO -> Activity");
+      //await buildMenuTagsToggle();
+      //storeState();
       break;
     }
     // emacs org-mode integration
@@ -172,17 +177,20 @@ export const handleCommand = async (
     // context-sensitive operations (perform actions on resources)
     // links operations
     case "menuCurrentActivity": {
-      await buildMenuCurrentActivity();
+      console.log("commented. need to transform/merge ActivityDTO -> Activity");
+      //await buildMenuCurrentActivity();
       break;
     }
     case "linkGroupStore": {
-      await linkGroupStore();
-      storeState();
+      console.log("commented. need to transform/merge ActivityDTO -> Activity");
+      //await linkGroupStore();
+      //storeState();
       break;
     }
     case "stickyLinkStore": {
-      await stickyLinkStore();
-      storeState();
+      console.log("commented. need to transform/merge ActivityDTO -> Activity");
+      //await stickyLinkStore();
+      //storeState();
       break;
     }
     // emacs bookmarks + capture
@@ -199,20 +207,24 @@ export const handleCommand = async (
     }
     // UI, menus
     case "menuLinks": {
-      await buildMenuLinks();
+      console.log("commented. need to transform/merge ActivityDTO -> Activity");
+      //await buildMenuLinks();
       break;
     }
     case "menuLinkGroups": {
-      await buildMenuLinkGroups();
+      console.log("commented. need to transform/merge ActivityDTO -> Activity");
+      //await buildMenuLinkGroups();
       break;
     }
     case "menuEmacsBookmarks": {
-      await buildMenuEmacsBookmarks();
+      console.log("commented. need to transform/merge ActivityDTO -> Activity");
+      //await buildMenuEmacsBookmarks();
       break;
     }
     // launchItems
     case "menuLaunchItems": {
-      await buildMenuLaunchItems();
+      console.log("commented. need to transform/merge ActivityDTO -> Activity");
+      //await buildMenuLaunchItems();
       break;
     }
     default: {
