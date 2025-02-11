@@ -170,7 +170,12 @@ export const formatActivitiesListExtended = async (activities: Activity[]) => {
 
     const display = c.name ? c.name : c.activityId + marker;
     //const activityId = c.activityId + marker;
-    const tags = c.tags.join(",").substring(0, 32).padEnd(32, " ");
+
+    //TOFIX
+    //const tags = c.tags.join(",").substring(0, 32).padEnd(32, " ");
+
+    const tags = ["tag1"];
+
     //TOFIX absoutely atrocious
     const lastAccessed = formatDistanceToNow(c.lastAccessed, {
       includeSeconds: true,

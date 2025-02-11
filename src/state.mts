@@ -144,7 +144,8 @@ export const createActivityForOrgId = (
   activity.orgId = orgId;
   activity.orgText = orgText;
   activity.name = orgText;
-  activity.tags.push("orgTask");
+  //TOFIX
+  //activity.tags.push("orgTask");
   return activity;
 };
 

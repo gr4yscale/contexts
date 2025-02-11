@@ -47,8 +47,8 @@ const server = createServer((socket: Socket) => {
     } catch (e) {
       const msg = `Activities: Error handling command ${data}!`;
       $`notify-send "${msg}"`;
-      //console.error(msg);
-      //console.error(e);
+      console.log(msg);
+      console.log(e);
     }
   });
 });
