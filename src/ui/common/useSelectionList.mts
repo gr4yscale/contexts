@@ -32,6 +32,7 @@ type UseExampleReturn<T> = {
   // modes
   findMode: () => void;
   selectMode: () => void;
+  actMode: () => void;
   commitMode: () => void;
   trimLastCharacter: () => void;
 };
@@ -42,7 +43,9 @@ function useExample<T extends Item>({
   const [items, setItems] = useState<T[]>(
     initialItems.map((item) => ({ ...item, selected: false })),
   );
-  const [mode, setMode] = useState<"find" | "select" | "commit">("find");
+  const [mode, setMode] = useState<"find" | "select" | "act" | "commit">(
+    "find",
+  );
 
   const [searchString, setSearchString] = useState<string>("");
   const [highlightedIndex, setHighlightedIndex] = useState<number>(0);
@@ -131,6 +134,10 @@ function useExample<T extends Item>({
     return items.filter((item) => item.selected);
   };
 
+  const actMode = (): void => {
+    setMode("act");
+  };
+
   const commitMode = (): void => {
     setMode("commit");
   };
@@ -170,6 +177,7 @@ function useExample<T extends Item>({
     selectAtHighlightedIndex,
     findMode,
     selectMode,
+    actMode,
     commitMode,
     trimLastCharacter,
   };

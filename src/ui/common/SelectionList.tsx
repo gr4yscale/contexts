@@ -8,17 +8,24 @@ import { InteractiveComponent } from "./InteractiveComponent.tsx";
 interface Props {
   initialItems: Item[];
   callback?: (selectedItems: Item[]) => void;
+  onAct?: (input: string, selectedItems: Item[]) => void;
+  unhandledInput?: (input: string) => void;
   navigate?: (path: any) => void;
 }
 
-const SelectionList: React.FC<Props> = ({ initialItems, callback }) => {
+const SelectionList: React.FC<Props> = ({
+  initialItems,
+  callback,
+  onAct,
+  unhandledInput,
+}) => {
   const {
     mode,
     getItems,
     getSelectedItems,
     selectMode,
     findMode,
-    commitMode,
+    actMode,
     filterBySearchString,
     trimLastCharacter,
     clearSearchString,
@@ -108,19 +115,7 @@ const SelectionList: React.FC<Props> = ({ initialItems, callback }) => {
             name: "commit",
             handler: () => {
               if (getSelectedItems().length > 0) {
-                commitMode();
-              }
-            },
-          },
-        },
-        {
-          sequence: [key("y")],
-          description: "Enter commit mode",
-          command: {
-            name: "commit",
-            handler: () => {
-              if (getSelectedItems().length > 0) {
-                commitMode();
+                actMode();
               }
             },
           },
@@ -174,9 +169,13 @@ const SelectionList: React.FC<Props> = ({ initialItems, callback }) => {
       {() => (
         <InteractiveComponent
           keyMapConfig={keymaps}
-          onUnhandledInput={(input) => {
+          onUnhandledInput={async (input) => {
             if (mode === "find") {
               filterBySearchString(input);
+            } else if (mode === "act") {
+              onAct && onAct(input, getSelectedItems());
+            } else {
+              unhandledInput && unhandledInput(input);
             }
           }}
         >
