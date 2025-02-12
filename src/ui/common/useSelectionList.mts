@@ -8,57 +8,47 @@ export type Item = {
   selected?: boolean;
 };
 
-type UseExampleProps<T> = {
+export type Modes = "find" | "select" | "act" | "commit";
+
+type Props<T> = {
   initialItems: T[];
 };
 
-type UseExampleReturn<T> = {
+type Return<T> = {
   // state
   items: T[];
   mode: string;
-
-  searchString: string;
+  getItems: () => T[]; // hack; highlighted state
+  getSelectedItems: () => T[]; // merge this with ^^
   // search
+  searchString: string;
   filterBySearchString: (searchString: string) => void;
-  appendSearchString: (append: string) => void;
   clearSearchString: () => void;
+  trimLastCharacter: () => void;
   // selection
-  selectByIndex: (index: number) => void;
-  getItems: () => T[];
-  getSelectedItems: () => T[];
   highlightDown: () => void;
   highlightUp: () => void;
-  selectAtHighlightedIndex: () => void;
-  // modes
+  toggleSelectionAtHighlightedIndex: () => void;
+  // modes                   // TOFIX: hack
   findMode: () => void;
   selectMode: () => void;
   actMode: () => void;
   commitMode: () => void;
-  trimLastCharacter: () => void;
 };
 
-function useExample<T extends Item>({
+const useSelectionList = <T extends Item>({
   initialItems,
-}: UseExampleProps<T>): UseExampleReturn<T> {
-  const [items, setItems] = useState<T[]>(
-    initialItems.map((item) => ({ ...item, selected: false })),
-  );
-  const [mode, setMode] = useState<"find" | "select" | "act" | "commit">(
-    "find",
-  );
-
+}: Props<T>): Return<T> => {
+  const [mode, setMode] = useState<Modes>("find");
+  const [items, setItems] = useState<T[]>(initialItems);
   const [searchString, setSearchString] = useState<string>("");
   const [highlightedIndex, setHighlightedIndex] = useState<number>(0);
 
-  // Select or deselect an item by index
-  const selectByIndex = (index: number): void => {
+  const toggleSelectionByIndex = (index: number): void => {
     if (index >= 0 && index < items.length) {
       const updatedItems = items.map((item, i) => {
         if (i === index) {
-          return {
-            ...item,
-            selected: !item.selected,
-          };
+          return { ...item, selected: !item.selected };
         }
         return item;
       });
@@ -68,15 +58,6 @@ function useExample<T extends Item>({
     }
   };
 
-  // Get all items with their current states (selected and highlighted)
-  const getItems = (): T[] => {
-    return items.map((item, index) => ({
-      ...item,
-      highlighted: index === highlightedIndex,
-    })) as T[];
-  };
-
-  // Filter items by search string
   const filterBySearchString = (nextString: string): void => {
     const newSearchString = searchString + nextString;
 
@@ -91,55 +72,13 @@ function useExample<T extends Item>({
 
     setSearchString(newSearchString);
     setItems(filteredItems);
-    setHighlightedIndex(0); // Reset highlight when filtering
+    setHighlightedIndex(0);
   };
 
-  // Clear the search string and reset the list
   const clearSearchString = (): void => {
     setSearchString("");
-    setItems(initialItems.map((item) => ({ ...item, selected: false })));
-    setHighlightedIndex(0); // Reset highlight when clearing
-  };
-
-  // Move highlight down
-  const highlightDown = (): void => {
-    if (items.length === 0) return;
-    setHighlightedIndex((prev) =>
-      prev === null || prev === items.length - 1 ? 0 : prev + 1,
-    );
-  };
-
-  // Move highlight up
-  const highlightUp = (): void => {
-    if (items.length === 0) return;
-    setHighlightedIndex((prev) =>
-      prev === null || prev === 0 ? items.length - 1 : prev - 1,
-    );
-  };
-
-  // Select the item at the highlighted index
-  const selectAtHighlightedIndex = (): void => {
-    selectByIndex(highlightedIndex);
-  };
-
-  // modes
-  const findMode = (): void => {
-    setMode("find");
-  };
-  const selectMode = (): void => {
-    setMode("select");
-  };
-  // Get only the selected items
-  const getSelectedItems = (): T[] => {
-    return items.filter((item) => item.selected);
-  };
-
-  const actMode = (): void => {
-    setMode("act");
-  };
-
-  const commitMode = (): void => {
-    setMode("commit");
+    setItems(initialItems);
+    setHighlightedIndex(0);
   };
 
   const trimLastCharacter = (): void => {
@@ -158,8 +97,50 @@ function useExample<T extends Item>({
     setItems(filteredItems);
   };
 
-  const appendSearchString = (append: string): void => {
-    setSearchString(searchString + append);
+  const highlightDown = (): void => {
+    if (items.length === 0) return;
+    setHighlightedIndex((prev) =>
+      prev === null || prev === items.length - 1 ? 0 : prev + 1,
+    );
+  };
+
+  const highlightUp = (): void => {
+    if (items.length === 0) return;
+    setHighlightedIndex((prev) =>
+      prev === null || prev === 0 ? items.length - 1 : prev - 1,
+    );
+  };
+
+  const toggleSelectionAtHighlightedIndex = (): void => {
+    toggleSelectionByIndex(highlightedIndex);
+  };
+
+  const getSelectedItems = (): T[] => {
+    return items.filter((item) => item.selected);
+  };
+
+  // TOFIX: hacks
+  const getItems = (): T[] => {
+    return items.map((item, index) => ({
+      ...item,
+      highlighted: index === highlightedIndex,
+    })) as T[];
+  };
+
+  const findMode = (): void => {
+    setMode("find");
+    clearSearchString();
+  };
+  const selectMode = (): void => {
+    setMode("select");
+  };
+
+  const actMode = (): void => {
+    setMode("act");
+  };
+
+  const commitMode = (): void => {
+    setMode("commit");
   };
 
   return {
@@ -167,20 +148,18 @@ function useExample<T extends Item>({
     mode,
     searchString,
     filterBySearchString,
-    appendSearchString,
-    selectByIndex,
     clearSearchString,
     getItems,
     getSelectedItems,
     highlightDown,
     highlightUp,
-    selectAtHighlightedIndex,
+    toggleSelectionAtHighlightedIndex,
     findMode,
     selectMode,
     actMode,
     commitMode,
     trimLastCharacter,
   };
-}
+};
 
-export default useExample;
+export default useSelectionList;

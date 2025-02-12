@@ -1,24 +1,16 @@
-import React from "react";
-import { Text, Box } from "ink";
-import { Consumer } from "./Context.mts";
+import React, { useEffect, useContext } from "react";
+import { Text, Box, useInput } from "ink";
 import useSelectionList, { Item } from "./useSelectionList.mts";
-import { KeyMapConfig, key } from "./useKeyMap.mts";
-import { InteractiveComponent } from "./InteractiveComponent.tsx";
+import { KeymapConfig, key } from "./Keymapping.mts";
+import { KeysContext } from "./Context.mts";
 
-interface Props {
+interface SelectionListProps {
   initialItems: Item[];
-  callback?: (selectedItems: Item[]) => void;
-  onAct?: (input: string, selectedItems: Item[]) => void;
-  unhandledInput?: (input: string) => void;
-  navigate?: (path: any) => void;
+  onSelected?: (selectedItems: Item[]) => void;
+  onAct?: (selectedItems: Item[]) => void;
 }
 
-const SelectionList: React.FC<Props> = ({
-  initialItems,
-  callback,
-  onAct,
-  unhandledInput,
-}) => {
+const SelectionList: React.FC<SelectionListProps> = ({ initialItems }) => {
   const {
     mode,
     getItems,
@@ -29,171 +21,158 @@ const SelectionList: React.FC<Props> = ({
     filterBySearchString,
     trimLastCharacter,
     clearSearchString,
-    selectAtHighlightedIndex,
+    toggleSelectionAtHighlightedIndex,
     highlightDown,
     highlightUp,
   } = useSelectionList<Item>({ initialItems });
 
-  // adding multiple keymaps (for global / shared vs submenu)
-  // move the keymap definitions in SearchableSelectableList.tsx to searchableSelectableListKeymaps.tsx
-  // make a "perform actions on current activity" menu; review handleCommand
+  const { keymap }: any = useContext(KeysContext);
 
-  let keymapConfig: KeyMapConfig = [];
+  useEffect(() => {
+    // shared keymap, persists regardless of mode
+    keymap.pushKeymap([
+      {
+        sequence: [key("", "rightArrow")],
+        description: "Enter select mode",
+        command: { name: "selectMode", handler: selectMode },
+      },
+      {
+        sequence: [key("", "leftArrow")],
+        description: "Enter find mode",
+        command: { name: "findMode", handler: findMode },
+      },
+    ]);
 
-  switch (mode) {
-    case "find":
-      keymapConfig = [
-        {
-          sequence: [key("\r", "return")],
-          description: "Enter select mode",
-          command: {
-            name: "selectMode",
-            handler: () => {
-              selectMode();
-              highlightDown();
-              selectAtHighlightedIndex();
+    return () => {
+      keymap.popKeymap();
+    };
+  }, []);
+
+  useEffect(() => {
+    // push a keymap for the current mode
+    let keymapConfig: KeymapConfig = [];
+
+    switch (mode) {
+      case "find":
+        keymapConfig = [
+          {
+            sequence: [key("\r", "return")],
+            description: "Enter select mode (selectionlist)",
+            command: {
+              name: "selectMode",
+              handler: selectMode,
             },
           },
-        },
-        {
-          sequence: [key("", "delete")],
-          description: "Clear search string",
-          command: {
-            name: "clearSearch",
-            handler: clearSearchString,
-          },
-        },
-        {
-          sequence: [key("", "pageUp")],
-          description: "Trim last character",
-          command: {
-            name: "trimLast",
-            handler: trimLastCharacter,
-          },
-        },
-      ];
-      break;
-
-    case "select":
-      keymapConfig = [
-        {
-          sequence: [key("x")],
-          description: "Select item",
-          command: {
-            name: "selectItems",
-            handler: selectAtHighlightedIndex,
-          },
-        },
-        {
-          sequence: [key("j")],
-          description: "Move down",
-          command: {
-            name: "moveDown",
-            handler: highlightDown,
-          },
-        },
-        {
-          sequence: [key("k")],
-          description: "Move up",
-          command: {
-            name: "moveUp",
-            handler: highlightUp,
-          },
-        },
-        {
-          sequence: [key(" ")],
-          description: "Select items",
-          command: {
-            name: "selectItems",
-            handler: selectAtHighlightedIndex,
-          },
-        },
-        {
-          sequence: [key("\r", "return")],
-          description: "Enter commit mode",
-          command: {
-            name: "commit",
-            handler: () => {
-              if (getSelectedItems().length > 0) {
-                actMode();
-              }
+          {
+            sequence: [key("", "delete")],
+            description: "Clear search string",
+            command: {
+              name: "clearSearch",
+              handler: clearSearchString,
             },
           },
-        },
-      ];
-      break;
-
-    case "commit":
-      keymapConfig = [
-        {
-          sequence: [key("y")],
-          description: "Yes",
-          command: {
-            name: "yes",
-            handler: () => {
-              callback && callback(getSelectedItems());
-              findMode();
-              clearSearchString();
+          {
+            sequence: [key("", "pageUp")],
+            description: "Trim last character",
+            command: {
+              name: "trimLast",
+              handler: trimLastCharacter,
             },
           },
-        },
-        {
-          sequence: [key("n")],
-          description: "No",
-          command: {
-            name: "no",
-            handler: () => {},
-          },
-        },
-      ];
-      break;
-  }
+        ];
+        break;
 
-  const sharedKeymapConfig: KeyMapConfig = [
-    {
-      sequence: [key("", "rightArrow")],
-      description: "Enter select mode",
-      command: { name: "selectMode", handler: selectMode },
+      case "select":
+        keymapConfig = [
+          {
+            sequence: [key("j")],
+            description: "Move down",
+            command: {
+              name: "moveDown",
+              handler: highlightDown,
+            },
+          },
+          {
+            sequence: [key("k")],
+            description: "Move up",
+            command: {
+              name: "moveUp",
+              handler: highlightUp,
+            },
+          },
+          {
+            sequence: [key(" ")],
+            description: "Select items",
+            command: {
+              name: "selectItems",
+              handler: toggleSelectionAtHighlightedIndex,
+            },
+          },
+          {
+            sequence: [key("\r", "return")],
+            description: "Enter commit mode",
+            command: {
+              name: "commit",
+              handler: () => {
+                if (getSelectedItems().length > 0) {
+                  actMode();
+                }
+              },
+            },
+          },
+        ];
+        break;
+
+      case "commit":
+        keymapConfig = [
+          {
+            sequence: [key("y")],
+            description: "Yes",
+            command: {
+              name: "yes",
+              handler: findMode,
+            },
+          },
+          {
+            sequence: [key("n")],
+            description: "No",
+            command: {
+              name: "no",
+              handler: () => {},
+            },
+          },
+        ];
+        break;
+    }
+
+    keymap.pushKeymap(keymapConfig);
+
+    return () => {
+      keymap.popKeymap();
+    };
+  }, [mode]); // the keymapping side effects depend on the mode state variable; useEffect will run every render without mode defined in the useEffect deps array
+
+  // Update the search string with freeform text when we are in find mode
+  useInput(
+    (input, key) => {
+      if (input != "" && !key.return) filterBySearchString(input);
     },
-    {
-      sequence: [key("", "leftArrow")],
-      description: "Enter find mode",
-      command: { name: "findMode", handler: findMode },
-    },
-  ];
-
-  const keymaps = [...sharedKeymapConfig, ...keymapConfig];
+    { isActive: mode === "find" },
+  );
 
   return (
-    <Consumer>
-      {() => (
-        <InteractiveComponent
-          keyMapConfig={keymaps}
-          onUnhandledInput={async (input) => {
-            if (mode === "find") {
-              filterBySearchString(input);
-            } else if (mode === "act") {
-              onAct && onAct(input, getSelectedItems());
-            } else {
-              unhandledInput && unhandledInput(input);
-            }
-          }}
-        >
-          <Box flexDirection="column">
-            <Text>Mode: {mode}</Text>
-            {getItems().map((i: Item) => (
-              <Box key={i.id} paddingLeft={2}>
-                <Text>
-                  {i.highlighted && mode === "select" ? "> " : "  "}
-                  {i.selected ? "* " : "  "}
-                  {i.display}
-                </Text>
-              </Box>
-            ))}
-          </Box>
-        </InteractiveComponent>
-      )}
-    </Consumer>
+    <Box flexDirection="column">
+      <Text>mode: {mode}</Text>
+      {getItems().map((i: Item) => (
+        <Box key={i.id} paddingLeft={2}>
+          <Text>
+            {i.highlighted && mode === "select" ? "> " : "  "}
+            {i.selected ? "* " : "  "}
+            {i.display}
+          </Text>
+        </Box>
+      ))}
+    </Box>
   );
 };
 

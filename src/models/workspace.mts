@@ -4,6 +4,35 @@ export interface WorkspaceDTO {
   id: number;
   activityId: string;
   name: string;
+  activityName?: string;
+}
+
+export async function getAllWorkspaces(): Promise<WorkspaceDTO[]> {
+  const conn = await getConnection();
+  const result = await conn.run(
+    `
+    SELECT 
+      w.id, 
+      w.activityId, 
+      w.name,
+      a.name as activityName
+    FROM workspaces w
+    LEFT JOIN activities a ON w.activityId = a.activityId
+    ORDER BY w.id ASC;
+    `,
+  );
+
+  const rows = await result.fetchAllChunks();
+  if (!rows || rows.length === 0) {
+    return [];
+  }
+
+  return rows[0].getRows().map((row: any) => ({
+    id: row[0],
+    activityId: row[1],
+    name: row[2],
+    activityName: row[3],
+  }));
 }
 
 export async function createWorkspaceForActivity(
@@ -31,7 +60,7 @@ export async function createWorkspaceForActivity(
       };
     }
     throw new Error("Failed to create workspace");
-  } catch (error) {
+  } catch (error: any) {
     if (error.message?.includes("workspace_id_seq")) {
       throw new Error("Maximum number of workspaces (32) reached");
     }
