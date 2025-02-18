@@ -6,13 +6,13 @@ import { KeysContext } from "./Context.mts";
 
 import { Keymap } from "./Keymapping.mts";
 
-import ActivitySelect from "../ActivitySelect.tsx";
+import Activity from "../Activity.tsx";
 import Workspace from "../Workspace.tsx";
 import WhichKey from "../WhichKey.tsx";
 
 const routes = [
-  { path: "/", component: Workspace },
-  { path: "/activity", component: ActivitySelect },
+  { path: "/", component: Activity },
+  { path: "/activity", component: Activity },
   { path: "/workspace", component: Workspace },
 ];
 

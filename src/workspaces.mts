@@ -3,7 +3,13 @@ import { $ } from "zx";
 import { Activity } from "./types.mts";
 import { getWorkspacesForActivity } from "./models/workspace.mts";
 
+import activityDTO from "./models/activity.mts";
+
+const { getActivityById } = await activityDTO();
+
 $.verbose = false; // suppress stdout from zx subprocess calls
+
+let currentWorkspaceId = 0;
 
 export const viewWorkspace = async (activity: Activity) => {
   if (activity.dwmTag === undefined || activity.dwmTag === 0) {
@@ -21,8 +27,26 @@ export async function viewFirstWorkspaceForActivity(activityID: string) {
   }
 }
 
-//export async function viewNextWorkspaceForActivity(activityID: string) {
-//export async function viewPrevWorkspaceForActivity(activityID: string) {
+export async function viewNextWorkspaceForActivity(activityId: string) {
+  const activity = await getActivityById(activityId);
+  if (!activity) {
+    console.error(`No activity found for ID: ${activityId}`);
+    return;
+  }
+
+  const workspaces = await getWorkspacesForActivity(activityId);
+  const currentIndex = workspaces.findIndex((e) => e.id === currentWorkspaceId);
+  let nextWorkspace = workspaces[currentIndex + 1];
+  if (!nextWorkspace) {
+    nextWorkspace = workspaces[0];
+  }
+  if (nextWorkspace) {
+    await $`dwmc viewex ${nextWorkspace.id}`;
+    currentWorkspaceId = nextWorkspace.id;
+    console.log(`switched to workspace ID: ${nextWorkspace.id}`);
+    $`notify-send "workspace: ${nextWorkspace.id}"`;
+  }
+}
 
 export const allocateWorkspace = async (activity: Activity) => {
   //TOFIX: handle case of not finding an available dwm tag

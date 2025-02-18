@@ -5,8 +5,8 @@ import SelectionList from "./common/SelectionList.tsx";
 import { key, KeymapConfig } from "./common/Keymapping.mts";
 import { KeysContext } from "./common/Context.mts";
 
-type WorkspaceStates = "initial" | "find" | "selectForSwitching";
 type WorkspaceItem = { id: string; display: string; data: WorkspaceDTO };
+type WorkspaceStates = "initial" | "find" | "selectForSwitching";
 
 const Workspace: React.FC = () => {
   const [mode, setMode] = useState<WorkspaceStates>("initial");
@@ -33,7 +33,7 @@ const Workspace: React.FC = () => {
 
   useEffect(() => {
     fetchWorkspaces();
-  }, []); // also depends on mode?
+  }, []);
 
   const { keymap }: any = useContext(KeysContext);
 
@@ -49,7 +49,6 @@ const Workspace: React.FC = () => {
             command: {
               name: "goto-workspace",
               handler: () => {
-                //keymap.popKeymap();
                 setMode("find");
               },
             },

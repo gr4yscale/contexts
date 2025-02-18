@@ -10,14 +10,17 @@ interface SelectionListProps {
   onAct?: (selectedItems: Item[]) => void;
 }
 
-const SelectionList: React.FC<SelectionListProps> = ({ initialItems }) => {
+const SelectionList: React.FC<SelectionListProps> = ({
+  initialItems,
+  onSelected,
+}) => {
   const {
     mode,
     getItems,
     getSelectedItems,
-    selectMode,
     findMode,
-    actMode,
+    selectMode,
+    commitMode,
     filterBySearchString,
     trimLastCharacter,
     clearSearchString,
@@ -41,6 +44,11 @@ const SelectionList: React.FC<SelectionListProps> = ({ initialItems }) => {
         description: "Enter find mode",
         command: { name: "findMode", handler: findMode },
       },
+      {
+        sequence: [key("", "upArrow")],
+        description: "Enter commit mode",
+        command: { name: "commitMode", handler: commitMode },
+      },
     ]);
 
     return () => {
@@ -49,6 +57,7 @@ const SelectionList: React.FC<SelectionListProps> = ({ initialItems }) => {
   }, []);
 
   useEffect(() => {
+    console.log("useEffect");
     // push a keymap for the current mode
     let keymapConfig: KeymapConfig = [];
 
@@ -57,10 +66,13 @@ const SelectionList: React.FC<SelectionListProps> = ({ initialItems }) => {
         keymapConfig = [
           {
             sequence: [key("\r", "return")],
-            description: "Enter select mode (selectionlist)",
+            description: "Select mode",
             command: {
-              name: "selectMode",
-              handler: selectMode,
+              name: "mode-select",
+              handler: () => {
+                keymap.popKeymap();
+                selectMode();
+              },
             },
           },
           {
@@ -110,13 +122,11 @@ const SelectionList: React.FC<SelectionListProps> = ({ initialItems }) => {
           },
           {
             sequence: [key("\r", "return")],
-            description: "Enter commit mode",
+            description: "commit mode",
             command: {
               name: "commit",
               handler: () => {
-                if (getSelectedItems().length > 0) {
-                  actMode();
-                }
+                commitMode();
               },
             },
           },
@@ -130,7 +140,11 @@ const SelectionList: React.FC<SelectionListProps> = ({ initialItems }) => {
             description: "Yes",
             command: {
               name: "yes",
-              handler: findMode,
+              handler: () => {
+                onSelected && onSelected(getSelectedItems());
+                findMode();
+                //TOFIX pop keymap?
+              },
             },
           },
           {
@@ -138,7 +152,7 @@ const SelectionList: React.FC<SelectionListProps> = ({ initialItems }) => {
             description: "No",
             command: {
               name: "no",
-              handler: () => {},
+              handler: findMode, //TOFIX pop keymap?
             },
           },
         ];
@@ -159,6 +173,8 @@ const SelectionList: React.FC<SelectionListProps> = ({ initialItems }) => {
     },
     { isActive: mode === "find" },
   );
+
+  console.log("render");
 
   return (
     <Box flexDirection="column">

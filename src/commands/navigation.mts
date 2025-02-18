@@ -19,7 +19,10 @@ import {
 
 import { buildMenu } from "../menus.mts";
 
-import { viewWorkspace } from "../workspaces.mts";
+import {
+  viewWorkspace,
+  viewFirstWorkspaceForActivity,
+} from "../workspaces.mts";
 
 import activityDTO from "../models/activity.mts";
 
@@ -91,8 +94,7 @@ export const activateActivity = async (id: ActivityId) => {
 
   $`notify-send -a activity -t 500 "${activity.dwmTag}: ${activity.name}"`;
 
-  // TOFIX was allocateWorkspace
-  return await viewWorkspace(activity);
+  return await viewFirstWorkspaceForActivity(activity.activityId);
 };
 
 export const toggleActivity = async (id: ActivityId) => {
