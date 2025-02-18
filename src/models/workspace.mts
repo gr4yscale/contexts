@@ -67,3 +67,37 @@ export async function createWorkspaceForActivity(
     throw error;
   }
 }
+
+export async function updateWorkspace(workspace: Partial<WorkspaceDTO>): Promise<void> {
+  try {
+    const fields: string[] = [];
+    const values: any[] = [];
+
+    const { id, activityId, name } = workspace;
+
+    const fieldMappings: [string, any][] = [
+      ["activityId = ?", activityId],
+      ["name = ?", name]
+    ];
+
+    fieldMappings.forEach(([field, value]) => {
+      if (value !== undefined) {
+        fields.push(field);
+        values.push(value);
+      }
+    });
+
+    if (fields.length === 0) {
+      throw new Error("No fields to update");
+    }
+
+    const query = `UPDATE workspaces SET ${fields.join(', ')} WHERE id = ?`;
+    values.push(id);
+
+    const conn = await getConnection();
+    await conn.run(query, values);
+  } catch (error) {
+    console.error('Error updating workspace:', error);
+    throw error;
+  }
+}
