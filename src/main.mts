@@ -34,16 +34,6 @@ const server = createServer((socket: Socket) => {
         console.log(response);
         socket.write(response);
       }
-
-      //const activeActivities = activitiesActive(getState().activities)
-      //const activityIds = activeActivities.map(a => a.activityId)
-
-      //console.log(' activityIds:    *****')
-      //console.log(activityIds)
-
-      //console.log(' dwmTags:    *****')
-      //const dwmTags = getState().dwmTags.toString();
-      //console.error(dwmTags);
     } catch (e) {
       const msg = `Activities: Error handling command ${data}!`;
       $`notify-send "${msg}"`;
@@ -59,10 +49,6 @@ server.listen("/tmp/contexts.sock", () => {
 
 try {
   await initializeDB();
-  // await loadState();
-  // // TODO
-  // const activeActivities = activitiesActive(getState().activities);
-  // syncWorkspaces(activeActivities);
 } catch (e) {
   $`notify-send "Activities: unhandled error occurred."`;
   console.error(e);
