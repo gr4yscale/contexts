@@ -101,3 +101,14 @@ export async function updateWorkspace(workspace: Partial<WorkspaceDTO>): Promise
     throw error;
   }
 }
+
+export async function assignWorkspaceToActivity(workspaceId: number, activityId: string): Promise<void> {
+  try {
+    const query = `UPDATE workspaces SET activityId = ? WHERE id = ?`;
+    const conn = await getConnection();
+    await conn.run(query, [activityId, workspaceId]);
+  } catch (error) {
+    console.error('Error assigning workspace to activity:', error);
+    throw error;
+  }
+}
