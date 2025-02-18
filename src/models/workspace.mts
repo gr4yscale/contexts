@@ -112,3 +112,33 @@ export async function assignWorkspaceToActivity(workspaceId: number, activityId:
     throw error;
   }
 }
+
+export async function getWorkspacesForActivity(activityId: string): Promise<WorkspaceDTO[]> {
+  const conn = await getConnection();
+  const result = await conn.run(
+    `
+    SELECT 
+      w.id, 
+      w.activityId, 
+      w.name,
+      a.name as activityName
+    FROM workspaces w
+    LEFT JOIN activities a ON w.activityId = a.activityId
+    WHERE w.activityId = ?
+    ORDER BY w.id ASC;
+    `,
+    [activityId],
+  );
+
+  const rows = await result.fetchAllChunks();
+  if (!rows || rows.length === 0) {
+    return [];
+  }
+
+  return rows[0].getRows().map((row: any) => ({
+    id: row[0],
+    activityId: row[1],
+    name: row[2],
+    activityName: row[3],
+  }));
+}
