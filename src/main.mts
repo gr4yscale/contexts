@@ -68,6 +68,8 @@ try {
   console.error(e);
 }
 
+$.verbose = false; // suppress stdout from zx subprocess calls
+
 // handleCommand("storeBrowserStates");
 
 // setInterval(
