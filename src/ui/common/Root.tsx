@@ -20,64 +20,12 @@ const routes = [
   { path: "/workspace", component: Workspace },
 ];
 
+// define root keymap
+const keymap = Keymap([]);
+
 const Root: React.FC = () => {
   const [routePath, setRoutePath] = useState("/");
   const { write } = useStdout();
-
-  // define root keymap
-  const keymap = Keymap([]);
-
-  // listen for "showHome" command coming via unix socket
-  useEffect(() => {
-    console.log("showHome listener useEffect");
-
-    const listener = () => {
-      setRoutePath("/");
-      console.log("showHome was called!");
-    };
-
-    registerShowHomeListener(listener);
-
-    return () => {
-      unregisterShowHomeListener(listener);
-    };
-  }, []);
-
-  // update the keymap when route changes
-  useEffect(() => {
-    console.log("route change useEffect");
-
-    keymap.pushKeymap([
-      {
-        sequence: [key("w")],
-        description: "Show Workspaces",
-        command: {
-          name: "workspaces-show",
-          handler: () => {
-            //keymap.popKeymap();
-            setRoutePath("/workspace");
-          },
-        },
-      },
-      {
-        sequence: [key("a")],
-        description: "Show Activities",
-        command: {
-          name: "activities-show",
-          handler: () => {
-            //keymap.popKeymap();
-            setRoutePath("/activity");
-          },
-        },
-      },
-    ]);
-
-    return () => {
-      //keymap.popKeymap();
-    };
-  }, [routePath]); //TOFIX this shouldn't be needed?
-
-  //}, []);
 
   // global key handling
   useInput((input, key) => {
@@ -91,10 +39,47 @@ const Root: React.FC = () => {
     }
   });
 
+  // listen for "showHome" command coming via unix socket
+  useEffect(() => {
+    const listener = () => setRoutePath("/");
+
+    registerShowHomeListener(listener);
+
+    return () => {
+      unregisterShowHomeListener(listener);
+    };
+  }, []);
+
+  // define root keymap
+  useEffect(() => {
+    if (routePath === "/") {
+      keymap.pushKeymap([
+        {
+          sequence: [key("w")],
+          description: "Show Workspaces",
+          command: {
+            name: "workspaces-show",
+            handler: () => setRoutePath("/workspace"),
+          },
+        },
+        {
+          sequence: [key("a")],
+          description: "Show Activities",
+          command: {
+            name: "activities-show",
+            handler: () => setRoutePath("/activity"),
+          },
+        },
+      ]);
+    }
+
+    return () => {
+      keymap.popKeymap();
+    };
+  }, [routePath]);
+
   const route = routes.find((r) => r.path === routePath);
   const Component = route ? route?.component : null;
-
-  console.log("rendering root");
 
   return (
     <KeysContext.Provider value={{ keymap }}>

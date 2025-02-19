@@ -53,6 +53,7 @@ const Activity: React.FC = () => {
               name: "activity-list-show",
               handler: () => {
                 setMode("find");
+                keymap.popKeymap();
               },
             },
           },

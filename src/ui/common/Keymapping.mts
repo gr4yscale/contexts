@@ -76,7 +76,6 @@ export const Keymap = (initialConfig: KeymapConfig) => {
   };
 
   const pushKeymap = (newConfig: KeymapConfig) => {
-    console.log("keymap pushed");
     keymapStack = [...keymapStack, newConfig];
     listeners.forEach((listener) => listener());
   };

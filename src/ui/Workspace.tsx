@@ -50,6 +50,7 @@ const Workspace: React.FC = () => {
               name: "goto-workspace",
               handler: () => {
                 setMode("find");
+                keymap.popKeymap();
               },
             },
           },
