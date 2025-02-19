@@ -5,6 +5,7 @@ import {
   switchActivity,
   swapActivity,
   sendWindowToAnotherWorkspace,
+  showHome,
 } from "./commands/navigation.mts";
 import { linkGroupStore, stickyLinkStore } from "./commands/links.mts";
 import { saveEmacsWindowBookmark } from "./commands/emacs.mts";
@@ -63,6 +64,8 @@ export const handleCommand = async (
       await switchActivity();
       break;
     }
+    case "showHome": {
+      await showHome();
       break;
     }
     case "swapActivity": {

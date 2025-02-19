@@ -29,6 +29,26 @@ const {
   updateActivity,
 } = await activityDTO();
 
+let showHomeListeners: (() => void)[] = [];
+
+export const showHome = async () => {
+  for (const listener of showHomeListeners) {
+    listener();
+  }
+  // dwm tag 1 is reserved for the TUI
+  // a dedicated kitty terminal emulator resides there
+  // await $`dwmc viewex 0`;
+};
+
+export const registerShowHomeListener = (listener: () => void) => {
+  showHomeListeners.push(listener);
+};
+
+export const unregisterShowHomeListener = (listener: () => void) => {
+  const idx = showHomeListeners.indexOf(listener);
+  showHomeListeners.splice(idx, 1);
+};
+
 /** build lists of activities for each of the ListTypes
  *  append them to a combined list, sort by recent access
  *  format lists of activities to include tags, for matching in rofi
