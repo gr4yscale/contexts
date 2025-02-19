@@ -1,6 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
 import { Box, useInput, useStdout } from "ink";
-import useRoutes from "./useRoutes.mts";
 import { KeysContext } from "./Context.mts";
 
 import { Keymap } from "./Keymapping.mts";
@@ -10,14 +9,14 @@ import Workspace from "../Workspace.tsx";
 import WhichKey from "../WhichKey.tsx";
 
 const routes = [
-  { path: "/", component: Activity },
+  { path: "/", component: Workspace },
   { path: "/activity", component: Activity },
   { path: "/workspace", component: Workspace },
 ];
 
 const Root: React.FC = () => {
+  const [routePath, setRoutePath] = useState("/");
   const { write } = useStdout();
-  const { Component, navigate } = useRoutes(routes);
 
   const keymap = Keymap([]);
 
@@ -32,13 +31,12 @@ const Root: React.FC = () => {
     }
   });
 
+  const route = routes.find((r) => r.path === routePath);
+  const Component = route ? route?.component : null;
+
   return (
     <KeysContext.Provider value={{ keymap }}>
-      <Box>
-        {Component && (
-          <Component navigate={navigate} pushKeymap={keymap.pushKeymap} />
-        )}
-      </Box>
+      <Box>{Component && <Component />}</Box>
       <Box>
         <WhichKey />
       </Box>
