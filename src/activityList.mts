@@ -1,7 +1,6 @@
 import { Activity, Tag } from "./types.mts";
 
 import { formatDistanceToNow } from "date-fns";
-import { getState } from "./state.mts";
 
 /**
  *  Activity List types
@@ -119,7 +118,6 @@ export const toggleTagEnabled = (t: string) => {
 export const availableTags = () => {
   //TOFIX
   console.log("de-implemented temporarily for sql integration");
-  //return new Set<Tag>(getState().activities.flatMap((a) => a.tags));
   return new Set<Tag>();
 };
 

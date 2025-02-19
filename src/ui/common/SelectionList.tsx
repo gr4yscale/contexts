@@ -57,7 +57,6 @@ const SelectionList: React.FC<SelectionListProps> = ({
   }, []);
 
   useEffect(() => {
-    console.log("useEffect");
     // push a keymap for the current mode
     let keymapConfig: KeymapConfig = [];
 
@@ -173,8 +172,6 @@ const SelectionList: React.FC<SelectionListProps> = ({
     },
     { isActive: mode === "find" },
   );
-
-  console.log("render");
 
   return (
     <Box flexDirection="column">

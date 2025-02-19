@@ -8,7 +8,6 @@ import { render } from "ink";
 import { initializeDB } from "./db.mts";
 import { handleCommand } from "./handleCommand.mts";
 
-// import { getState, loadState } from "./state.mts";
 // import { activitiesActive } from "./activityList.mts";
 
 //import { syncWorkspaces } from "./workspaces.mts";

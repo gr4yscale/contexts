@@ -4,18 +4,10 @@ import { nanoid } from "nanoid";
 import { Activity, ActivityId } from "../types.mts";
 
 import {
-  createActivity,
-  createActivityForOrgId,
-  activityByOrgId,
-} from "../state.mts";
-
-import {
   buildActivityList,
   formatActivitiesListExtended,
   enabledActivityListTypes,
 } from "../activityList.mts";
-
-//import { rofiListSelectRecentActivities } from "../selection.mts";
 
 import { buildMenu } from "../menus.mts";
 
@@ -84,11 +76,11 @@ export const activateActivity = async (id: ActivityId) => {
   }
 
   //TOFIX make activity creation explicit
-  if (!activity) {
-    //console.log(`activity not found, creating for id: ${id}`);
-    activity = createActivity(id);
-    $`notify-send "Created new activity: ${id}"`;
-  }
+  // if (!activity) {
+  //   //console.log(`activity not found, creating for id: ${id}`);
+  //   activity = createActivity(id);
+  //   $`notify-send "Created new activity: ${id}"`;
+  // }
 
   const lastAccessed = new Date();
   await updateActivity({ activityId: id, lastAccessed });
@@ -125,58 +117,63 @@ const slugify = (str: string) => {
 
 //export const createActivityForOrgItem = async (args: string) => {
 
-export const activateActivityForOrgId = async (args: string) => {
-  const { orgId, orgText } = JSON.parse(args);
+// export const activateActivityForOrgId = async (args: string) => {
+//   const { orgId, orgText } = JSON.parse(args);
 
-  // new way
+//   // TOFIX neuter for activity activation by orgId for now
+//   return;
 
-  // create an org id if it doesn't exist
-  // pass orgId and orgtText in to command to createActivity
-  // create an activity with orgId set; sluggify activity text, include orgId at the end, add orgItem tag
-  // get the activityID back from contextc
-  // set activityID property on org element
+//   // new way
 
-  // old way
+//   // create an org id if it doesn't exist
+//   // pass orgId and orgtText in to command to createActivity
+//   // create an activity with orgId set; sluggify activity text, include orgId at the end, add orgItem tag
+//   // get the activityID back from contextc
+//   // set activityID property on org element
 
-  // prompt the user for final title / confirm (get from org element text)
-  // create an activityID based on slugified title
-  // get the activityID back from contextc
-  // set activityID property on org element
+//   // old way
 
-  const display = slugify(orgText as string);
+//   // prompt the user for final title / confirm (get from org element text)
+//   // create an activityID based on slugified title
+//   // get the activityID back from contextc
+//   // set activityID property on org element
 
-  let activity: Activity | undefined;
-  activity = activityByOrgId(orgId);
+//   const display = slugify(orgText as string);
 
-  if (!activity) {
-    //console.log(`activity not found, creating for id: ${orgId}`);
-    // try-catch? storeState?
-    activity = createActivityForOrgId(nanoid(), orgId, display);
-    // SET ORGTASK TAG HERE
-    $`notify-send "Created new activity for orgId: ${orgId}"`;
-  }
+//   let activity: Activity | undefined;
 
-  // get the response by a client that closes the connection after a response, or
-  // shelling to emacs from contexts, to find an org element and update activityId property
+//   // TOFIX
+//   //activity = activityByOrgId(orgId);
 
-  // return the activityId to emacs somehow - check how we get the response from handleCommand
+//   if (!activity) {
+//     //console.log(`activity not found, creating for id: ${orgId}`);
+//     // try-catch? storeState?
+//     activity = createActivityForOrgId(nanoid(), orgId, display);
+//     // SET ORGTASK TAG HERE
+//     $`notify-send "Created new activity for orgId: ${orgId}"`;
+//   }
 
-  //TODO was allocateWorkspcae
-  if (await viewWorkspace(activity)) {
-    const previousActivity = await getPreviousActivity();
-    if (previousActivity) {
-      updateActivityHistory(activity.activityId, previousActivity.activityId);
-    }
+//   // get the response by a client that closes the connection after a response, or
+//   // shelling to emacs from contexts, to find an org element and update activityId property
 
-    //TOFIX
-    const lastAccessed = new Date();
-    await updateActivity({ lastAccessed });
+//   // return the activityId to emacs somehow - check how we get the response from handleCommand
 
-    $`notify-send -a activity -t 500 "${activity.dwmTag}: ${activity.name}"`;
-  }
+//   //TODO was allocateWorkspcae
+//   if (await viewWorkspace(activity)) {
+//     const previousActivity = await getPreviousActivity();
+//     if (previousActivity) {
+//       updateActivityHistory(activity.activityId, previousActivity.activityId);
+//     }
 
-  return `activityId:  ${activity.activityId}  orgId: ${activity.orgId}`;
-};
+//     //TOFIX
+//     const lastAccessed = new Date();
+//     await updateActivity({ lastAccessed });
+
+//     $`notify-send -a activity -t 500 "${activity.dwmTag}: ${activity.name}"`;
+//   }
+
+//   return `activityId:  ${activity.activityId}  orgId: ${activity.orgId}`;
+// };
 
 export const swapActivity = async () => {
   const previousActivity = await getPreviousActivity();
