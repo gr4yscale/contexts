@@ -19,6 +19,8 @@ import {
 
 import { buildMenu } from "../menus.mts";
 
+import { getAllWorkspaces, WorkspaceDTO } from "../models/workspace.mts";
+
 import {
   viewWorkspace,
   viewFirstWorkspaceForActivity,
@@ -64,8 +66,7 @@ export const switchActivity = async () => {
             if (activity) {
               await activateActivity(activity.activityId);
             }
-            // TOFIX run actions here
-            // for activity.actions ... run
+            // run activity init actions here?
           },
         };
       }),
@@ -92,9 +93,16 @@ export const activateActivity = async (id: ActivityId) => {
   const lastAccessed = new Date();
   await updateActivity({ activityId: id, lastAccessed });
 
-  $`notify-send -a activity -t 500 "${activity.dwmTag}: ${activity.name}"`;
+  // TOFIX: update activity history based on this result?
+  const result = await viewFirstWorkspaceForActivity(activity.activityId);
 
-  return await viewFirstWorkspaceForActivity(activity.activityId);
+  if (result) {
+    $`notify-send -a activity -t 500 "${activity.dwmTag}: ${activity.name}"`;
+  } else {
+    $`notify-send "No workspace for activity: ${id}"`;
+  }
+
+  return result;
 };
 
 export const toggleActivity = async (id: ActivityId) => {
@@ -177,38 +185,23 @@ export const swapActivity = async () => {
   }
 };
 
-// windows
+// we need the client/window that we want to send to be focused,
+// so this commmand needs to be handled via socket, not TUI
 
-// tofix: refactor activity list / menu builder; it's cloned from switchActivity
+export const sendWindowToAnotherWorkspace = async () => {
+  const workspaces = await getAllWorkspaces();
 
-export const sendWindowToAnotherActivity = async () => {
-  const activities = await getAllActivities();
-  const lists = buildActivityList(enabledActivityListTypes, activities);
-  const sorted = lists.sort(
-    (l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime(),
-  );
-  const formatted = await formatActivitiesListExtended(sorted);
-  const prompt = `${Object.values(enabledActivityListTypes).join(", ")}`;
+  const menuItem = (w: WorkspaceDTO) => ({
+    display: `${w.name} - ${w.activityName || "No activity associated"}`,
+    handler: async (selectedIndex?: number) => {
+      if (selectedIndex !== undefined) {
+        await $`dwmc tagex ${w.id.toString()}`;
+      }
+    },
+  });
+
   await buildMenu({
-    display: prompt,
-    builder: () =>
-      formatted.map((line: string) => {
-        return {
-          display: line,
-          handler: async (selectionIndex?: number) => {
-            if (selectionIndex === undefined) {
-              return;
-            }
-            const activity = sorted[selectionIndex];
-            if (activity) {
-              await $`dwmc tagex ${activity.dwmTag}`;
-              activity.lastAccessed = new Date();
-              // console.log(
-              //   `sent window to ${activity.dwmTag}: ${activity.activityId}`,
-              // );
-            }
-          },
-        };
-      }),
+    display: `Workspace:`,
+    builder: () => workspaces.map(menuItem),
   });
 };

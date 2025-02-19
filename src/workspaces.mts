@@ -19,12 +19,13 @@ export const viewWorkspace = async (activity: Activity) => {
   return true;
 };
 
-export async function viewFirstWorkspaceForActivity(activityID: string) {
-  const workspaces = await getWorkspacesForActivity(activityID);
+export async function viewFirstWorkspaceForActivity(activityId: string) {
+  const workspaces = await getWorkspacesForActivity(activityId);
   if (workspaces && workspaces[0]) {
     await $`dwmc viewex ${workspaces[0].id}`;
-    console.log(`switcing to workspace ID: ${workspaces[0].id}`);
+    return true;
   }
+  return false;
 }
 
 export async function viewNextWorkspaceForActivity(activityId: string) {
