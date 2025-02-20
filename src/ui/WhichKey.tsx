@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Box, Newline, Text } from "ink";
 import { KeysContext } from "./common/Context.mts";
+import { Keymap, KeyEvent } from "./common/Keymapping.mts";
 
 const WhichKey: React.FC = () => {
   const { keymap }: any = useContext(KeysContext);
@@ -12,9 +13,15 @@ const WhichKey: React.FC = () => {
   useEffect(() => {
     keymap.registerListener(() => {
       const state = keymap.getCurrentState();
+
+      const pairs = state.keymap.map((e: Keymap) => {
+        const keys = e.sequence.map((s: KeyEvent) => s.input);
+        return `(${keys.join("-")}) ${e.description}`;
+      });
+
+      setKeyCommandPairs(pairs);
       setLastKeyPressed(state.lastKeyPressed);
       setLastCommandExecuted(state.lastCommandExecuted);
-      setKeyCommandPairs(state.keymap.map((e: any) => e.description ?? ""));
     });
   }, []);
 
