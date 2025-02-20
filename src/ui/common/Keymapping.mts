@@ -5,14 +5,10 @@ export type KeyEvent = {
   key: Key;
 };
 
-export type Command = {
-  name: string;
-  handler: () => void | Promise<void>;
-};
-
 export type Keymap = {
   sequence: KeyEvent[];
-  command?: Command;
+  name?: string;
+  handler?: () => void | Promise<void>;
   keymap?: KeymapConfig;
   description?: string;
 };
@@ -20,7 +16,8 @@ export type Keymap = {
 export type KeymapConfig = Keymap[];
 
 export type KeymapResult = {
-  command?: Command;
+  name?: string;
+  handler?: () => void | Promise<void>;
   pendingKeymap?: KeymapConfig;
   description?: string;
 };
@@ -160,13 +157,14 @@ export const Keymap = (initialConfig: KeymapConfig) => {
         // Clear buffer after match
         keyBuffer = [];
 
-        if (keyMap.command) {
-          // Execute command but maintain current keymap stack
+        if (keyMap.handler) {
+          // Execute handler but maintain current keymap stack
           const result = {
-            command: keyMap.command,
+            name: keyMap.name,
+            handler: keyMap.handler,
             description: keyMap.description,
           };
-          lastCommandExecuted = keyMap.command.name;
+          lastCommandExecuted = keyMap.name || '';
           listeners.forEach((listener) => listener());
           return result;
         } else if (keyMap.keymap) {

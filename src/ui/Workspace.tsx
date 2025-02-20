@@ -46,62 +46,50 @@ const Workspace: React.FC = () => {
           {
             sequence: [key("g")],
             description: "Go to workspace",
-            command: {
-              name: "goto-workspace",
-              handler: () => {
-                setMode("find");
-                keymap.popKeymap();
-              },
+            name: "goto-workspace",
+            handler: () => {
+              setMode("find");
+              keymap.popKeymap();
             },
           },
           {
             sequence: [key("x")],
             description: "Filter workspace goto list",
-            command: {
-              name: "filter-workspace-goto-list",
-              handler: () => {
-                console.log("filter workspace");
-              },
+            name: "filter-workspace-goto-list",
+            handler: () => {
+              console.log("filter workspace");
             },
           },
           {
             sequence: [key("s")],
             description: "Select for switching",
-            command: {
-              name: "select-workspace-for-switching",
-              handler: () => {
-                setMode("selectForSwitching");
-              },
+            name: "select-workspace-for-switching",
+            handler: () => {
+              setMode("selectForSwitching");
             },
           },
           {
             sequence: [key("n")],
             description: "New workspace for current activity",
-            command: {
-              name: "new-workspace-for-current-acctivity",
-              handler: () => {
-                console.log("create new workspace");
-              },
+            name: "new-workspace-for-current-acctivity",
+            handler: () => {
+              console.log("create new workspace");
             },
           },
           {
             sequence: [key("d")],
             description: "Destroy current workspace",
-            command: {
-              name: "destroy-current-workspace",
-              handler: () => {
-                console.log("destroy workspace");
-              },
+            name: "destroy-current-workspace",
+            handler: () => {
+              console.log("destroy workspace");
             },
           },
           {
             sequence: [key("r")],
             description: "Rename current workspace",
-            command: {
-              name: "rename-current-workspace",
-              handler: () => {
-                console.log("rename workspace");
-              },
+            name: "rename-current-workspace",
+            handler: () => {
+              console.log("rename workspace");
             },
           },
         ];
@@ -112,11 +100,9 @@ const Workspace: React.FC = () => {
           {
             sequence: [key("z")],
             description: "Initial mode",
-            command: {
-              name: "set-mode-initial",
-              handler: () => {
-                setMode("initial");
-              },
+            name: "set-mode-initial",
+            handler: () => {
+              setMode("initial");
             },
           },
         ];

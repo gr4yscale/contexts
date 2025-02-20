@@ -31,8 +31,8 @@ const Root: React.FC = () => {
   useInput((input, key) => {
     const result = keymap.handleKeyEvent(input, key);
     if (result) {
-      if (result.command) {
-        result.command.handler();
+      if (result.handler) {
+        result.handler();
       }
     } else {
       write(`unhandled input received: ${input}`);
@@ -57,18 +57,14 @@ const Root: React.FC = () => {
         {
           sequence: [key("w")],
           description: "Show Workspaces",
-          command: {
-            name: "workspaces-show",
-            handler: () => setRoutePath("/workspace"),
-          },
+          name: "workspaces-show",
+          handler: () => setRoutePath("/workspace"),
         },
         {
           sequence: [key("a")],
           description: "Show Activities",
-          command: {
-            name: "activities-show",
-            handler: () => setRoutePath("/activity"),
-          },
+          name: "activities-show",
+          handler: () => setRoutePath("/activity"),
         },
       ]);
     }

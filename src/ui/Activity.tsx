@@ -49,22 +49,18 @@ const Activity: React.FC = () => {
           {
             sequence: [key("g")],
             description: "show activity list",
-            command: {
-              name: "activity-list-show",
-              handler: () => {
-                setMode("find");
-                keymap.popKeymap();
-              },
+            name: "activity-list-show",
+            handler: () => {
+              setMode("find");
+              keymap.popKeymap();
             },
           },
           {
             sequence: [key("x")],
             description: "Filter activity goto list",
-            command: {
-              name: "filter-activity-list",
-              handler: () => {
-                console.log("filter workspace");
-              },
+            name: "filter-activity-list",
+            handler: () => {
+              console.log("filter workspace");
             },
           },
         ];
@@ -75,11 +71,9 @@ const Activity: React.FC = () => {
           {
             sequence: [key("z")],
             description: "Initial mode",
-            command: {
-              name: "set-mode-initial",
-              handler: () => {
-                setMode("initial");
-              },
+            name: "set-mode-initial",
+            handler: () => {
+              setMode("initial");
             },
           },
         ];

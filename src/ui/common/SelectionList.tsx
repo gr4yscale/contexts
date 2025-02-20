@@ -31,23 +31,26 @@ const SelectionList: React.FC<SelectionListProps> = ({
 
   const { keymap }: any = useContext(KeysContext);
 
+  // shared keymap, persists regardless of mode
   useEffect(() => {
-    // shared keymap, persists regardless of mode
     keymap.pushKeymap([
       {
         sequence: [key("", "rightArrow")],
         description: "Enter select mode",
-        command: { name: "selectMode", handler: selectMode },
+        name: "selectMode",
+        handler: selectMode,
       },
       {
         sequence: [key("", "leftArrow")],
         description: "Enter find mode",
-        command: { name: "findMode", handler: findMode },
+        name: "findMode",
+        handler: findMode,
       },
       {
         sequence: [key("", "upArrow")],
         description: "Enter commit mode",
-        command: { name: "commitMode", handler: commitMode },
+        name: "commitMode",
+        handler: commitMode,
       },
     ]);
 
@@ -56,8 +59,8 @@ const SelectionList: React.FC<SelectionListProps> = ({
     };
   }, []);
 
+  // mode-specific keymap
   useEffect(() => {
-    // push a keymap for the current mode
     let keymapConfig: KeymapConfig = [];
 
     switch (mode) {
@@ -66,29 +69,23 @@ const SelectionList: React.FC<SelectionListProps> = ({
           {
             sequence: [key("\r", "return")],
             description: "Select mode",
-            command: {
-              name: "mode-select",
-              handler: () => {
-                keymap.popKeymap();
-                selectMode();
-              },
+            name: "mode-select",
+            handler: () => {
+              keymap.popKeymap();
+              selectMode();
             },
           },
           {
             sequence: [key("", "delete")],
             description: "Clear search string",
-            command: {
-              name: "clearSearch",
-              handler: clearSearchString,
-            },
+            name: "clearSearch",
+            handler: clearSearchString,
           },
           {
             sequence: [key("", "pageUp")],
             description: "Trim last character",
-            command: {
-              name: "trimLast",
-              handler: trimLastCharacter,
-            },
+            name: "trimLast",
+            handler: trimLastCharacter,
           },
         ];
         break;
@@ -98,35 +95,27 @@ const SelectionList: React.FC<SelectionListProps> = ({
           {
             sequence: [key("j")],
             description: "Move down",
-            command: {
-              name: "moveDown",
-              handler: highlightDown,
-            },
+            name: "moveDown",
+            handler: highlightDown,
           },
           {
             sequence: [key("k")],
             description: "Move up",
-            command: {
-              name: "moveUp",
-              handler: highlightUp,
-            },
+            name: "moveUp",
+            handler: highlightUp,
           },
           {
             sequence: [key(" ")],
             description: "Select items",
-            command: {
-              name: "selectItems",
-              handler: toggleSelectionAtHighlightedIndex,
-            },
+            name: "selectItems",
+            handler: toggleSelectionAtHighlightedIndex,
           },
           {
             sequence: [key("\r", "return")],
             description: "commit mode",
-            command: {
-              name: "commit",
-              handler: () => {
-                commitMode();
-              },
+            name: "commit",
+            handler: () => {
+              commitMode();
             },
           },
         ];
@@ -137,22 +126,18 @@ const SelectionList: React.FC<SelectionListProps> = ({
           {
             sequence: [key("y")],
             description: "Yes",
-            command: {
-              name: "yes",
-              handler: () => {
-                onSelected && onSelected(getSelectedItems());
-                findMode();
-                //TOFIX pop keymap?
-              },
+            name: "yes",
+            handler: () => {
+              onSelected && onSelected(getSelectedItems());
+              findMode();
+              //TOFIX pop keymap?
             },
           },
           {
             sequence: [key("n")],
             description: "No",
-            command: {
-              name: "no",
-              handler: findMode, //TOFIX pop keymap?
-            },
+            name: "no",
+            handler: findMode, //TOFIX pop keymap?
           },
         ];
         break;
