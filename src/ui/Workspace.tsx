@@ -1,17 +1,40 @@
 import React, { useEffect, useState, useContext } from "react";
 import { Box, Text } from "ink";
 import { getAllWorkspaces, WorkspaceDTO } from "../models/workspace.mts";
-import SelectionList from "./common/SelectionList.tsx";
+import ActionList from "./common/ActionList.tsx";
 import { key, KeymapConfig } from "./common/Keymapping.mts";
 import { KeysContext } from "./common/Context.mts";
+import { Item } from "./common/useActionList.mts";
 
 type WorkspaceItem = { id: string; display: string; data: WorkspaceDTO };
 type WorkspaceStates = "initial" | "find" | "selectForSwitching";
 
 const Workspace: React.FC = () => {
-  const [mode, setMode] = useState<WorkspaceStates>("initial");
+  const [mode, setMode] = useState<WorkspaceStates>("find");
   const [items, setItems] = useState<Array<WorkspaceItem>>([]);
   const [loading, setLoading] = useState(true);
+
+  const itemActionKeymap = (item: Item): KeymapConfig => [
+    {
+      sequence: [key("o")],
+      description: "Item action: Open",
+      name: "item-action-open",
+      handler: () => {},
+    },
+
+    {
+      sequence: [key("\r", "return")],
+      description: "Item action: default",
+      name: "item-action-default",
+      handler: () => {},
+    },
+    {
+      sequence: [key(" ")],
+      description: "Item action: handy keybind",
+      name: "item-act-handy",
+      handler: () => {},
+    },
+  ];
 
   const fetchWorkspaces = async () => {
     try {
@@ -117,16 +140,10 @@ const Workspace: React.FC = () => {
   }, [mode]);
 
   return (
-    <Box>
+    <Box flexDirection="column">
       <Text>mode: {mode}</Text>
       {mode === "find" && (
-        <SelectionList
-          initialItems={items}
-          onSelected={async (items) => {
-            const workspaces = items.map((item) => item.data);
-            console.log("Selected workspaces:", workspaces);
-          }}
-        />
+        <ActionList initialItems={items} actionKeymap={itemActionKeymap} />
       )}
     </Box>
   );
@@ -139,7 +156,7 @@ export default Workspace;
 // {loading ? (
 //   <Text>Loading...</Text>
 // ) : (
-//   <SelectionList
+//   <ActionList
 //     initialItems={items}
 //   />
 // )}
