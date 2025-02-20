@@ -1,6 +1,10 @@
 import React, { useEffect, useState, useContext } from "react";
 import { Box, Text } from "ink";
 import { getAllWorkspaces, WorkspaceDTO } from "../models/workspace.mts";
+import {
+  createWorkspaceForCurrentActivity,
+  viewWorkspace,
+} from "../workspaces.mts";
 import ActionList from "./common/ActionList.tsx";
 import { key, KeymapConfig } from "./common/Keymapping.mts";
 import { KeysContext } from "./common/Context.mts";
@@ -19,7 +23,11 @@ const Workspace: React.FC = () => {
       sequence: [key("o")],
       description: "Item action: Open",
       name: "item-action-open",
-      handler: () => {},
+      handler: async () => {
+        const workspace = item.data as WorkspaceDTO; //TOFIX casting
+        viewWorkspace(workspace.id);
+        console.log(`open ${item.display}`);
+      },
     },
 
     {
@@ -67,37 +75,10 @@ const Workspace: React.FC = () => {
       case "initial":
         keymapConfig = [
           {
-            sequence: [key("g")],
-            description: "Go to workspace",
-            name: "goto-workspace",
-            handler: () => {
-              setMode("find");
-              keymap.popKeymap();
-            },
-          },
-          {
-            sequence: [key("x")],
-            description: "Filter workspace goto list",
-            name: "filter-workspace-goto-list",
-            handler: () => {
-              console.log("filter workspace");
-            },
-          },
-          {
-            sequence: [key("s")],
-            description: "Select for switching",
-            name: "select-workspace-for-switching",
-            handler: () => {
-              setMode("selectForSwitching");
-            },
-          },
-          {
             sequence: [key("n")],
             description: "New workspace for current activity",
-            name: "new-workspace-for-current-acctivity",
-            handler: () => {
-              console.log("create new workspace");
-            },
+            name: "workspace-create-for-current-acctivity",
+            handler: createWorkspaceForCurrentActivity,
           },
           {
             sequence: [key("d")],
@@ -115,6 +96,23 @@ const Workspace: React.FC = () => {
               console.log("rename workspace");
             },
           },
+          {
+            sequence: [key("x")],
+            description: "Filter workspace goto list",
+            name: "filter-workspace-goto-list",
+            handler: () => {
+              console.log("filter workspace");
+            },
+          },
+          // {
+          //   sequence: [key("g")],
+          //   description: "Go to workspace",
+          //   name: "goto-workspace",
+          //   handler: () => {
+          //     setMode("find");
+          //     keymap.popKeymap();
+          //   },
+          // },
         ];
         break;
 

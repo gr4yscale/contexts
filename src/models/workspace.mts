@@ -68,7 +68,9 @@ export async function createWorkspaceForActivity(
   }
 }
 
-export async function updateWorkspace(workspace: Partial<WorkspaceDTO>): Promise<void> {
+export async function updateWorkspace(
+  workspace: Partial<WorkspaceDTO>,
+): Promise<void> {
   try {
     const fields: string[] = [];
     const values: any[] = [];
@@ -77,7 +79,7 @@ export async function updateWorkspace(workspace: Partial<WorkspaceDTO>): Promise
 
     const fieldMappings: [string, any][] = [
       ["activityId = ?", activityId],
-      ["name = ?", name]
+      ["name = ?", name],
     ];
 
     fieldMappings.forEach(([field, value]) => {
@@ -91,29 +93,34 @@ export async function updateWorkspace(workspace: Partial<WorkspaceDTO>): Promise
       throw new Error("No fields to update");
     }
 
-    const query = `UPDATE workspaces SET ${fields.join(', ')} WHERE id = ?`;
+    const query = `UPDATE workspaces SET ${fields.join(", ")} WHERE id = ?`;
     values.push(id);
 
     const conn = await getConnection();
     await conn.run(query, values);
   } catch (error) {
-    console.error('Error updating workspace:', error);
+    console.error("Error updating workspace:", error);
     throw error;
   }
 }
 
-export async function assignWorkspaceToActivity(workspaceId: number, activityId: string): Promise<void> {
+export async function assignWorkspaceToActivity(
+  workspaceId: number,
+  activityId: string,
+): Promise<void> {
   try {
     const query = `UPDATE workspaces SET activityId = ? WHERE id = ?`;
     const conn = await getConnection();
     await conn.run(query, [activityId, workspaceId]);
   } catch (error) {
-    console.error('Error assigning workspace to activity:', error);
+    console.error("Error assigning workspace to activity:", error);
     throw error;
   }
 }
 
-export async function getWorkspacesForActivity(activityId: string): Promise<WorkspaceDTO[]> {
+export async function getWorkspacesForActivity(
+  activityId: string,
+): Promise<WorkspaceDTO[]> {
   const conn = await getConnection();
   const result = await conn.run(
     `
@@ -141,4 +148,34 @@ export async function getWorkspacesForActivity(activityId: string): Promise<Work
     name: row[2],
     activityName: row[3],
   }));
+}
+
+export async function getWorkspaceById(id: number): Promise<WorkspaceDTO> {
+  const conn = await getConnection();
+  const result = await conn.run(
+    `
+    SELECT 
+      w.id, 
+      w.activityId, 
+      w.name,
+      a.name as activityName
+    FROM workspaces w
+    LEFT JOIN activities a ON w.activityId = a.activityId
+    WHERE w.id = ?
+    `,
+    [id],
+  );
+
+  const rows = await result.fetchAllChunks();
+  if (!rows || rows.length === 0 || rows[0].getRows().length === 0) {
+    throw new Error(`Workspace with id ${id} not found`);
+  }
+
+  const row = rows[0].getRows()[0];
+  return {
+    id: row[0],
+    activityId: row[1],
+    name: row[2],
+    activityName: row[3],
+  };
 }

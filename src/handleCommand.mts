@@ -28,9 +28,9 @@ import {
 } from "./browser.mts";
 
 import activityDTO from "./models/activity.mts";
-const { getCurrentActivity, getActiveActivities } = await activityDTO();
+const { getCurrentActivity } = await activityDTO();
 
-import { createWorkspaceForActivity } from "./models/workspace.mts";
+import { createWorkspaceForCurrentActivity } from "./workspaces.mts";
 
 export const handleCommand = async (
   command: string | undefined,
@@ -52,9 +52,7 @@ export const handleCommand = async (
   switch (command) {
     case "createWorkspaceForCurrentActivity": {
       if (currentActivity) {
-        const ws = await createWorkspaceForActivity(currentActivity.activityId);
-        console.log("ws");
-        console.log(ws.id);
+        await createWorkspaceForCurrentActivity();
       }
       break;
     }
