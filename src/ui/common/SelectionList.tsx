@@ -35,22 +35,11 @@ const SelectionList: React.FC<SelectionListProps> = ({
   useEffect(() => {
     keymap.pushKeymap([
       {
-        sequence: [key("", "rightArrow")],
-        description: "Enter select mode",
-        name: "selectMode",
-        handler: selectMode,
-      },
-      {
         sequence: [key("", "leftArrow")],
         description: "Enter find mode",
         name: "findMode",
         handler: findMode,
-      },
-      {
-        sequence: [key("", "upArrow")],
-        description: "Enter commit mode",
-        name: "commitMode",
-        handler: commitMode,
+        hidden: true,
       },
     ]);
 
@@ -74,18 +63,21 @@ const SelectionList: React.FC<SelectionListProps> = ({
               keymap.popKeymap();
               selectMode();
             },
+            hidden: true,
           },
           {
             sequence: [key("", "delete")],
             description: "Clear search string",
             name: "clearSearch",
             handler: clearSearchString,
+            hidden: true,
           },
           {
             sequence: [key("", "pageUp")],
             description: "Trim last character",
             name: "trimLast",
             handler: trimLastCharacter,
+            hidden: true,
           },
         ];
         break;

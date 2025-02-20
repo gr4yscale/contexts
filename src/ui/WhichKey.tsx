@@ -14,7 +14,9 @@ const WhichKey: React.FC = () => {
     keymap.registerListener(() => {
       const state = keymap.getCurrentState();
 
-      const pairs = state.keymap.map((e: Keymap) => {
+      const visible = state.keymap.filter((k: Keymap) => !k.hidden);
+
+      const pairs = visible.map((e: Keymap) => {
         const keys = e.sequence.map((s: KeyEvent) => s.input);
         return `(${keys.join("-")}) ${e.description}`;
       });

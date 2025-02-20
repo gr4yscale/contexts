@@ -11,6 +11,7 @@ export type Keymap = {
   handler?: () => void | Promise<void>;
   keymap?: KeymapConfig;
   description?: string;
+  hidden?: boolean;
 };
 
 export type KeymapConfig = Keymap[];
@@ -164,7 +165,7 @@ export const Keymap = (initialConfig: KeymapConfig) => {
             handler: keyMap.handler,
             description: keyMap.description,
           };
-          lastCommandExecuted = keyMap.name || '';
+          lastCommandExecuted = keyMap.name || "";
           listeners.forEach((listener) => listener());
           return result;
         } else if (keyMap.keymap) {
