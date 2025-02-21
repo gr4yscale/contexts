@@ -27,8 +27,8 @@ export async function viewWorkspace(workspaceId: number) {
     }
     return false;
   } catch (error) {
-    console.error("Error viewing workspace:", error);
-    throw error;
+    $`notify-send "Error viewing workspace: ${workspaceId}"`;
+    return false;
   }
 }
 
@@ -77,12 +77,16 @@ export async function viewPreviousWorkspaceForCurrentActivity() {
   }
 }
 
+// TOFIX better error handling
 export const createWorkspaceForCurrentActivity = async () => {
   const currentActivity = await getCurrentActivity();
   if (currentActivity) {
-    // TOFIX try/catch this
-    if (await createWorkspaceForActivity(currentActivity.activityId)) {
-      $`notify-send "Created workspace for ${currentActivity.activityId}"`;
+    const workspace = await createWorkspaceForActivity(
+      currentActivity.activityId,
+    );
+    if (workspace) {
+      $`notify-send "Created workspace for activity ${currentActivity.activityId}"`;
+      viewWorkspace(workspace.id);
     }
   }
 };

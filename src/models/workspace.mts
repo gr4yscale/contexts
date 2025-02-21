@@ -35,19 +35,55 @@ export async function getAllWorkspaces(): Promise<WorkspaceDTO[]> {
   }));
 }
 
+/**
+ * Creates a new workspace for the given activity with a unique ID.
+ * Uses a recursive SQL query to find the first available ID from the workspace_id_seq
+ * sequence that doesn't conflict with existing workspace IDs. Will attempt up to 32
+ * different sequence values before failing.
+ *
+ * @param activityId - The ID of the activity to create a workspace for
+ * @returns Promise<WorkspaceDTO> - The newly created workspace
+ * @throws {Error} When no available IDs are found or when maximum workspaces (32) is reached
+ */
 export async function createWorkspaceForActivity(
   activityId: string,
 ): Promise<WorkspaceDTO> {
   const conn = await getConnection();
   try {
-    // Get the next sequence value and create a workspace
     const result = await conn.run(
       `
-      INSERT INTO workspaces (activityId, name)
-      VALUES (?, ? || '_' || nextval('workspace_id_seq'))
+      WITH RECURSIVE workspace_insert AS (
+        SELECT 
+          nextval('workspace_id_seq') as next_id,
+          1 as attempt
+        UNION ALL
+        SELECT 
+          nextval('workspace_id_seq'),
+          attempt + 1
+        FROM workspace_insert
+        WHERE attempt < 32
+        AND EXISTS (
+          SELECT 1 FROM workspaces w 
+          WHERE w.id = workspace_insert.next_id
+        )
+      )
+      INSERT INTO workspaces (id, activityId, name)
+      SELECT 
+        next_id,
+        $1,
+        $2 || next_id
+      FROM (
+        SELECT next_id
+        FROM workspace_insert
+        WHERE NOT EXISTS (
+          SELECT 1 FROM workspaces w 
+          WHERE w.id = workspace_insert.next_id
+        )
+        LIMIT 1
+      ) available_id
       RETURNING id, activityId, name;
-    `,
-      [activityId, "test1"],
+      `,
+      [activityId, activityId],
     );
 
     const rows = await result.fetchAllChunks();
@@ -59,10 +95,10 @@ export async function createWorkspaceForActivity(
         name: row[2],
       };
     }
-    throw new Error("Failed to create workspace");
+    //console.log("Failed to create workspace - no available IDs found");
   } catch (error: any) {
     if (error.message?.includes("workspace_id_seq")) {
-      throw new Error("Maximum number of workspaces (32) reached");
+      throw new Error("Maximum number of workspaces reached");
     }
     throw error;
   }

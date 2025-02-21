@@ -10,11 +10,16 @@ export async function initializeDB() {
       connection = await instance.connect();
 
       // Create sequence for workspace IDs
+      // 1-29 is the index range of tags in my dwm setup which
+      // are available to allocate dynamically.
+      // 0 is reserved for the TUI of this program
+      // trying to view indexes above 29 using my dwm build's IPC interface fails
+      // this seems arbitrary but is likely due to how I've patched dwm; will investigate
       await connection.run(`
             CREATE SEQUENCE IF NOT EXISTS workspace_id_seq
             START 1
             INCREMENT 1
-            MAXVALUE 32
+            MAXVALUE 29
             CYCLE;
         `);
 
