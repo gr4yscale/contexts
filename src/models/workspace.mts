@@ -179,3 +179,13 @@ export async function getWorkspaceById(id: number): Promise<WorkspaceDTO> {
     activityName: row[3],
   };
 }
+
+export async function deleteWorkspaceById(id: number): Promise<void> {
+  try {
+    const conn = await getConnection();
+    await conn.run("DELETE FROM workspaces WHERE id = ?", [id]);
+  } catch (error) {
+    console.error("Error deleting workspace:", error);
+    throw error;
+  }
+}

@@ -87,21 +87,10 @@ export const createWorkspaceForCurrentActivity = async () => {
   }
 };
 
-export const allocateWorkspace = async (activity: Activity) => {
-  //TOFIX: handle case of not finding an available dwm tag
-  if (activity.dwmTag === undefined || activity.dwmTag === 0) {
-    //console.log(`Activity needs a workspace allocated: ${activity.name}`);
-    if (availableWorkspacesCount() > 1) {
-      await assignEmptyWorkspace(activity);
-    } else {
-      $`notify-send "Available workspaces = 0; cancelling"`;
-    }
+export const deleteCurrentWorkspace = async () => {
+  const currentWorkspace = await getWorkspaceById(currentWorkspaceId);
+  if (currentWorkspace) {
+    await deleteWorkspaceById(currentWorkspaceId);
+    viewWorkspace(previousWorkspaceId);
   }
-
-  if (await viewWorkspace(activity)) {
-    activity.active = true; // TOFIX: make this a computed value
-    return true;
-  }
-  return false;
 };
-

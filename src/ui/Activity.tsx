@@ -95,7 +95,6 @@ const Activity: React.FC = () => {
           initialItems={items}
           onSelected={async (items) => {
             const activities = items.map((item) => item.data);
-            console.log("Selected activities:", activities);
 
             const firstActivity = activities[0];
             if (firstActivity) {

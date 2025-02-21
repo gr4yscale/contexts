@@ -6,6 +6,7 @@ import {
   viewNextWorkspaceForCurrentActivity,
   viewPreviousWorkspaceForCurrentActivity,
   viewWorkspace,
+  deleteCurrentWorkspace,
 } from "../workspaces.mts";
 import ActionList from "./common/ActionList.tsx";
 import { key, KeymapConfig } from "./common/Keymapping.mts";
@@ -86,9 +87,7 @@ const Workspace: React.FC = () => {
             sequence: [key("d")],
             description: "Destroy current workspace",
             name: "destroy-current-workspace",
-            handler: () => {
-              console.log("destroy workspace");
-            },
+            handler: deleteCurrentWorkspace,
           },
           {
             sequence: [key("r")],
