@@ -1,27 +1,35 @@
 import { $ } from "zx";
 
-import { Activity } from "./types.mts";
 import {
   getWorkspacesForActivity,
   getWorkspaceById,
   createWorkspaceForActivity,
+  deleteWorkspaceById,
 } from "./models/workspace.mts";
 
 import activityDTO from "./models/activity.mts";
 
-const { getActivityById, getCurrentActivity } = await activityDTO();
+const { getCurrentActivity } = await activityDTO();
 
 $.verbose = false; // suppress stdout from zx subprocess calls
 
 let currentWorkspaceId = 0;
 
 export async function viewWorkspace(workspaceId: number) {
-  const workspace = await getWorkspaceById(workspaceId);
-  if (workspace) {
-    await $`dwmc viewex ${workspace.id}`;
-    return true;
+  try {
+    const workspace = await getWorkspaceById(workspaceId);
+    if (workspace) {
+      previousWorkspaceId = currentWorkspaceId;
+      await $`dwmc viewex ${workspace.id}`;
+      currentWorkspaceId = workspace.id;
+      $`notify-send "workspace: ${workspace.id}"`;
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error("Error viewing workspace:", error);
+    throw error;
   }
-  return false;
 }
 
 export async function viewFirstWorkspaceForActivity(activityId: string) {
@@ -33,24 +41,39 @@ export async function viewFirstWorkspaceForActivity(activityId: string) {
   return false;
 }
 
-export async function viewNextWorkspaceForActivity(activityId: string) {
-  const activity = await getActivityById(activityId);
-  if (!activity) {
-    console.error(`No activity found for ID: ${activityId}`);
+export async function viewNextWorkspaceForCurrentActivity() {
+  const currentActivity = await getCurrentActivity();
+  if (!currentActivity) {
+    console.error(`No current activity found`);
     return;
   }
 
-  const workspaces = await getWorkspacesForActivity(activityId);
+  const workspaces = await getWorkspacesForActivity(currentActivity.activityId);
   const currentIndex = workspaces.findIndex((e) => e.id === currentWorkspaceId);
   let nextWorkspace = workspaces[currentIndex + 1];
   if (!nextWorkspace) {
     nextWorkspace = workspaces[0];
   }
   if (nextWorkspace) {
-    await $`dwmc viewex ${nextWorkspace.id}`;
-    currentWorkspaceId = nextWorkspace.id;
-    console.log(`switched to workspace ID: ${nextWorkspace.id}`);
-    $`notify-send "workspace: ${nextWorkspace.id}"`;
+    viewWorkspace(nextWorkspace.id);
+  }
+}
+
+export async function viewPreviousWorkspaceForCurrentActivity() {
+  const currentActivity = await getCurrentActivity();
+  if (!currentActivity) {
+    console.error(`No current activity found`);
+    return;
+  }
+
+  const workspaces = await getWorkspacesForActivity(currentActivity.activityId);
+  const currentIndex = workspaces.findIndex((e) => e.id === currentWorkspaceId);
+  let nextWorkspace = workspaces[currentIndex - 1];
+  if (!nextWorkspace) {
+    nextWorkspace = workspaces[workspaces.length];
+  }
+  if (nextWorkspace) {
+    viewWorkspace(nextWorkspace.id);
   }
 }
 

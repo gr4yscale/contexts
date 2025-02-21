@@ -3,6 +3,8 @@ import { Box, Text } from "ink";
 import { getAllWorkspaces, WorkspaceDTO } from "../models/workspace.mts";
 import {
   createWorkspaceForCurrentActivity,
+  viewNextWorkspaceForCurrentActivity,
+  viewPreviousWorkspaceForCurrentActivity,
   viewWorkspace,
 } from "../workspaces.mts";
 import ActionList from "./common/ActionList.tsx";
@@ -95,6 +97,18 @@ const Workspace: React.FC = () => {
             handler: () => {
               console.log("rename workspace");
             },
+          },
+          {
+            sequence: [key("j")],
+            description: "Next workspace for current activity",
+            name: "workspace-next-for-current-activity",
+            handler: viewNextWorkspaceForCurrentActivity,
+          },
+          {
+            sequence: [key("k")],
+            description: "Prev workspace for current activity",
+            name: "workspace-prev-for-current-activity",
+            handler: viewPreviousWorkspaceForCurrentActivity,
           },
           {
             sequence: [key("x")],
