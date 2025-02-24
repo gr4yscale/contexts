@@ -1,12 +1,13 @@
 {
     "name": "contexts",
+    "private": true,
     "version": "1.0.0",
     "description": "",
     "main": "main.mts",
     "type": "module",
     "scripts": {
-        "start": "tsx src/main.mts",
-        "test": "tsx src/SelectableListExample.tsx",
+        "start": "DEV=true tsx src/main.mts",
+        "test": "tsx runSomeTests",
         "build": "esbuild src/main.mts --bundle --platform=node --format=esm --packages=external --outfile=build.mjs"
     },
     "keywords": [],
@@ -18,6 +19,7 @@
         "@types/react-reconciler": "^0.28.2",
         "esbuild": "0.19.8",
         "prettier": "3.1.0",
+        "react-devtools-core": "^5.0.0",
         "tsx": "^4.4.0",
         "zx": "^7.2.3"
     },
