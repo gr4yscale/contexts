@@ -6,7 +6,7 @@ let connection: any;
 export async function initializeDB() {
   if (!connection) {
     try {
-      instance = await DuckDBInstance.create("database.db");
+      instance = await DuckDBInstance.create("data/database.db");
       connection = await instance.connect();
 
       // Create sequence for workspace IDs
