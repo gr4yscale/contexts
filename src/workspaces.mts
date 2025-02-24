@@ -78,11 +78,12 @@ export async function viewPreviousWorkspaceForCurrentActivity() {
 }
 
 // TOFIX better error handling
-export const createWorkspaceForCurrentActivity = async () => {
+export const createWorkspaceForCurrentActivity = async (name: string) => {
   const currentActivity = await getCurrentActivity();
   if (currentActivity) {
     const workspace = await createWorkspaceForActivity(
       currentActivity.activityId,
+      name,
     );
     if (workspace) {
       $`notify-send "Created workspace for activity ${currentActivity.activityId}"`;
@@ -97,4 +98,8 @@ export const deleteCurrentWorkspace = async () => {
     await deleteWorkspaceById(currentWorkspaceId);
     viewWorkspace(previousWorkspaceId);
   }
+};
+
+export const getCurrentWorkspace = async () => {
+  return await getWorkspaceById(currentWorkspaceId);
 };

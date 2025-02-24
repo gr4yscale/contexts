@@ -47,6 +47,7 @@ export async function getAllWorkspaces(): Promise<WorkspaceDTO[]> {
  */
 export async function createWorkspaceForActivity(
   activityId: string,
+  name: string,
 ): Promise<WorkspaceDTO> {
   const conn = await getConnection();
   try {
@@ -71,7 +72,7 @@ export async function createWorkspaceForActivity(
       SELECT 
         next_id,
         $1,
-        $2 || next_id
+        $2
       FROM (
         SELECT next_id
         FROM workspace_insert
@@ -83,7 +84,7 @@ export async function createWorkspaceForActivity(
       ) available_id
       RETURNING id, activityId, name;
       `,
-      [activityId, activityId],
+      [activityId, name],
     );
 
     const rows = await result.fetchAllChunks();

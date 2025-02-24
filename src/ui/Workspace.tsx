@@ -1,23 +1,35 @@
 import React, { useEffect, useState, useContext } from "react";
 import { Box, Text } from "ink";
-import { getAllWorkspaces, WorkspaceDTO } from "../models/workspace.mts";
+import {
+  getAllWorkspaces,
+  updateWorkspace,
+  WorkspaceDTO,
+} from "../models/workspace.mts";
 import {
   createWorkspaceForCurrentActivity,
   viewNextWorkspaceForCurrentActivity,
   viewPreviousWorkspaceForCurrentActivity,
   viewWorkspace,
   deleteCurrentWorkspace,
+  getCurrentWorkspace,
 } from "../workspaces.mts";
+
 import ActionList from "./common/ActionList.tsx";
+
 import { key, KeymapConfig } from "./common/Keymapping.mts";
 import { KeysContext } from "./common/Context.mts";
 import { Item } from "./common/useActionList.mts";
+import TextInput from "./TextInput.tsx";
 
 type WorkspaceItem = { id: string; display: string; data: WorkspaceDTO };
-type WorkspaceStates = "initial" | "find" | "selectForSwitching";
+type WorkspaceStates =
+  | "initial"
+  | "find"
+  | "workspaceCreate"
+  | "workspaceRename";
 
 const Workspace: React.FC = () => {
-  const [mode, setMode] = useState<WorkspaceStates>("find");
+  const [mode, setMode] = useState<WorkspaceStates>("initial");
   const [items, setItems] = useState<Array<WorkspaceItem>>([]);
   const [loading, setLoading] = useState(true);
 
@@ -78,10 +90,22 @@ const Workspace: React.FC = () => {
       case "initial":
         keymapConfig = [
           {
+            sequence: [key("g")],
+            description: "Go to workpace list",
+            name: "workspace-list-show",
+            handler: () => {
+              setMode("find");
+              keymap.popKeymap();
+            },
+          },
+          {
             sequence: [key("n")],
             description: "New workspace for current activity",
             name: "workspace-create-for-current-acctivity",
-            handler: createWorkspaceForCurrentActivity,
+            handler: () => {
+              setMode("workspaceCreate");
+              keymap.popKeymap();
+            },
           },
           {
             sequence: [key("d")],
@@ -94,7 +118,8 @@ const Workspace: React.FC = () => {
             description: "Rename current workspace",
             name: "rename-current-workspace",
             handler: () => {
-              console.log("rename workspace");
+              setMode("workspaceRename");
+              keymap.popKeymap();
             },
           },
           {
@@ -117,15 +142,6 @@ const Workspace: React.FC = () => {
               console.log("filter workspace");
             },
           },
-          // {
-          //   sequence: [key("g")],
-          //   description: "Go to workspace",
-          //   name: "goto-workspace",
-          //   handler: () => {
-          //     setMode("find");
-          //     keymap.popKeymap();
-          //   },
-          // },
         ];
         break;
 
@@ -153,8 +169,35 @@ const Workspace: React.FC = () => {
   return (
     <Box flexDirection="column">
       <Text>mode: {mode}</Text>
+
       {mode === "find" && (
         <ActionList initialItems={items} actionKeymap={itemActionKeymap} />
+      )}
+
+      {mode === "workspaceCreate" && (
+        <TextInput
+          callback={(name: string) => {
+            if (name === "") return; // TODO validation
+            createWorkspaceForCurrentActivity(name);
+            setMode("initial");
+          }}
+        />
+      )}
+
+      {mode === "workspaceRename" && (
+        <TextInput
+          callback={async (name: string) => {
+            if (name === "") return; // TODO validation
+            const workspace = await getCurrentWorkspace();
+            if (workspace) {
+              updateWorkspace({
+                id: workspace.id,
+                name,
+              });
+            }
+            setMode("initial");
+          }}
+        />
       )}
     </Box>
   );
