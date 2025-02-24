@@ -1,0 +1,16 @@
+site_name: Contexts
+nav:
+  - Readme: README.md
+  - Concepts: concepts.md
+  - Architecture: architecture.md
+  - Usage: usage.md
+  - "***": history.md
+  - Keymaps: keymaps.md
+  - Ideas: ideas.md
+  - Tasks: TODO.md
+theme:
+  name: slate
+markdown_extensions:
+  - toc:
+      permalink: "#"
+extra_css: [extra.css]
