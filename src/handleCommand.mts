@@ -5,7 +5,7 @@ import {
   switchActivity,
   swapActivity,
   sendWindowToAnotherWorkspace,
-  showHome,
+  showTUI,
 } from "./commands/navigation.mts";
 import { linkGroupStore, stickyLinkStore } from "./commands/links.mts";
 import { saveEmacsWindowBookmark } from "./commands/emacs.mts";
@@ -30,7 +30,17 @@ import {
 import activityDTO from "./models/activity.mts";
 const { getCurrentActivity } = await activityDTO();
 
-import { createWorkspaceForCurrentActivity } from "./workspaces.mts";
+type Listener = (command: string) => void;
+let listeners: Listener[] = [];
+
+export const registerCommandListener = (listener: Listener) => {
+  listeners.push(listener);
+};
+
+export const unregisterCommandListener = (listener: Listener) => {
+  const idx = listeners.indexOf(listener);
+  listeners.splice(idx, 1);
+};
 
 export const handleCommand = async (
   command: string | undefined,
@@ -42,28 +52,19 @@ export const handleCommand = async (
   }
   //console.error(`handling command ${command}`);
 
-  const currentActivity = await getCurrentActivity();
-
   // switchActivity
   // toggle enabledActivityListTypes
   // toggle enabledTags
   // activity lifecycle
 
   switch (command) {
-    case "createWorkspaceForCurrentActivity": {
-      if (currentActivity) {
-        await createWorkspaceForCurrentActivity();
-      }
-      break;
-    }
-
     // navigation
     case "switchActivity": {
       await switchActivity();
       break;
     }
-    case "showHome": {
-      await showHome();
+    case "globalLeader": {
+      await showTUI();
       break;
     }
     case "swapActivity": {
@@ -225,5 +226,9 @@ export const handleCommand = async (
     default: {
       console.error("command not recognized");
     }
+  }
+
+  for (const listener of listeners) {
+    listener(command);
   }
 };

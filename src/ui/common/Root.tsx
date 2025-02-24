@@ -10,9 +10,9 @@ import WhichKey from "../WhichKey.tsx";
 import Home from "../Home.tsx";
 
 import {
-  registerShowHomeListener,
-  unregisterShowHomeListener,
-} from "../../commands/navigation.mts";
+  registerCommandListener,
+  unregisterCommandListener,
+} from "../../handleCommand.mts";
 
 const routes = [
   { path: "/", component: Home },
@@ -41,12 +41,17 @@ const Root: React.FC = () => {
 
   // listen for "showHome" command coming via unix socket
   useEffect(() => {
-    const listener = () => setRoutePath("/");
+    const listener = (command: string) => {
+      // TOFIX: check command type in handleCommand
+      if (command === "globalLeader") {
+        setRoutePath("/");
+      }
+    };
 
-    registerShowHomeListener(listener);
+    registerCommandListener(listener);
 
     return () => {
-      unregisterShowHomeListener(listener);
+      unregisterCommandListener(listener);
     };
   }, []);
 
