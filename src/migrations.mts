@@ -5,17 +5,28 @@ import { getConnection } from "./db.mts";
 interface Migration {
   id: number;
   name: string;
-  sql: string;
+  upSql: string;
+  downSql: string;
 }
 
-export async function runMigrations(): Promise<void> {
+interface MigrationOptions {
+  direction?: "up" | "down";
+  target?: number;
+}
+
+export async function runMigrations(
+  options: MigrationOptions = {},
+): Promise<void> {
+  const direction = options.direction || "up";
   const connection = await getConnection();
 
   // Get applied migrations
   const result = await connection.query(
-    `SELECT id FROM migrations ORDER BY id`,
+    `SELECT id, name FROM migrations ORDER BY id`,
   );
-  const appliedMigrations = new Set(result.map((row: any) => row.id));
+  const appliedMigrations = new Map(
+    result.map((row: any) => [row.id, row.name]),
+  );
 
   // Load migration files
   const migrationsDir = path.join(process.cwd(), "migrations");
@@ -33,38 +44,95 @@ export async function runMigrations(): Promise<void> {
 
       const id = parseInt(match[1], 10);
       const name = match[2];
-      const sql = await fs.readFile(path.join(migrationsDir, file), "utf8");
+      const content = await fs.readFile(path.join(migrationsDir, file), "utf8");
 
-      migrations.push({ id, name, sql });
+      // Split content into up and down migrations
+      const upDownSplit = content.split(/^--\s*down\s*$/im);
+
+      if (upDownSplit.length < 2) {
+        console.warn(`Migration ${id} doesn't have a DOWN section. Skipping.`);
+        continue;
+      }
+
+      // Remove any "-- up" marker from the up SQL if present
+      const upSql = upDownSplit[0].replace(/^--\s*up\s*$/im, "").trim();
+      const downSql = upDownSplit[1].trim();
+
+      migrations.push({ id, name, upSql, downSql });
     }
 
     // Sort migrations by ID
     migrations.sort((a, b) => a.id - b.id);
 
-    // Apply pending migrations
-    for (const migration of migrations) {
-      if (!appliedMigrations.has(migration.id)) {
-        console.log(`Applying migration ${migration.id}: ${migration.name}`);
+    if (direction === "up") {
+      // Apply pending migrations up to target (or all if target not specified)
+      for (const migration of migrations) {
+        if (options.target !== undefined && migration.id > options.target) {
+          break;
+        }
 
-        // Run the migration in a transaction
+        if (!appliedMigrations.has(migration.id)) {
+          console.log(`Applying migration ${migration.id}: ${migration.name}`);
+
+          // Run the migration in a transaction
+          await connection.run("BEGIN TRANSACTION");
+          try {
+            await connection.run(migration.upSql);
+            await connection.run(
+              `INSERT INTO migrations (id, name) VALUES (?, ?)`,
+              [migration.id, migration.name],
+            );
+            await connection.run("COMMIT");
+            console.log(`Migration ${migration.id} applied successfully`);
+          } catch (error) {
+            await connection.run("ROLLBACK");
+            console.error(`Error applying migration ${migration.id}:`, error);
+            throw error;
+          }
+        }
+      }
+    } else {
+      // Roll back migrations down to target (or all if target not specified)
+      // Get all applied migrations in reverse order
+      const appliedMigrationIds = Array.from(appliedMigrations.keys()).sort(
+        (a, b) => b - a,
+      );
+
+      for (const id of appliedMigrationIds) {
+        // If target is specified and we've reached or gone below it, stop
+        if (options.target !== undefined && id <= options.target) {
+          break;
+        }
+
+        // Find the migration object
+        const migration = migrations.find((m) => m.id === id);
+        if (!migration) {
+          console.warn(`Cannot find migration with ID ${id} to roll back`);
+          continue;
+        }
+
+        console.log(`Rolling back migration ${id}: ${migration.name}`);
+
+        // Run the down migration in a transaction
         await connection.run("BEGIN TRANSACTION");
         try {
-          await connection.run(migration.sql);
-          await connection.run(
-            `INSERT INTO migrations (id, name) VALUES (?, ?)`,
-            [migration.id, migration.name],
-          );
+          await connection.run(migration.downSql);
+          await connection.run(`DELETE FROM migrations WHERE id = ?`, [id]);
           await connection.run("COMMIT");
-          console.log(`Migration ${migration.id} applied successfully`);
+          console.log(`Migration ${id} rolled back successfully`);
         } catch (error) {
           await connection.run("ROLLBACK");
-          console.error(`Error applying migration ${migration.id}:`, error);
+          console.error(`Error rolling back migration ${id}:`, error);
           throw error;
         }
       }
     }
 
-    console.log("All migrations applied successfully");
+    console.log(
+      `All migrations ${
+        direction === "up" ? "applied" : "rolled back"
+      } successfully`,
+    );
   } catch (error) {
     console.error("Error running migrations:", error);
     throw error;
