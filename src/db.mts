@@ -1,4 +1,5 @@
 import { DuckDBInstance } from "@duckdb/node-api";
+import { runMigrations } from "./migrations.mts";
 
 let instance: DuckDBInstance;
 let connection: any;
@@ -8,6 +9,15 @@ export async function initializeDB() {
     try {
       instance = await DuckDBInstance.create("data/database.db");
       connection = await instance.connect();
+
+      // Create migrations table first
+      await connection.run(`
+          CREATE TABLE IF NOT EXISTS migrations (
+              id INTEGER PRIMARY KEY,
+              name VARCHAR NOT NULL,
+              applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+      `);
 
       // Create sequence for workspace IDs
       // 1-29 is the index range of tags in my dwm setup which
@@ -46,6 +56,9 @@ export async function initializeDB() {
                 FOREIGN KEY (activityId) REFERENCES activities(activityId)
             );
         `);
+
+      // Run migrations after basic tables are created
+      await runMigrations();
     } catch (error) {
       console.error("Error initializing database:", error);
       throw error;
