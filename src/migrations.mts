@@ -20,12 +20,17 @@ export async function runMigrations(
   const direction = options.direction || "up";
   const connection = await getConnection();
 
-  // Get applied migrations
-  const reader = await connection.runAndReadAll(
+  // Get applied migrations (TOFIX hacks)
+  const result = await connection.run(
     `SELECT id, name FROM migrations ORDER BY id`,
   );
-  const rows = reader.getRows();
-  const appliedMigrations = new Map(rows.map((row: any) => [row.id, row.name]));
+  const chunks = await result.fetchAllChunks();
+  let rows = [];
+  if (chunks.length > 0) {
+    rows = chunks[0].getRows();
+  }
+
+  const appliedMigrations = new Map(rows.map((row: any) => [row[0], row[1]]));
 
   // Load migration files
   const migrationsDir = path.join(process.cwd(), "migrations");

@@ -56,8 +56,8 @@ export async function initializeDB() {
             );
         `);
 
-      // Run migrations after basic tables are created
-      await runMigrations();
+      // Run migrations explicitly
+      // await runMigrations();
     } catch (error) {
       console.error("Error initializing database:", error);
       throw error;
