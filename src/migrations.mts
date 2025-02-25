@@ -21,12 +21,11 @@ export async function runMigrations(
   const connection = await getConnection();
 
   // Get applied migrations
-  const result = await connection.query(
+  const reader = await connection.runAndReadAll(
     `SELECT id, name FROM migrations ORDER BY id`,
   );
-  const appliedMigrations = new Map(
-    result.map((row: any) => [row.id, row.name]),
-  );
+  const rows = reader.getRows();
+  const appliedMigrations = new Map(rows.map((row: any) => [row.id, row.name]));
 
   // Load migration files
   const migrationsDir = path.join(process.cwd(), "migrations");
