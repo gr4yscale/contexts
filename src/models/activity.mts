@@ -18,7 +18,6 @@ export default async function activityDTO() {
       orgId,
       orgText,
       name,
-      dwmTag,
       created,
       lastAccessed,
       active,
@@ -28,17 +27,16 @@ export default async function activityDTO() {
       await connection.run(
         `
               INSERT INTO activities (
-                  activityId, orgId, orgText, name, dwmTag, created, lastAccessed,
+                  activityId, orgId, orgText, name, created, lastAccessed,
                   active
               ) VALUES 
-              (?, ?, ?, ?, ?, ?, ?, ?);
+              (?, ?, ?, ?, ?, ?, ?);
           `,
         [
           activityId,
           orgId ?? "",
           orgText ?? "",
           name,
-          dwmTag ?? 100,
           created.toISOString(),
           lastAccessed.toISOString(),
           active,
@@ -68,10 +66,9 @@ export default async function activityDTO() {
         orgId: row[1],
         orgText: row[2],
         name: row[3],
-        dwmTag: row[4],
-        created: new Date(row[5]),
-        lastAccessed: new Date(row[6]),
-        active: row[7],
+        created: new Date(row[4]),
+        lastAccessed: new Date(row[5]),
+        active: row[6],
       };
     } catch (error) {
       console.error("Error getting activity:", error);
@@ -93,10 +90,9 @@ export default async function activityDTO() {
         orgId: row[1],
         orgText: row[2],
         name: row[3],
-        dwmTag: row[4],
-        created: new Date(row[5]),
-        lastAccessed: new Date(row[6]),
-        active: row[7],
+        created: new Date(row[4]),
+        lastAccessed: new Date(row[5]),
+        active: row[6],
       }));
     } catch (error) {
       console.error("Error getting all activities:", error);
@@ -109,14 +105,13 @@ export default async function activityDTO() {
       const fields: string[] = [];
       const values: any[] = [];
 
-      const { orgId, orgText, name, dwmTag, lastAccessed, active, activityId } =
+      const { orgId, orgText, name, lastAccessed, active, activityId } =
         activity;
 
       const fieldMappings: [string, any][] = [
         ["orgId = ?", orgId],
         ["orgText = ?", orgText],
         ["name = ?", name],
-        ["dwmTag = ?", dwmTag],
         ["lastAccessed = ?", lastAccessed?.toISOString()],
         ["active = ?", active],
       ];
@@ -172,10 +167,9 @@ export default async function activityDTO() {
         orgId: row[1],
         orgText: row[2],
         name: row[3],
-        dwmTag: row[4],
-        created: new Date(row[5]),
-        lastAccessed: new Date(row[6]),
-        active: row[7],
+        created: new Date(row[4]),
+        lastAccessed: new Date(row[5]),
+        active: row[6],
       }));
     } catch (error) {
       console.error("Error getting active activities:", error);

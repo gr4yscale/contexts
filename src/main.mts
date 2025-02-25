@@ -10,8 +10,6 @@ import { handleCommand } from "./handleCommand.mts";
 
 // import { activitiesActive } from "./activityList.mts";
 
-//import { syncWorkspaces } from "./workspaces.mts";
-
 import Root from "./ui/common/Root.tsx";
 
 fs.removeSync("/tmp/contexts.sock");

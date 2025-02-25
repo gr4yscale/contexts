@@ -8,6 +8,9 @@
     "scripts": {
         "start": "DEV=true tsx src/main.mts",
         "test": "tsx runSomeTests",
+        "migrate": "tsx src/scripts/migrate.mts",
+        "migrate:up": "tsx src/scripts/migrate.mts up",
+        "migrate:down": "tsx src/scripts/migrate.mts down",
         "build": "esbuild src/main.mts --bundle --platform=node --format=esm --packages=external --outfile=build.mjs"
     },
     "keywords": [],

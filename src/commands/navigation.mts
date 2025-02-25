@@ -75,6 +75,7 @@ export const switchActivity = async () => {
 export const activateActivity = async (id: ActivityId) => {
   let activity: Activity | null;
   activity = await getActivityById(id);
+  if (!activity) return false;
 
   const previousActivity = await getCurrentActivity();
   if (previousActivity && activity) {
@@ -95,7 +96,7 @@ export const activateActivity = async (id: ActivityId) => {
   const result = await viewFirstWorkspaceForActivity(activity.activityId);
 
   if (result) {
-    $`notify-send -a activity -t 500 "${activity.dwmTag}: ${activity.name}"`;
+    $`notify-send -a activity -t 500 "${activity.name}"`;
   } else {
     $`notify-send "No workspace for activity: ${id}"`;
   }

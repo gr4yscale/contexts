@@ -40,7 +40,6 @@ export async function initializeDB() {
                 orgId VARCHAR NULL,
                 orgText VARCHAR NULL,
                 name VARCHAR,
-                dwmTag INTEGER NULL,
                 created TIMESTAMP,
                 lastAccessed TIMESTAMP,
                 active BOOLEAN
