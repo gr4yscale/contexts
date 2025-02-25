@@ -194,7 +194,7 @@ export default async function activityDTO() {
         previousActivityId,
       };
       const stringified = stringify(state);
-      fs.writeFileSync("./state-mini.yml", stringified);
+      fs.writeFileSync("./data/state-mini.yml", stringified);
     } catch (error) {
       console.error("Error updating activity state:", error);
       throw error;
@@ -203,7 +203,7 @@ export default async function activityDTO() {
 
   async function getCurrentActivity(): Promise<Activity | null> {
     try {
-      const file = fs.readFileSync("./state-mini.yml", "utf8");
+      const file = fs.readFileSync("./data/state-mini.yml", "utf8");
       const parsed = parse(file) as ActivityHistoryDoc;
       const currentActivityId = parsed["currentActivityId"] as string;
       return getActivityById(currentActivityId);
@@ -215,7 +215,7 @@ export default async function activityDTO() {
 
   async function getPreviousActivity(): Promise<Activity | null> {
     try {
-      const file = fs.readFileSync("./state-mini.yml", "utf8");
+      const file = fs.readFileSync("./data/state-mini.yml", "utf8");
       const parsed = parse(file) as ActivityHistoryDoc;
       const previousActivityId = parsed["previousActivityId"] as string;
       return getActivityById(previousActivityId);
