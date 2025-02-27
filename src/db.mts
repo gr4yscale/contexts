@@ -1,18 +1,26 @@
-import { DuckDBInstance } from "@duckdb/node-api";
+import { Pool, PoolClient } from 'pg';
 
-let instance: DuckDBInstance;
-let connection: any;
+// Create a connection pool
+const pool = new Pool({
+  host: 'localhost',
+  port: 5432,
+  user: 'postgres',
+  password: 'postgres',
+  database: 'contexts',
+});
+
+let client: PoolClient | null = null;
 
 export async function initializeDB() {
-  if (!connection) {
+  if (!client) {
     try {
-      instance = await DuckDBInstance.create("data/database.db");
-      connection = await instance.connect();
+      // Get a client from the pool
+      client = await pool.connect();
 
       // Create migrations table first
-      await connection.run(`
+      await client.query(`
           CREATE TABLE IF NOT EXISTS migrations (
-              id INTEGER PRIMARY KEY,
+              id SERIAL PRIMARY KEY,
               name VARCHAR NOT NULL,
               applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           );
@@ -24,16 +32,21 @@ export async function initializeDB() {
   }
 }
 
-export async function getConnection(): Promise<any> {
+export async function getConnection(): Promise<PoolClient> {
   await initializeDB();
-  return connection;
+  if (!client) {
+    throw new Error("Database connection not initialized");
+  }
+  return client;
 }
 
 export async function closeDB(): Promise<void> {
   try {
-    if (connection) {
-      await connection.close();
+    if (client) {
+      await client.release();
+      client = null;
     }
+    await pool.end();
   } catch (error) {
     console.error("Error closing database connection:", error);
     throw error;

@@ -7,10 +7,10 @@ export interface WorkspaceDTO {
   activityName?: string;
 }
 
+
 export async function getAllWorkspaces(): Promise<WorkspaceDTO[]> {
-  const conn = await getConnection();
-  const result = await conn.run(
-    `
+  const client = await getConnection();
+  const result = await client.query(`
     SELECT 
       w.id, 
       w.activityId, 
@@ -19,19 +19,17 @@ export async function getAllWorkspaces(): Promise<WorkspaceDTO[]> {
     FROM workspaces w
     LEFT JOIN activities a ON w.activityId = a.activityId
     ORDER BY w.id ASC;
-    `,
-  );
+  `);
 
-  const rows = await result.fetchAllChunks();
-  if (!rows || rows.length === 0) {
+  if (!result.rows || result.rows.length === 0) {
     return [];
   }
 
-  return rows[0].getRows().map((row: any) => ({
-    id: row[0],
-    activityId: row[1],
-    name: row[2],
-    activityName: row[3],
+  return result.rows.map((row) => ({
+    id: row.id,
+    activityId: row.activityid,
+    name: row.name,
+    activityName: row.activityname,
   }));
 }
 
@@ -49,9 +47,9 @@ export async function createWorkspaceForActivity(
   activityId: string,
   name: string,
 ): Promise<WorkspaceDTO> {
-  const conn = await getConnection();
+  const client = await getConnection();
   try {
-    const result = await conn.run(
+    const result = await client.query(
       `
       WITH RECURSIVE workspace_insert AS (
         SELECT 
@@ -83,17 +81,16 @@ export async function createWorkspaceForActivity(
         LIMIT 1
       ) available_id
       RETURNING id, activityId, name;
-      `,
+    `,
       [activityId, name],
     );
 
-    const rows = await result.fetchAllChunks();
-    if (rows && rows.length > 0) {
-      const row = rows[0].getRows()[0];
+    if (result.rows && result.rows.length > 0) {
+      const row = result.rows[0];
       return {
-        id: row[0],
-        activityId: row[1],
-        name: row[2],
+        id: row.id,
+        activityId: row.activityid,
+        name: row.name,
       };
     }
     //console.log("Failed to create workspace - no available IDs found");
@@ -111,18 +108,22 @@ export async function updateWorkspace(
   try {
     const fields: string[] = [];
     const values: any[] = [];
+    const params: string[] = [];
 
     const { id, activityId, name } = workspace;
 
     const fieldMappings: [string, any][] = [
-      ["activityId = ?", activityId],
-      ["name = ?", name],
+      ["activityId", activityId],
+      ["name", name],
     ];
 
+    let paramIndex = 1;
     fieldMappings.forEach(([field, value]) => {
       if (value !== undefined) {
-        fields.push(field);
+        fields.push(`${field} = $${paramIndex}`);
+        params.push(`$${paramIndex}`);
         values.push(value);
+        paramIndex++;
       }
     });
 
@@ -130,11 +131,13 @@ export async function updateWorkspace(
       throw new Error("No fields to update");
     }
 
-    const query = `UPDATE workspaces SET ${fields.join(", ")} WHERE id = ?`;
+    const query = `UPDATE workspaces SET ${fields.join(
+      ", ",
+    )} WHERE id = $${paramIndex}`;
     values.push(id);
 
-    const conn = await getConnection();
-    await conn.run(query, values);
+    const client = await getConnection();
+    await client.query(query, values);
   } catch (error) {
     console.error("Error updating workspace:", error);
     throw error;
@@ -146,9 +149,9 @@ export async function assignWorkspaceToActivity(
   activityId: string,
 ): Promise<void> {
   try {
-    const query = `UPDATE workspaces SET activityId = ? WHERE id = ?`;
-    const conn = await getConnection();
-    await conn.run(query, [activityId, workspaceId]);
+    const query = `UPDATE workspaces SET activityId = $1 WHERE id = $2`;
+    const client = await getConnection();
+    await client.query(query, [activityId, workspaceId]);
   } catch (error) {
     console.error("Error assigning workspace to activity:", error);
     throw error;
@@ -158,8 +161,8 @@ export async function assignWorkspaceToActivity(
 export async function getWorkspacesForActivity(
   activityId: string,
 ): Promise<WorkspaceDTO[]> {
-  const conn = await getConnection();
-  const result = await conn.run(
+  const client = await getConnection();
+  const result = await client.query(
     `
     SELECT 
       w.id, 
@@ -168,28 +171,27 @@ export async function getWorkspacesForActivity(
       a.name as activityName
     FROM workspaces w
     LEFT JOIN activities a ON w.activityId = a.activityId
-    WHERE w.activityId = ?
+    WHERE w.activityId = $1
     ORDER BY w.id ASC;
-    `,
+  `,
     [activityId],
   );
 
-  const rows = await result.fetchAllChunks();
-  if (!rows || rows.length === 0) {
+  if (!result.rows || result.rows.length === 0) {
     return [];
   }
 
-  return rows[0].getRows().map((row: any) => ({
-    id: row[0],
-    activityId: row[1],
-    name: row[2],
-    activityName: row[3],
+  return result.rows.map((row) => ({
+    id: row.id,
+    activityId: row.activityid,
+    name: row.name,
+    activityName: row.activityname,
   }));
 }
 
 export async function getWorkspaceById(id: number): Promise<WorkspaceDTO> {
-  const conn = await getConnection();
-  const result = await conn.run(
+  const client = await getConnection();
+  const result = await client.query(
     `
     SELECT 
       w.id, 
@@ -198,29 +200,28 @@ export async function getWorkspaceById(id: number): Promise<WorkspaceDTO> {
       a.name as activityName
     FROM workspaces w
     LEFT JOIN activities a ON w.activityId = a.activityId
-    WHERE w.id = ?
-    `,
+    WHERE w.id = $1
+  `,
     [id],
   );
 
-  const rows = await result.fetchAllChunks();
-  if (!rows || rows.length === 0 || rows[0].getRows().length === 0) {
+  if (!result.rows || result.rows.length === 0) {
     throw new Error(`Workspace with id ${id} not found`);
   }
 
-  const row = rows[0].getRows()[0];
+  const row = result.rows[0];
   return {
-    id: row[0],
-    activityId: row[1],
-    name: row[2],
-    activityName: row[3],
+    id: row.id,
+    activityId: row.activityid,
+    name: row.name,
+    activityName: row.activityname,
   };
 }
 
 export async function deleteWorkspaceById(id: number): Promise<void> {
   try {
-    const conn = await getConnection();
-    await conn.run("DELETE FROM workspaces WHERE id = ?", [id]);
+    const client = await getConnection();
+    await client.query("DELETE FROM workspaces WHERE id = $1", [id]);
   } catch (error) {
     console.error("Error deleting workspace:", error);
     throw error;

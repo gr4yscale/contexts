@@ -10,7 +10,7 @@ type ActivityHistoryDoc = {
 };
 
 export default async function activityDTO() {
-  const connection = await getConnection();
+  const client = await getConnection();
 
   async function createActivity(activity: Activity): Promise<void> {
     const {
@@ -24,13 +24,13 @@ export default async function activityDTO() {
     } = activity;
 
     try {
-      await connection.run(
+      await client.query(
         `
               INSERT INTO activities (
                   activityId, orgId, orgText, name, created, lastAccessed,
                   active
               ) VALUES 
-              (?, ?, ?, ?, ?, ?, ?);
+              ($1, $2, $3, $4, $5, $6, $7);
           `,
         [
           activityId,
@@ -50,25 +50,24 @@ export default async function activityDTO() {
 
   async function getActivityById(activityId: string): Promise<Activity | null> {
     try {
-      const result = await connection.run(
-        "SELECT * FROM activities WHERE activityId = ?;",
+      const result = await client.query(
+        "SELECT * FROM activities WHERE activityId = $1;",
         [activityId],
       );
 
-      const rows = await result.fetchAllChunks();
-      if (rows.length === 0 || rows[0].rowCount === 0) {
+      if (result.rows.length === 0) {
         return null;
       }
 
-      const row = rows[0].getRows()[0];
+      const row = result.rows[0];
       return {
-        activityId: row[0],
-        orgId: row[1],
-        orgText: row[2],
-        name: row[3],
-        created: new Date(row[4]),
-        lastAccessed: new Date(row[5]),
-        active: row[6],
+        activityId: row.activityid,
+        orgId: row.orgid,
+        orgText: row.orgtext,
+        name: row.name,
+        created: new Date(row.created),
+        lastAccessed: new Date(row.lastaccessed),
+        active: row.active,
       };
     } catch (error) {
       console.error("Error getting activity:", error);
@@ -78,21 +77,20 @@ export default async function activityDTO() {
 
   async function getAllActivities(): Promise<Activity[]> {
     try {
-      const result = await connection.run("SELECT * FROM activities;");
-      const rows = await result.fetchAllChunks();
+      const result = await client.query("SELECT * FROM activities;");
 
-      if (rows.length === 0) {
+      if (result.rows.length === 0) {
         return [];
       }
 
-      return rows[0].getRows().map((row: any) => ({
-        activityId: row[0],
-        orgId: row[1],
-        orgText: row[2],
-        name: row[3],
-        created: new Date(row[4]),
-        lastAccessed: new Date(row[5]),
-        active: row[6],
+      return result.rows.map((row: any) => ({
+        activityId: row.activityid,
+        orgId: row.orgid,
+        orgText: row.orgtext,
+        name: row.name,
+        created: new Date(row.created),
+        lastAccessed: new Date(row.lastaccessed),
+        active: row.active,
       }));
     } catch (error) {
       console.error("Error getting all activities:", error);
@@ -109,17 +107,19 @@ export default async function activityDTO() {
         activity;
 
       const fieldMappings: [string, any][] = [
-        ["orgId = ?", orgId],
-        ["orgText = ?", orgText],
-        ["name = ?", name],
-        ["lastAccessed = ?", lastAccessed?.toISOString()],
-        ["active = ?", active],
+        ["orgId", orgId],
+        ["orgText", orgText],
+        ["name", name],
+        ["lastAccessed", lastAccessed?.toISOString()],
+        ["active", active],
       ];
 
+      let paramIndex = 1;
       fieldMappings.forEach(([field, value]) => {
         if (value !== undefined) {
-          fields.push(field);
+          fields.push(`${field} = $${paramIndex}`);
           values.push(value);
+          paramIndex++;
         }
       });
 
@@ -131,9 +131,9 @@ export default async function activityDTO() {
 
       const query = `UPDATE activities SET ${fields.join(
         ", ",
-      )} WHERE activityId = ?;`;
+      )} WHERE activityId = $${paramIndex};`;
 
-      await connection.run(query, values);
+      await client.query(query, values);
     } catch (error) {
       console.error("Error updating activity:", error);
       throw error;
@@ -142,7 +142,7 @@ export default async function activityDTO() {
 
   async function deleteActivity(activityId: string): Promise<void> {
     try {
-      await connection.run("DELETE FROM activities WHERE activityId = ?;", [
+      await client.query("DELETE FROM activities WHERE activityId = $1;", [
         activityId,
       ]);
     } catch (error) {
@@ -153,23 +153,22 @@ export default async function activityDTO() {
 
   async function getActiveActivities(): Promise<Activity[]> {
     try {
-      const result = await connection.run(
+      const result = await client.query(
         "SELECT * FROM activities WHERE active = true;",
       );
-      const rows = await result.fetchAllChunks();
 
-      if (rows.length === 0) {
+      if (result.rows.length === 0) {
         return [];
       }
 
-      return rows[0].getRows().map((row: any) => ({
-        activityId: row[0],
-        orgId: row[1],
-        orgText: row[2],
-        name: row[3],
-        created: new Date(row[4]),
-        lastAccessed: new Date(row[5]),
-        active: row[6],
+      return result.rows.map((row: any) => ({
+        activityId: row.activityid,
+        orgId: row.orgid,
+        orgText: row.orgtext,
+        name: row.name,
+        created: new Date(row.created),
+        lastAccessed: new Date(row.lastaccessed),
+        active: row.active,
       }));
     } catch (error) {
       console.error("Error getting active activities:", error);
