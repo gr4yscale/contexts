@@ -16,31 +16,11 @@ export type Activity = {
   orgId?: string;
   orgText?: string;
   name: string;
-  dwmTag?: number;
   created: Date;
   lastAccessed: Date;
   active: boolean;
   parentActivityId?: string;
 };
-
-// export type Activity = {
-//   activityId: ActivityId;
-//   orgId: OrgId;
-//   orgText: string;
-//   name: string;
-//   dwmTag?: number;
-//   created: Date;
-//   lastAccessed: Date;
-//   active: boolean;
-//   scripts: string[];
-//   emacsWindowBookmarks: EmacsBookmark[];
-//   emacsOrgBookmarks: EmacsBookmark[];
-//   tags: string[];
-//   linkGroups: LinkGroup[];
-//   links: Link[];
-//   actions: string[];
-//   browserStates: BrowserState[];
-// };
 
 export type Tag = string;
 
