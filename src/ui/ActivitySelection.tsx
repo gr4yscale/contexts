@@ -6,9 +6,7 @@ import SelectionList from "./common/SelectionList.tsx";
 import { key, KeymapConfig } from "./common/Keymapping.mts";
 import { KeysContext } from "./common/Context.mts";
 
-import activityDTO from "../models/activity.mts";
-
-const { getActiveActivities } = await activityDTO();
+import { getActiveActivities } from "../models/activity.mts";
 
 type ActivityItem = { id: string; display: string; data: Activity };
 type ActivityStates = "initial" | "find";

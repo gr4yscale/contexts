@@ -18,16 +18,14 @@ import {
   viewFirstWorkspaceForActivity,
 } from "../workspaces.mts";
 
-import activityDTO from "../models/activity.mts";
-
-const {
+import {
   getActivityById,
   getAllActivities,
   getCurrentActivity,
   getPreviousActivity,
   updateActivityHistory,
   updateActivity,
-} = await activityDTO();
+} from "../models/activity.mts";
 
 export const showTUI = async () => {
   // dwm tag 1 is reserved for the TUI

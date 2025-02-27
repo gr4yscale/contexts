@@ -27,8 +27,7 @@ import {
   loadLastBrowserStateForActiveActivities,
 } from "./browser.mts";
 
-import activityDTO from "./models/activity.mts";
-const { getCurrentActivity } = await activityDTO();
+import { getCurrentActivity } from "./models/activity.mts";
 
 type Listener = (command: string) => void;
 let listeners: Listener[] = [];

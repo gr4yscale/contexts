@@ -7,9 +7,7 @@ import {
   deleteWorkspaceById,
 } from "./models/workspace.mts";
 
-import activityDTO from "./models/activity.mts";
-
-const { getCurrentActivity } = await activityDTO();
+import { getCurrentActivity } from "./models/activity.mts";
 
 $.verbose = false; // suppress stdout from zx subprocess calls
 
