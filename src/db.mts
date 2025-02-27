@@ -1,4 +1,6 @@
-import { Pool, PoolClient } from 'pg';
+import pg from "pg";
+const { Pool } = pg;
+type PoolClient = pg.PoolClient;
 
 // Create a connection pool
 const pool = new Pool({
