@@ -11,6 +11,8 @@
         "test:watch": "vitest",
         "test:coverage": "vitest run --coverage",
         "test:integration": "RUN_INTEGRATION_TESTS=true vitest run src/db.test.mts",
+        "test:integration:workspace": "RUN_INTEGRATION_TESTS=true vitest run src/models/workspace.test.mts",
+        "test:integration:all": "RUN_INTEGRATION_TESTS=true vitest run \"**/*.test.mts\"",
         "migrate:up": "tsx src/scripts/migrate.mts up",
         "migrate:down": "tsx src/scripts/migrate.mts down",
         "build": "esbuild src/main.mts --bundle --platform=node --format=esm --packages=external --outfile=build.mjs"
