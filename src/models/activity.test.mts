@@ -7,6 +7,7 @@ import {
   updateActivity,
   deleteActivity,
   getActiveActivities,
+  activityTree,
 } from "./activity.mts";
 import { Activity } from "../types.mts";
 import * as fs from "fs";
@@ -374,5 +375,161 @@ testSuite("Activity Model Integration Tests", () => {
     expect(await getActivityById(testActivity1.activityId)).toBeNull();
     expect(await getActivityById(childActivity.activityId)).toBeNull();
     expect(await getActivityById(grandchildActivity.activityId)).toBeNull();
+  });
+
+  it("should retrieve activity tree with correct hierarchy and depth", async () => {
+    // Create a three-level hierarchy:
+    // Root
+    // ├── Child 1
+    // │   └── Grandchild 1
+    // └── Child 2
+    
+    // Create root activity
+    const rootActivity: Activity = {
+      activityId: "root-activity",
+      name: "Root Activity",
+      created: new Date(),
+      lastAccessed: new Date(),
+      active: true,
+    };
+    await createActivity(rootActivity);
+
+    // Create first child activity
+    const child1Activity: Activity = {
+      activityId: "child-activity-1",
+      name: "Child Activity 1",
+      created: new Date(),
+      lastAccessed: new Date(),
+      active: true,
+      parentActivityId: rootActivity.activityId,
+    };
+    await createActivity(child1Activity);
+
+    // Create second child activity
+    const child2Activity: Activity = {
+      activityId: "child-activity-2",
+      name: "Child Activity 2",
+      created: new Date(),
+      lastAccessed: new Date(),
+      active: true,
+      parentActivityId: rootActivity.activityId,
+    };
+    await createActivity(child2Activity);
+
+    // Create grandchild activity
+    const grandchildActivity: Activity = {
+      activityId: "grandchild-activity",
+      name: "Grandchild Activity",
+      created: new Date(),
+      lastAccessed: new Date(),
+      active: true,
+      parentActivityId: child1Activity.activityId,
+    };
+    await createActivity(grandchildActivity);
+
+    // Get the activity tree
+    const tree = await activityTree();
+
+    // Verify tree structure
+    expect(tree).toHaveLength(4); // Root + 2 children + 1 grandchild
+
+    // Find each activity in the tree
+    const rootInTree = tree.find(a => a.activityId === rootActivity.activityId);
+    const child1InTree = tree.find(a => a.activityId === child1Activity.activityId);
+    const child2InTree = tree.find(a => a.activityId === child2Activity.activityId);
+    const grandchildInTree = tree.find(a => a.activityId === grandchildActivity.activityId);
+
+    // Verify all activities are in the tree
+    expect(rootInTree).toBeDefined();
+    expect(child1InTree).toBeDefined();
+    expect(child2InTree).toBeDefined();
+    expect(grandchildInTree).toBeDefined();
+
+    // Verify correct depth values
+    expect(rootInTree?.depth).toBe(0);
+    expect(child1InTree?.depth).toBe(1);
+    expect(child2InTree?.depth).toBe(1);
+    expect(grandchildInTree?.depth).toBe(2);
+
+    // Verify parent-child relationships
+    expect(rootInTree?.parentActivityId).toBeNull();
+    expect(child1InTree?.parentActivityId).toBe(rootActivity.activityId);
+    expect(child2InTree?.parentActivityId).toBe(rootActivity.activityId);
+    expect(grandchildInTree?.parentActivityId).toBe(child1Activity.activityId);
+
+    // Verify ordering (parents should come before their children)
+    const rootIndex = tree.findIndex(a => a.activityId === rootActivity.activityId);
+    const child1Index = tree.findIndex(a => a.activityId === child1Activity.activityId);
+    const child2Index = tree.findIndex(a => a.activityId === child2Activity.activityId);
+    const grandchildIndex = tree.findIndex(a => a.activityId === grandchildActivity.activityId);
+
+    expect(rootIndex).toBeLessThan(child1Index);
+    expect(rootIndex).toBeLessThan(child2Index);
+    expect(child1Index).toBeLessThan(grandchildIndex);
+  });
+
+  it("should limit activity tree depth to 3 levels", async () => {
+    // Create a four-level hierarchy to test depth limitation:
+    // Root
+    // └── Level 1
+    //     └── Level 2
+    //         └── Level 3 (should be included)
+    //             └── Level 4 (should NOT be included)
+    
+    // Create activities for each level
+    const activities: Activity[] = [];
+    
+    // Create root activity (level 0)
+    const rootActivity: Activity = {
+      activityId: "depth-root",
+      name: "Depth Root",
+      created: new Date(),
+      lastAccessed: new Date(),
+      active: true,
+    };
+    await createActivity(rootActivity);
+    activities.push(rootActivity);
+    
+    // Create child activities for levels 1-4
+    let parentId = rootActivity.activityId;
+    for (let i = 1; i <= 4; i++) {
+      const activity: Activity = {
+        activityId: `depth-level-${i}`,
+        name: `Depth Level ${i}`,
+        created: new Date(),
+        lastAccessed: new Date(),
+        active: true,
+        parentActivityId: parentId,
+      };
+      await createActivity(activity);
+      activities.push(activity);
+      parentId = activity.activityId;
+    }
+    
+    // Get the activity tree
+    const tree = await activityTree();
+    
+    // Find our test activities in the tree
+    const treeActivityIds = tree.map(a => a.activityId);
+    
+    // Verify levels 0-3 are included
+    expect(treeActivityIds).toContain("depth-root");
+    expect(treeActivityIds).toContain("depth-level-1");
+    expect(treeActivityIds).toContain("depth-level-2");
+    expect(treeActivityIds).toContain("depth-level-3");
+    
+    // Verify level 4 is NOT included (due to depth limit of 3)
+    expect(treeActivityIds).not.toContain("depth-level-4");
+    
+    // Verify correct depth values for included activities
+    const level0 = tree.find(a => a.activityId === "depth-root");
+    const level1 = tree.find(a => a.activityId === "depth-level-1");
+    const level2 = tree.find(a => a.activityId === "depth-level-2");
+    const level3 = tree.find(a => a.activityId === "depth-level-3");
+    
+    expect(level0?.depth).toBe(0);
+    expect(level1?.depth).toBe(1);
+    expect(level2?.depth).toBe(2);
+    expect(level3?.depth).toBe(3);
   });
 });
