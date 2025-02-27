@@ -4,6 +4,10 @@ import { getConnection } from "../db.mts";
 import { fs } from "zx";
 import { parse, stringify } from "yaml";
 
+export type ActivityTreeItem = Activity & {
+  depth?: number;
+};
+
 type ActivityHistoryDoc = {
   currentActivityId: string;
   previousActivityId: string;
@@ -287,4 +291,87 @@ export async function createChildActivity(
 
   // Use the updated createActivity function which now handles parent_id
   await createActivity(activity);
+}
+
+/**
+ * Recursively fetches activities and their children up to a maximum depth of 3
+ * @returns Array of activities with depth information
+ */
+export async function activityTree(): Promise<ActivityTreeItem[]> {
+  try {
+    const client = await getConnection();
+
+    // This recursive CTE query:
+    // 1. Starts with root activities (parent_id IS NULL)
+    // 2. Recursively joins to find children up to depth 3
+    // 3. Orders results so parents come before children
+    const result = await client.query(`
+      WITH RECURSIVE activity_tree AS (
+        -- Base case: select root activities (no parent)
+        SELECT 
+          activityid, 
+          orgid, 
+          orgtext, 
+          name, 
+          created, 
+          lastaccessed, 
+          active, 
+          parent_id,
+          0 AS depth,
+          ARRAY[activityid] AS path
+        FROM activities
+        WHERE parent_id IS NULL
+        
+        UNION ALL
+        
+        -- Recursive case: select children and increment depth
+        SELECT 
+          a.activityid, 
+          a.orgid, 
+          a.orgtext, 
+          a.name, 
+          a.created, 
+          a.lastaccessed, 
+          a.active, 
+          a.parent_id,
+          at.depth + 1 AS depth,
+          at.path || a.activityid AS path
+        FROM activities a
+        JOIN activity_tree at ON a.parent_id = at.activityid
+        WHERE at.depth < 3  -- Limit recursion to depth 3
+      )
+      
+      SELECT 
+        activityid, 
+        orgid, 
+        orgtext, 
+        name, 
+        created, 
+        lastaccessed, 
+        active, 
+        parent_id,
+        depth
+      FROM activity_tree
+      ORDER BY path;  -- This ensures parents come before children
+    `);
+
+    if (result.rows.length === 0) {
+      return [];
+    }
+
+    return result.rows.map((row: any) => ({
+      activityId: row.activityid,
+      orgId: row.orgid,
+      orgText: row.orgtext,
+      name: row.name,
+      created: new Date(row.created),
+      lastAccessed: new Date(row.lastaccessed),
+      active: row.active,
+      parentActivityId: row.parent_id,
+      depth: row.depth,
+    }));
+  } catch (error) {
+    console.error("Error getting activity tree:", error);
+    throw error;
+  }
 }
