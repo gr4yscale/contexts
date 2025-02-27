@@ -13,7 +13,7 @@ const { getActiveActivities } = await activityDTO();
 type ActivityItem = { id: string; display: string; data: Activity };
 type ActivityStates = "initial" | "find";
 
-const Activity: React.FC = () => {
+const ActivitySelection: React.FC = () => {
   const [mode, setMode] = useState<ActivityStates>("initial");
   const [items, setItems] = useState<Array<ActivityItem>>([]);
 
@@ -109,4 +109,4 @@ const Activity: React.FC = () => {
   );
 };
 
-export default Activity;
+export default ActivitySelection;
