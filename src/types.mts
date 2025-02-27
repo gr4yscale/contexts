@@ -20,6 +20,7 @@ export type Activity = {
   created: Date;
   lastAccessed: Date;
   active: boolean;
+  parentActivityId?: string;
 };
 
 // export type Activity = {

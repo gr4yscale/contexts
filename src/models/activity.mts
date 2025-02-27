@@ -19,9 +19,9 @@ export async function createActivity(activity: Activity): Promise<void> {
       `
               INSERT INTO activities (
                   activityId, orgId, orgText, name, created, lastAccessed,
-                  active
+                  active, parent_id
               ) VALUES 
-              ($1, $2, $3, $4, $5, $6, $7);
+              ($1, $2, $3, $4, $5, $6, $7, $8);
           `,
       [
         activityId,
@@ -31,6 +31,7 @@ export async function createActivity(activity: Activity): Promise<void> {
         created.toISOString(),
         lastAccessed.toISOString(),
         active,
+        activity.parentActivityId || null,
       ],
     );
   } catch (error) {
@@ -62,6 +63,7 @@ export async function getActivityById(
       created: new Date(row.created),
       lastAccessed: new Date(row.lastaccessed),
       active: row.active,
+      parentActivityId: row.parent_id,
     };
   } catch (error) {
     console.error("Error getting activity:", error);
@@ -86,6 +88,7 @@ export async function getAllActivities(): Promise<Activity[]> {
       created: new Date(row.created),
       lastAccessed: new Date(row.lastaccessed),
       active: row.active,
+      parentActivityId: row.parent_id,
     }));
   } catch (error) {
     console.error("Error getting all activities:", error);
@@ -168,6 +171,7 @@ export async function getActiveActivities(): Promise<Activity[]> {
       created: new Date(row.created),
       lastAccessed: new Date(row.lastaccessed),
       active: row.active,
+      parentActivityId: row.parent_id,
     }));
   } catch (error) {
     console.error("Error getting active activities:", error);
@@ -215,4 +219,55 @@ export async function getPreviousActivity(): Promise<Activity | null> {
     console.error("Error retrieving previous activity:", error);
     throw error;
   }
+}
+
+/**
+ * Gets all child activities for a given parent activity
+ * @param parentActivityId The ID of the parent activity
+ * @returns Array of child activities
+ */
+export async function getChildActivities(
+  parentActivityId: string,
+): Promise<Activity[]> {
+  try {
+    const client = await getConnection();
+    const result = await client.query(
+      "SELECT * FROM activities WHERE parent_id = $1;",
+      [parentActivityId],
+    );
+
+    if (result.rows.length === 0) {
+      return [];
+    }
+
+    return result.rows.map((row: any) => ({
+      activityId: row.activityid,
+      orgId: row.orgid,
+      orgText: row.orgtext,
+      name: row.name,
+      created: new Date(row.created),
+      lastAccessed: new Date(row.lastaccessed),
+      active: row.active,
+      parentActivityId: row.parent_id,
+    }));
+  } catch (error) {
+    console.error("Error getting child activities:", error);
+    throw error;
+  }
+}
+
+/**
+ * Creates a new activity as a child of the specified parent activity
+ * @param activity The activity to create
+ * @param parentActivityId The ID of the parent activity
+ */
+export async function createChildActivity(
+  activity: Activity,
+  parentActivityId: string,
+): Promise<void> {
+  // Set the parentActivityId on the activity object
+  activity.parentActivityId = parentActivityId;
+
+  // Use the updated createActivity function which now handles parent_id
+  await createActivity(activity);
 }

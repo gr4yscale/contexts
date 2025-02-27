@@ -48,7 +48,7 @@ testSuite("Activity Model Integration Tests", () => {
     try {
       // Setup shared database
       await setupTestDatabase();
-      
+
       // Create temp directory for state files
       if (!fs.existsSync(tempDir)) {
         fs.mkdirSync(tempDir, { recursive: true });
@@ -63,7 +63,7 @@ testSuite("Activity Model Integration Tests", () => {
       // Create test tables
       const client = await getConnection();
 
-      // Create activities table if it doesn't exist
+      // Create activities table if it doesn't exist (including parent_id from migration 003)
       await client.query(`
         CREATE TABLE IF NOT EXISTS activities (
           activityId VARCHAR PRIMARY KEY,
@@ -72,7 +72,8 @@ testSuite("Activity Model Integration Tests", () => {
           name VARCHAR NOT NULL,
           created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           lastAccessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          active BOOLEAN DEFAULT FALSE
+          active BOOLEAN DEFAULT FALSE,
+          parent_id VARCHAR NULL REFERENCES activities(activityId)
         );
       `);
 
@@ -107,7 +108,7 @@ testSuite("Activity Model Integration Tests", () => {
       if (fs.existsSync(tempDir)) {
         fs.rmSync(tempDir, { recursive: true, force: true });
       }
-      
+
       // Always teardown after tests
       await teardownTestDatabase();
     } catch (error) {
@@ -241,5 +242,140 @@ testSuite("Activity Model Integration Tests", () => {
 
     // Verify empty array was returned
     expect(activities).toHaveLength(0);
+  });
+
+  it("should create an activity with a parent-child relationship", async () => {
+    // Create parent activity
+    await createActivity(testActivity1);
+
+    // Create child activity with parent reference
+    const childActivity: Activity = {
+      activityId: "child-activity-1",
+      name: "Child Activity 1",
+      created: new Date(),
+      lastAccessed: new Date(),
+      active: true,
+      parentActivityId: testActivity1.activityId,
+    };
+
+    await createActivity(childActivity);
+
+    // Verify the child activity was created with correct parent reference
+    const retrievedChild = await getActivityById(childActivity.activityId);
+    expect(retrievedChild).toBeDefined();
+    expect(retrievedChild?.parentActivityId).toBe(testActivity1.activityId);
+  });
+
+  it("should get child activities of a parent", async () => {
+    // First create a test function to get children
+    const getChildActivities = async (
+      parentId: string,
+    ): Promise<Activity[]> => {
+      const client = await getConnection();
+      const result = await client.query(
+        "SELECT * FROM activities WHERE parent_id = $1;",
+        [parentId],
+      );
+
+      if (result.rows.length === 0) {
+        return [];
+      }
+
+      return result.rows.map((row: any) => ({
+        activityId: row.activityid,
+        orgId: row.orgid,
+        orgText: row.orgtext,
+        name: row.name,
+        created: new Date(row.created),
+        lastAccessed: new Date(row.lastaccessed),
+        active: row.active,
+        parentActivityId: row.parent_id,
+      }));
+    };
+
+    // Create parent activity
+    await createActivity(testActivity1);
+
+    // Create multiple child activities
+    const childActivity1: Activity = {
+      activityId: "child-activity-1",
+      name: "Child Activity 1",
+      created: new Date(),
+      lastAccessed: new Date(),
+      active: true,
+      parentActivityId: testActivity1.activityId,
+    };
+
+    const childActivity2: Activity = {
+      activityId: "child-activity-2",
+      name: "Child Activity 2",
+      created: new Date(),
+      lastAccessed: new Date(),
+      active: false,
+      parentActivityId: testActivity1.activityId,
+    };
+
+    await createActivity(childActivity1);
+    await createActivity(childActivity2);
+
+    // Get children of parent
+    const children = await getChildActivities(testActivity1.activityId);
+
+    // Verify children were retrieved correctly
+    expect(children).toHaveLength(2);
+    expect(children.map((c) => c.activityId).sort()).toEqual(
+      [childActivity1.activityId, childActivity2.activityId].sort(),
+    );
+
+    // All children should have the correct parent ID
+    children.forEach((child) => {
+      expect(child.parentActivityId).toBe(testActivity1.activityId);
+    });
+  });
+
+  it("should handle deleting a parent activity with children", async () => {
+    // Create parent activity
+    await createActivity(testActivity1);
+
+    // Create child activity
+    const childActivity: Activity = {
+      activityId: "child-activity-1",
+      name: "Child Activity 1",
+      created: new Date(),
+      lastAccessed: new Date(),
+      active: true,
+      parentActivityId: testActivity1.activityId,
+    };
+
+    await createActivity(childActivity);
+
+    // Try to delete the parent (should fail due to foreign key constraint)
+    let error: any;
+    try {
+      await deleteActivity(testActivity1.activityId);
+    } catch (e) {
+      error = e;
+    }
+
+    // Verify the error occurred due to foreign key constraint
+    expect(error).toBeDefined();
+
+    // Verify both activities still exist
+    const parent = await getActivityById(testActivity1.activityId);
+    const child = await getActivityById(childActivity.activityId);
+
+    expect(parent).not.toBeNull();
+    expect(child).not.toBeNull();
+
+    // Now delete the child first, then the parent
+    await deleteActivity(childActivity.activityId);
+    await deleteActivity(testActivity1.activityId);
+
+    // Verify both are now deleted
+    const deletedParent = await getActivityById(testActivity1.activityId);
+    const deletedChild = await getActivityById(childActivity.activityId);
+
+    expect(deletedParent).toBeNull();
+    expect(deletedChild).toBeNull();
   });
 });
