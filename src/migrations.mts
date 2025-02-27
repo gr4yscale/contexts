@@ -20,17 +20,13 @@ export async function runMigrations(
   const direction = options.direction || "up";
   const connection = await getConnection();
 
-  // Get applied migrations (TOFIX hacks)
-  const result = await connection.run(
-    `SELECT id, name FROM migrations ORDER BY id`,
+  // Get applied migrations
+  const result = await connection.query(
+    `SELECT id, name FROM migrations ORDER BY id`
   );
-  const chunks = await result.fetchAllChunks();
-  let rows = [];
-  if (chunks.length > 0) {
-    rows = chunks[0].getRows();
-  }
-
-  const appliedMigrations = new Map(rows.map((row: any) => [row[0], row[1]]));
+  const appliedMigrations = new Map(
+    result.rows.map((row: any) => [row.id, row.name])
+  );
 
   // Load migration files
   const migrationsDir = path.join(process.cwd(), "migrations");
@@ -79,17 +75,17 @@ export async function runMigrations(
           console.log(`Applying migration ${migration.id}: ${migration.name}`);
 
           // Run the migration in a transaction
-          await connection.run("BEGIN TRANSACTION");
+          await connection.query("BEGIN");
           try {
-            await connection.run(migration.upSql);
-            await connection.run(
-              `INSERT INTO migrations (id, name) VALUES (?, ?)`,
-              [migration.id, migration.name],
+            await connection.query(migration.upSql);
+            await connection.query(
+              `INSERT INTO migrations (id, name) VALUES ($1, $2)`,
+              [migration.id, migration.name]
             );
-            await connection.run("COMMIT");
+            await connection.query("COMMIT");
             console.log(`Migration ${migration.id} applied successfully`);
           } catch (error) {
-            await connection.run("ROLLBACK");
+            await connection.query("ROLLBACK");
             console.error(`Error applying migration ${migration.id}:`, error);
             throw error;
           }
@@ -118,14 +114,14 @@ export async function runMigrations(
         console.log(`Rolling back migration ${id}: ${migration.name}`);
 
         // Run the down migration in a transaction
-        await connection.run("BEGIN TRANSACTION");
+        await connection.query("BEGIN");
         try {
-          await connection.run(migration.downSql);
-          await connection.run(`DELETE FROM migrations WHERE id = ?`, [id]);
-          await connection.run("COMMIT");
+          await connection.query(migration.downSql);
+          await connection.query(`DELETE FROM migrations WHERE id = $1`, [id]);
+          await connection.query("COMMIT");
           console.log(`Migration ${id} rolled back successfully`);
         } catch (error) {
-          await connection.run("ROLLBACK");
+          await connection.query("ROLLBACK");
           console.error(`Error rolling back migration ${id}:`, error);
           throw error;
         }
