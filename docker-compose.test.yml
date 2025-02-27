@@ -1,14 +1,15 @@
 version: "3.8"
+name: "contexts-test"
 
 services:
-  postgres:
+  postgres-test:
     image: postgres:15
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: contexts
+      POSTGRES_DB: contexts-test
     ports:
-      - "5432:5432"
+      - "1337:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s

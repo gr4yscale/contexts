@@ -2,14 +2,26 @@ import pg from "pg";
 const { Pool } = pg;
 type PoolClient = pg.PoolClient;
 
+const isIntegrationTest = process.env.RUN_INTEGRATION_TESTS === "true";
+
+// TODO: fix hackiness
+
 // Create a connection pool
-const pool = new Pool({
-  host: "localhost",
-  port: 5432,
-  user: "postgres",
-  password: "postgres",
-  database: "contexts",
-});
+const pool = isIntegrationTest
+  ? new Pool({
+      host: "localhost",
+      port: 1337,
+      user: "postgres",
+      password: "postgres",
+      database: "contexts-test",
+    })
+  : new Pool({
+      host: "localhost",
+      port: 1336,
+      user: "postgres",
+      password: "postgres",
+      database: "contexts",
+    });
 
 let client: PoolClient | null = null;
 
