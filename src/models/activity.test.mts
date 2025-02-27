@@ -60,23 +60,6 @@ testSuite("Activity Model Integration Tests", () => {
         fs.mkdirSync(dataDir, { recursive: true });
       }
 
-      // Create test tables
-      const client = await getConnection();
-
-      // Create activities table if it doesn't exist (including parent_id from migration 003)
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS activities (
-          activityId VARCHAR PRIMARY KEY,
-          orgId VARCHAR,
-          orgText TEXT,
-          name VARCHAR NOT NULL,
-          created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          lastAccessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          active BOOLEAN DEFAULT FALSE,
-          parent_id VARCHAR NULL REFERENCES activities(activityId)
-        );
-      `);
-
       // Create state-mini.yml file
       fs.writeFileSync(
         path.join(dataDir, "state-mini.yml"),
@@ -102,7 +85,7 @@ testSuite("Activity Model Integration Tests", () => {
       const client = await getConnection();
 
       // Drop test tables
-      await client.query("DROP TABLE IF EXISTS activities");
+      await client.query("DROP TABLE IF EXISTS activities CASCADE");
 
       // Clean up temp directory
       if (fs.existsSync(tempDir)) {

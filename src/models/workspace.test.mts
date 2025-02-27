@@ -26,41 +26,6 @@ testSuite("Workspace Model Integration Tests", () => {
     try {
       // Setup shared database
       await setupTestDatabase();
-
-      // Create test tables
-      const client = await getConnection();
-
-      // Create activities table if it doesn't exist
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS activities (
-          activityId VARCHAR PRIMARY KEY,
-          name VARCHAR NOT NULL,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-      `);
-
-      // Create workspaces table if it doesn't exist
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS workspaces (
-          id SERIAL PRIMARY KEY,
-          activityId VARCHAR REFERENCES activities(activityId),
-          name VARCHAR NOT NULL,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-      `);
-
-      // Create workspace_id_seq if it doesn't exist
-      await client.query(`
-        DO $$
-        BEGIN
-          IF NOT EXISTS (SELECT 1 FROM pg_sequences WHERE sequencename = 'workspace_id_seq') THEN
-            CREATE SEQUENCE workspace_id_seq START 1;
-          END IF;
-        END
-        $$;
-      `);
     } catch (error) {
       console.error("Error setting up test database:", error);
       throw error;
@@ -91,8 +56,8 @@ testSuite("Workspace Model Integration Tests", () => {
       const client = await getConnection();
 
       // Drop test tables
-      await client.query("DROP TABLE IF EXISTS workspaces");
-      await client.query("DROP TABLE IF EXISTS activities");
+      await client.query("DROP TABLE IF EXISTS workspaces CASCADE");
+      await client.query("DROP TABLE IF EXISTS activities CASCADE");
 
       // Always teardown after tests
       await teardownTestDatabase();

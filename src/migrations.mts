@@ -14,6 +14,8 @@ interface MigrationOptions {
   target?: number;
 }
 
+const isIntegrationTest = process.env.RUN_INTEGRATION_TESTS === "true";
+
 export async function runMigrations(
   options: MigrationOptions = {},
 ): Promise<void> {
@@ -22,10 +24,10 @@ export async function runMigrations(
 
   // Get applied migrations
   const result = await connection.query(
-    `SELECT id, name FROM migrations ORDER BY id`
+    `SELECT id, name FROM migrations ORDER BY id`,
   );
   const appliedMigrations = new Map(
-    result.rows.map((row: any) => [row.id, row.name])
+    result.rows.map((row: any) => [row.id, row.name]),
   );
 
   // Load migration files
@@ -72,7 +74,11 @@ export async function runMigrations(
         }
 
         if (!appliedMigrations.has(migration.id)) {
-          console.log(`Applying migration ${migration.id}: ${migration.name}`);
+          if (!isIntegrationTest) {
+            console.log(
+              `Applying migration ${migration.id}: ${migration.name}`,
+            );
+          }
 
           // Run the migration in a transaction
           await connection.query("BEGIN");
@@ -80,10 +86,12 @@ export async function runMigrations(
             await connection.query(migration.upSql);
             await connection.query(
               `INSERT INTO migrations (id, name) VALUES ($1, $2)`,
-              [migration.id, migration.name]
+              [migration.id, migration.name],
             );
             await connection.query("COMMIT");
-            console.log(`Migration ${migration.id} applied successfully`);
+            if (!isIntegrationTest) {
+              console.log(`Migration ${migration.id} applied successfully`);
+            }
           } catch (error) {
             await connection.query("ROLLBACK");
             console.error(`Error applying migration ${migration.id}:`, error);

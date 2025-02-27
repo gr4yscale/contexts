@@ -1,6 +1,7 @@
 import { exec } from "child_process";
 import { promisify } from "util";
 import { initializeDB, closeDB } from "./db.mts";
+import { runMigrations } from "./migrations.mts";
 
 export const execAsync = promisify(exec);
 
@@ -15,6 +16,9 @@ export async function startTestDatabase() {
 
     // Initialize the database connection
     await initializeDB();
+
+    // Run migrations to set up the database schema
+    await runMigrations();
   } catch (error) {
     console.error("Error setting up test database:", error);
     throw error;
