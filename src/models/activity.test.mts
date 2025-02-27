@@ -333,7 +333,7 @@ testSuite("Activity Model Integration Tests", () => {
     });
   });
 
-  it("should handle deleting a parent activity with children", async () => {
+  it("should fail deleting a parent activity which has children", async () => {
     // Create parent activity
     await createActivity(testActivity1);
 
@@ -349,33 +349,72 @@ testSuite("Activity Model Integration Tests", () => {
 
     await createActivity(childActivity);
 
+    // Verify both activities exist
+    const parentBefore = await getActivityById(testActivity1.activityId);
+    const childBefore = await getActivityById(childActivity.activityId);
+    expect(parentBefore).not.toBeNull();
+    expect(childBefore).not.toBeNull();
+
     // Try to delete the parent (should fail due to foreign key constraint)
     let error: any;
     try {
       await deleteActivity(testActivity1.activityId);
+      // If we get here, the test should fail
+      expect(true).toBe(false); // This should not be reached
     } catch (e) {
       error = e;
     }
 
     // Verify the error occurred due to foreign key constraint
     expect(error).toBeDefined();
+    expect(error.message).toContain("foreign key constraint");
 
     // Verify both activities still exist
-    const parent = await getActivityById(testActivity1.activityId);
-    const child = await getActivityById(childActivity.activityId);
+    const parentAfter = await getActivityById(testActivity1.activityId);
+    const childAfter = await getActivityById(childActivity.activityId);
+    expect(parentAfter).not.toBeNull();
+    expect(childAfter).not.toBeNull();
+  });
 
-    expect(parent).not.toBeNull();
-    expect(child).not.toBeNull();
+  it("should delete parent and children when cascade parameter is true", async () => {
+    // Create parent activity
+    await createActivity(testActivity1);
 
-    // Now delete the child first, then the parent
-    await deleteActivity(childActivity.activityId);
-    await deleteActivity(testActivity1.activityId);
+    // Create child activity
+    const childActivity: Activity = {
+      activityId: "child-activity-1",
+      name: "Child Activity 1",
+      created: new Date(),
+      lastAccessed: new Date(),
+      active: true,
+      parentActivityId: testActivity1.activityId,
+    };
 
-    // Verify both are now deleted
-    const deletedParent = await getActivityById(testActivity1.activityId);
-    const deletedChild = await getActivityById(childActivity.activityId);
+    await createActivity(childActivity);
 
-    expect(deletedParent).toBeNull();
-    expect(deletedChild).toBeNull();
+    // Create grandchild activity
+    const grandchildActivity: Activity = {
+      activityId: "grandchild-activity-1",
+      name: "Grandchild Activity 1",
+      created: new Date(),
+      lastAccessed: new Date(),
+      active: true,
+      parentActivityId: childActivity.activityId,
+    };
+
+    await createActivity(grandchildActivity);
+
+    // Verify all activities exist
+    expect(await getActivityById(testActivity1.activityId)).not.toBeNull();
+    expect(await getActivityById(childActivity.activityId)).not.toBeNull();
+    expect(await getActivityById(grandchildActivity.activityId)).not.toBeNull();
+
+    // Delete the parent with cascade=true
+    await deleteActivity(testActivity1.activityId, true);
+
+    // Verify all activities are deleted
+    expect(await getActivityById(testActivity1.activityId)).toBeNull();
+    expect(await getActivityById(childActivity.activityId)).toBeNull();
+    expect(await getActivityById(grandchildActivity.activityId)).toBeNull();
   });
 });

@@ -140,9 +140,26 @@ export async function updateActivity(
   }
 }
 
-export async function deleteActivity(activityId: string): Promise<void> {
+export async function deleteActivity(
+  activityId: string,
+  cascade: boolean = false,
+): Promise<void> {
   try {
     const client = await getConnection();
+
+    // If cascade is true, first delete all child activities
+    if (cascade) {
+      // Get all child activities
+      const childActivities = await getChildActivities(activityId);
+
+      // Delete each child activity
+      for (const child of childActivities) {
+        // Recursively delete with cascade to handle nested hierarchies
+        await deleteActivity(child.activityId, true);
+      }
+    }
+
+    // Now delete the activity itself
     await client.query("DELETE FROM activities WHERE activityId = $1;", [
       activityId,
     ]);
