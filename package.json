@@ -10,6 +10,7 @@
         "test": "vitest run",
         "test:watch": "vitest",
         "test:coverage": "vitest run --coverage",
+        "test:integration": "docker-compose -f docker-compose.test.yml up -d && sleep 5 && RUN_INTEGRATION_TESTS=true yarn test && docker-compose -f docker-compose.test.yml down",
         "migrate:up": "tsx src/scripts/migrate.mts up",
         "migrate:down": "tsx src/scripts/migrate.mts down",
         "build": "esbuild src/main.mts --bundle --platform=node --format=esm --packages=external --outfile=build.mjs"
