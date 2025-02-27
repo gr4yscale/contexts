@@ -11,7 +11,6 @@ export async function startTestDatabase() {
     await execAsync("docker-compose -f docker-compose.test.yml up -d");
 
     // Wait for the database to be ready
-    console.log("Waiting for database to be ready...");
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
     // Initialize the database connection
