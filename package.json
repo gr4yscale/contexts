@@ -7,7 +7,9 @@
     "type": "module",
     "scripts": {
         "start": "DEV=true tsx src/main.mts",
-        "test": "tsx runSomeTests",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:coverage": "vitest run --coverage",
         "migrate:up": "tsx src/scripts/migrate.mts up",
         "migrate:down": "tsx src/scripts/migrate.mts down",
         "build": "esbuild src/main.mts --bundle --platform=node --format=esm --packages=external --outfile=build.mjs"
@@ -23,6 +25,7 @@
         "prettier": "3.1.0",
         "react-devtools-core": "^5.0.0",
         "tsx": "^4.4.0",
+        "vitest": "^1.2.1",
         "zx": "^7.2.3"
     },
     "dependencies": {
