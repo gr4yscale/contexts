@@ -352,7 +352,10 @@ export async function activityTree(): Promise<ActivityTreeItem[]> {
         parent_id,
         depth
       FROM activity_tree
-      ORDER BY path;  -- This ensures parents come before children
+      ORDER BY 
+        CASE WHEN parent_id IS NULL THEN 0 ELSE 1 END,  -- Root activities first
+        CASE WHEN parent_id IS NULL THEN lastaccessed END DESC,  -- Sort roots by lastaccessed
+        path;  -- Then ensure parents come before children
     `);
 
     if (result.rows.length === 0) {
