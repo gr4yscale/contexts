@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
-import { initializeDB, getConnection, closeDB } from "../db.mts";
+import { getConnection } from "../db.mts";
 import {
   getAllWorkspaces,
   createWorkspaceForActivity,
@@ -9,10 +9,8 @@ import {
   getWorkspaceById,
   deleteWorkspaceById,
 } from "./workspace.mts";
-import { exec } from "child_process";
-import { promisify } from "util";
+import { setupTestDatabase, teardownTestDatabase } from "../testUtils.mts";
 
-const execAsync = promisify(exec);
 const isIntegrationTest = process.env.RUN_INTEGRATION_TESTS === "true";
 
 // Skip tests if not running integration tests
@@ -23,18 +21,11 @@ testSuite("Workspace Model Integration Tests", () => {
   const testActivityId1 = "test-activity-1";
   const testActivityId2 = "test-activity-2";
 
-  // Start the test database container before all tests
+  // Setup database and test tables
   beforeAll(async () => {
     try {
-      // Start the database container using docker-compose
-      await execAsync("docker-compose -f docker-compose.test.yml up -d");
-
-      // Wait for the database to be ready
-      console.log("Waiting for database to be ready...");
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-
-      // Initialize the database connection
-      await initializeDB();
+      // Setup shared database
+      await setupTestDatabase();
 
       // Create test tables
       const client = await getConnection();
@@ -103,11 +94,8 @@ testSuite("Workspace Model Integration Tests", () => {
       await client.query("DROP TABLE IF EXISTS workspaces");
       await client.query("DROP TABLE IF EXISTS activities");
 
-      // Close the database connection
-      await closeDB();
-
-      // Stop and remove the database container
-      await execAsync("docker-compose -f docker-compose.test.yml down");
+      // Always teardown after tests
+      await teardownTestDatabase();
     } catch (error) {
       console.error("Error cleaning up test database:", error);
     }

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
-import { initializeDB, getConnection, closeDB } from "../db.mts";
+import { getConnection } from "../db.mts";
 import {
   createActivity,
   getActivityById,
@@ -9,12 +9,10 @@ import {
   getActiveActivities,
 } from "./activity.mts";
 import { Activity } from "../types.mts";
-import { exec } from "child_process";
-import { promisify } from "util";
 import * as fs from "fs";
 import * as path from "path";
+import { setupTestDatabase, teardownTestDatabase } from "../testUtils.mts";
 
-const execAsync = promisify(exec);
 const isIntegrationTest = process.env.RUN_INTEGRATION_TESTS === "true";
 
 // Skip tests if not running integration tests
@@ -45,9 +43,12 @@ testSuite("Activity Model Integration Tests", () => {
   // Create a temporary directory for state files
   const tempDir = path.join(process.cwd(), "temp-test-data");
 
-  // Start the test database container before all tests
+  // Setup database and test environment
   beforeAll(async () => {
     try {
+      // Setup shared database
+      await setupTestDatabase();
+      
       // Create temp directory for state files
       if (!fs.existsSync(tempDir)) {
         fs.mkdirSync(tempDir, { recursive: true });
@@ -58,16 +59,6 @@ testSuite("Activity Model Integration Tests", () => {
       if (!fs.existsSync(dataDir)) {
         fs.mkdirSync(dataDir, { recursive: true });
       }
-
-      // Start the database container using docker-compose
-      await execAsync("docker-compose -f docker-compose.test.yml up -d");
-
-      // Wait for the database to be ready
-      console.log("Waiting for database to be ready...");
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-
-      // Initialize the database connection
-      await initializeDB();
 
       // Create test tables
       const client = await getConnection();
@@ -91,7 +82,7 @@ testSuite("Activity Model Integration Tests", () => {
         `currentActivityId: ${testActivity1.activityId}\npreviousActivityId: ${testActivity2.activityId}`,
       );
     } catch (error) {
-      console.error("Error setting up test database:", error);
+      console.error("Error setting up test environment:", error);
       throw error;
     }
   }, 30000); // Increase timeout for container startup
@@ -112,18 +103,15 @@ testSuite("Activity Model Integration Tests", () => {
       // Drop test tables
       await client.query("DROP TABLE IF EXISTS activities");
 
-      // Close the database connection
-      await closeDB();
-
-      // Stop and remove the database container
-      await execAsync("docker-compose -f docker-compose.test.yml down");
-
       // Clean up temp directory
       if (fs.existsSync(tempDir)) {
         fs.rmSync(tempDir, { recursive: true, force: true });
       }
+      
+      // Always teardown after tests
+      await teardownTestDatabase();
     } catch (error) {
-      console.error("Error cleaning up test database:", error);
+      console.error("Error cleaning up test environment:", error);
     }
   });
 

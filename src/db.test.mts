@@ -1,44 +1,21 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { initializeDB, getConnection, closeDB } from "./db.mts";
-import { exec } from "child_process";
-import { promisify } from "util";
+import { getConnection } from "./db.mts";
+import { setupTestDatabase, teardownTestDatabase } from "./testUtils.mts";
 
-const execAsync = promisify(exec);
 const isIntegrationTest = process.env.RUN_INTEGRATION_TESTS === "true";
 
 // Skip tests if not running integration tests
 const testSuite = isIntegrationTest ? describe : describe.skip;
 
 testSuite("Database Integration Tests", () => {
-  // Start the test database container before all tests
+  // Setup database once before all tests
   beforeAll(async () => {
-    try {
-      // Start the database container using docker-compose
-      await execAsync("docker-compose -f docker-compose.test.yml up -d");
-
-      // Wait for the database to be ready
-      console.log("Waiting for database to be ready...");
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-
-      // Initialize the database connection
-      await initializeDB();
-    } catch (error) {
-      console.error("Error setting up test database:", error);
-      throw error;
-    }
+    await setupTestDatabase();
   }, 30000); // Increase timeout for container startup
 
-  // Clean up after all tests
+  // Always teardown after tests
   afterAll(async () => {
-    try {
-      // Close the database connection
-      await closeDB();
-
-      // Stop and remove the database container
-      await execAsync("docker-compose -f docker-compose.test.yml down");
-    } catch (error) {
-      console.error("Error cleaning up test database:", error);
-    }
+    await teardownTestDatabase();
   });
 
   it("should connect to the database", async () => {
