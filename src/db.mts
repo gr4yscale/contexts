@@ -4,11 +4,11 @@ type PoolClient = pg.PoolClient;
 
 // Create a connection pool
 const pool = new Pool({
-  host: 'localhost',
+  host: "localhost",
   port: 5432,
-  user: 'postgres',
-  password: 'postgres',
-  database: 'contexts',
+  user: "postgres",
+  password: "postgres",
+  database: "contexts",
 });
 
 let client: PoolClient | null = null;
