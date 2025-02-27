@@ -40,31 +40,11 @@ testSuite("Activity Model Integration Tests", () => {
     orgText: "* Test Org Text 2",
   };
 
-  // Create a temporary directory for state files
-  const tempDir = path.join(process.cwd(), "temp-test-data");
-
   // Setup database and test environment
   beforeAll(async () => {
     try {
       // Setup shared database
       await setupTestDatabase();
-
-      // Create temp directory for state files
-      if (!fs.existsSync(tempDir)) {
-        fs.mkdirSync(tempDir, { recursive: true });
-      }
-
-      // Create a symbolic link to redirect data directory
-      const dataDir = path.join(process.cwd(), "data");
-      if (!fs.existsSync(dataDir)) {
-        fs.mkdirSync(dataDir, { recursive: true });
-      }
-
-      // Create state-mini.yml file
-      fs.writeFileSync(
-        path.join(dataDir, "state-mini.yml"),
-        `currentActivityId: ${testActivity1.activityId}\npreviousActivityId: ${testActivity2.activityId}`,
-      );
     } catch (error) {
       console.error("Error setting up test environment:", error);
       throw error;
@@ -87,12 +67,7 @@ testSuite("Activity Model Integration Tests", () => {
       // Drop test tables
       await client.query("DROP TABLE IF EXISTS activities CASCADE");
 
-      // Clean up temp directory
-      if (fs.existsSync(tempDir)) {
-        fs.rmSync(tempDir, { recursive: true, force: true });
-      }
-
-      // Always teardown after tests
+      // teardown test db container after tests
       await teardownTestDatabase();
     } catch (error) {
       console.error("Error cleaning up test environment:", error);
