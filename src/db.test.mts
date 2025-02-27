@@ -14,7 +14,7 @@ testSuite("Database Integration Tests", () => {
   beforeAll(async () => {
     try {
       // Start the database container using docker-compose
-      await execAsync("sudo docker-compose -f docker-compose.test.yml up -d");
+      await execAsync("docker-compose -f docker-compose.test.yml up -d");
 
       // Wait for the database to be ready
       console.log("Waiting for database to be ready...");
