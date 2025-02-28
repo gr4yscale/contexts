@@ -4,6 +4,19 @@ import { BrowserState } from "./browser.mts";
 export type ActivityId = string;
 /** Unique identifier for an Org-mode entry */
 export type OrgId = string;
+/** Unique identifier for a Context */
+export type ContextId = string;
+
+/**
+ * A Context is a collection of related Activities.
+ * It allows grouping multiple Activities that belong to the same theme or project.
+ */
+export interface Context {
+  contextId: string;
+  name: string;
+  created: Date;
+  activityIds: string[];
+}
 
 /**
  * An Activity represents a focused work session or task.
