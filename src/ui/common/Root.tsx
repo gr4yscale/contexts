@@ -4,7 +4,9 @@ import { KeysContext } from "./Context.mts";
 
 import { Keymap, key } from "./Keymapping.mts";
 
-import Activity from "../Activity.tsx";
+import ActivityRoot from "../ActivityRoot.tsx";
+import ActivitySelection from "../ActivitySelection.tsx";
+//import ActivityNavigate from "../ActivityNavigate.tsx";
 import Workspace from "../Workspace.tsx";
 import WhichKey from "../WhichKey.tsx";
 import Home from "../Home.tsx";
@@ -16,7 +18,8 @@ import {
 
 const routes = [
   { path: "/", component: Home },
-  { path: "/activity", component: Activity },
+  { path: "/activity", component: ActivityRoot },
+  { path: "/activitySelection", component: ActivitySelection },
   { path: "/workspace", component: Workspace },
 ];
 
@@ -67,9 +70,15 @@ const Root: React.FC = () => {
         },
         {
           sequence: [key("a")],
-          description: "Show Activities",
-          name: "activities-show",
+          description: "Activities",
+          name: "show-activities-root",
           handler: () => setRoutePath("/activity"),
+        },
+        {
+          sequence: [key("s")],
+          description: "Select Activities",
+          name: "activities-select",
+          handler: () => setRoutePath("/activitySelection"),
         },
       ]);
     }
