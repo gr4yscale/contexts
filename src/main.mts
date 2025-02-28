@@ -46,7 +46,6 @@ server.listen("/tmp/contexts.sock", () => {
 
 try {
   await initializeDB();
-  console.log("Database initialized successfully");
 } catch (e) {
   $`notify-send "Activities: Database initialization error occurred."`;
   console.error("Database initialization error:", e);

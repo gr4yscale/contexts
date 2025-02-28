@@ -140,7 +140,7 @@ const SelectionList: React.FC<SelectionListProps> = ({
     return () => {
       keymap.popKeymap();
     };
-  }, [mode]); // the keymapping side effects depend on the mode state variable; useEffect will run every render without mode defined in the useEffect deps array
+  }, [mode, toggleSelectionAtHighlightedIndex]); // the keymapping side effects depend on the mode state variable; useEffect will run every render without mode defined in the useEffect deps array
 
   // Update the search string with freeform text when we are in find mode
   useInput(
