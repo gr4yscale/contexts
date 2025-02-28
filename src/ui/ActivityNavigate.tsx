@@ -2,20 +2,13 @@ import React, { useEffect, useState, useContext } from "react";
 import { Box, Text } from "ink";
 
 import { Activity } from "../types.mts";
-import {
-  activityTree,
-  ActivityTreeItem,
-  getAllActivities,
-  getCurrentActivity,
-  updateActivity,
-} from "../models/activity.mts";
 
 import ActionList from "./common/ActionList.tsx";
 
 import { key, KeymapConfig } from "./common/Keymapping.mts";
 import { KeysContext } from "./common/Context.mts";
 import { Item } from "./common/useActionList.mts";
-import { getContextActivities } from "../models/context.mts";
+import { getCurrentContextActivities } from "../models/context.mts";
 
 type ActivityItem = { id: string; display: string; data: Activity };
 type ActivityNavigateStates = "initial" | "find";
@@ -46,8 +39,7 @@ const ActivityNavigate: React.FC = () => {
 
   const fetchActivities = async () => {
     try {
-      //const activities = await getAllActivities();
-      const activities = await getContextActivities();
+      const activities = await getCurrentContextActivities();
       const newItems = activities.map((activity) => ({
         id: activity.activityId,
         display: activity.name,
@@ -95,7 +87,6 @@ const ActivityNavigate: React.FC = () => {
   return (
     <Box flexDirection="column">
       <Text>mode: {mode}</Text>
-
       {mode === "find" && (
         <ActionList initialItems={items} actionKeymap={itemActionKeymap} />
       )}

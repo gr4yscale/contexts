@@ -9,6 +9,8 @@ import {
   addActivityToLatestContext,
   removeActivityFromLatestContext,
   getContextActivities,
+  getCurrentContext,
+  getCurrentContextActivities,
 } from "./context.mts";
 import { createActivity } from "./activity.mts";
 import { Activity, Context } from "../types.mts";
@@ -108,8 +110,12 @@ testSuite("Context Model Integration Tests", () => {
     // Verify the context was created with activities
     expect(contextWithActivities).toBeDefined();
     expect(contextWithActivities.activityIds).toHaveLength(2);
-    expect(contextWithActivities.activityIds).toContain(testActivity1.activityId);
-    expect(contextWithActivities.activityIds).toContain(testActivity2.activityId);
+    expect(contextWithActivities.activityIds).toContain(
+      testActivity1.activityId,
+    );
+    expect(contextWithActivities.activityIds).toContain(
+      testActivity2.activityId,
+    );
   });
 
   it("should get a context by ID", async () => {
@@ -272,7 +278,9 @@ testSuite("Context Model Integration Tests", () => {
     await createActivity(testActivity1);
 
     // Try to add the activity to the latest context when no contexts exist
-    await expect(addActivityToLatestContext(testActivity1.activityId)).rejects.toThrow("No contexts found");
+    await expect(
+      addActivityToLatestContext(testActivity1.activityId),
+    ).rejects.toThrow("No contexts found");
   });
 
   it("should throw an error when removing activity from latest context if no contexts exist", async () => {
@@ -280,7 +288,9 @@ testSuite("Context Model Integration Tests", () => {
     await createActivity(testActivity1);
 
     // Try to remove the activity from the latest context when no contexts exist
-    await expect(removeActivityFromLatestContext(testActivity1.activityId)).rejects.toThrow("No contexts found");
+    await expect(
+      removeActivityFromLatestContext(testActivity1.activityId),
+    ).rejects.toThrow("No contexts found");
   });
 
   it("should get activities for a context", async () => {
@@ -351,9 +361,84 @@ testSuite("Context Model Integration Tests", () => {
     const client = await getConnection();
     const result = await client.query(
       "SELECT COUNT(*) FROM activities WHERE activityid IN ($1, $2)",
-      [testActivity1.activityId, testActivity2.activityId]
+      [testActivity1.activityId, testActivity2.activityId],
     );
-    
+
     expect(parseInt(result.rows[0].count)).toBe(2);
+  });
+
+  it("should get the current (most recently created) context", async () => {
+    // Create multiple contexts in sequence
+    const context1 = await createContext(testContext1);
+
+    // Wait a small amount to ensure different creation timestamps
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    const context2 = await createContext(testContext2);
+
+    // Get the current context
+    const currentContext = await getCurrentContext();
+
+    // Verify the most recently created context was returned
+    expect(currentContext).toBeDefined();
+    expect(currentContext?.contextId).toBe(context2.contextId);
+    expect(currentContext?.name).toBe(testContext2.name);
+  });
+
+  it("should return null from getCurrentContext when no contexts exist", async () => {
+    // Ensure no contexts exist
+    const client = await getConnection();
+    await client.query("DELETE FROM contexts");
+
+    // Get the current context
+    const currentContext = await getCurrentContext();
+
+    // Verify null was returned
+    expect(currentContext).toBeNull();
+  });
+
+  it("should get activities for the current context", async () => {
+    // Create test activities
+    await createActivity(testActivity1);
+    await createActivity(testActivity2);
+
+    // Create a context with activities
+    await createContext({
+      name: "Context with Activities",
+      activityIds: [testActivity1.activityId, testActivity2.activityId],
+    });
+
+    // Get activities for the current context
+    const activities = await getCurrentContextActivities();
+
+    // Verify activities were retrieved
+    expect(activities).toBeDefined();
+    expect(activities).toHaveLength(2);
+
+    // Find activities by ID
+    const activity1 = activities.find(
+      (a) => a.activityId === testActivity1.activityId,
+    );
+    const activity2 = activities.find(
+      (a) => a.activityId === testActivity2.activityId,
+    );
+
+    expect(activity1).toBeDefined();
+    expect(activity1?.name).toBe(testActivity1.name);
+
+    expect(activity2).toBeDefined();
+    expect(activity2?.name).toBe(testActivity2.name);
+  });
+
+  it("should return empty array from getCurrentContextActivities when no contexts exist", async () => {
+    // Ensure no contexts exist
+    const client = await getConnection();
+    await client.query("DELETE FROM contexts");
+
+    // Get activities for the current context
+    const activities = await getCurrentContextActivities();
+
+    // Verify empty array was returned
+    expect(activities).toHaveLength(0);
   });
 });
