@@ -6,7 +6,6 @@ import {
   WorkspaceDTO,
 } from "../models/workspace.mts";
 import {
-  createWorkspaceForCurrentActivity,
   viewNextWorkspaceForCurrentActivity,
   viewPreviousWorkspaceForCurrentActivity,
   viewWorkspace,
@@ -22,11 +21,7 @@ import { Item } from "./common/useActionList.mts";
 import TextInput from "./TextInput.tsx";
 
 type WorkspaceItem = { id: string; display: string; data: WorkspaceDTO };
-type WorkspaceStates =
-  | "initial"
-  | "find"
-  | "workspaceCreate"
-  | "workspaceRename";
+type WorkspaceStates = "initial" | "find" | "workspaceRename";
 
 const Workspace: React.FC = () => {
   const [mode, setMode] = useState<WorkspaceStates>("initial");
@@ -98,15 +93,15 @@ const Workspace: React.FC = () => {
               keymap.popKeymap();
             },
           },
-          {
-            sequence: [key("n")],
-            description: "New workspace for current activity",
-            name: "workspace-create-for-current-acctivity",
-            handler: () => {
-              setMode("workspaceCreate");
-              keymap.popKeymap();
-            },
-          },
+          // {
+          //   sequence: [key("n")],
+          //   description: "New workspace for current activity",
+          //   name: "workspace-create-for-current-acctivity",
+          //   handler: () => {
+          //     //setMode("workspaceCreate");
+          //     keymap.popKeymap();
+          //   },
+          // },
           {
             sequence: [key("d")],
             description: "Destroy current workspace",
@@ -172,16 +167,6 @@ const Workspace: React.FC = () => {
 
       {mode === "find" && (
         <ActionList initialItems={items} actionKeymap={itemActionKeymap} />
-      )}
-
-      {mode === "workspaceCreate" && (
-        <TextInput
-          callback={(name: string) => {
-            if (name === "") return; // TODO validation
-            createWorkspaceForCurrentActivity(name);
-            setMode("initial");
-          }}
-        />
       )}
 
       {mode === "workspaceRename" && (

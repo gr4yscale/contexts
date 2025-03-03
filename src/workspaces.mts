@@ -14,6 +14,7 @@ import { Activity } from "./types.mts";
 $.verbose = false; // suppress stdout from zx subprocess calls
 
 let currentWorkspaceId = 0;
+let previousWorkspaceId = 0;
 
 export async function viewWorkspace(workspaceId: number) {
   try {

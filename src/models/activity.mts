@@ -1,5 +1,6 @@
 import { Activity } from "../types.mts";
 import { getConnection } from "../db.mts";
+import { nanoid } from "nanoid";
 // Hack
 import { fs } from "zx";
 import { parse, stringify } from "yaml";
@@ -13,10 +14,24 @@ type ActivityHistoryDoc = {
   previousActivityId: string;
 };
 
-export async function createActivity(activity: Activity): Promise<void> {
+
+// Define ActivityCreate type as a partial of Activity with required fields
+export type ActivityCreate = {
+  name: string;
+  orgId?: string;
+  orgText?: string;
+  created?: Date;
+  lastAccessed?: Date;
+  active?: boolean;
+  parentActivityId?: string;
+};
+
+export async function createActivity(activity: ActivityCreate): Promise<void> {
   const client = await getConnection();
-  const { activityId, orgId, orgText, name, created, lastAccessed, active } =
-    activity;
+  const { orgId, orgText, name, parentActivityId } = activity;
+  
+  // Use provided values or defaults
+  const active = activity.active ?? true;
 
   try {
     await client.query(
@@ -25,17 +40,15 @@ export async function createActivity(activity: Activity): Promise<void> {
                   activityId, orgId, orgText, name, created, lastAccessed,
                   active, parent_id
               ) VALUES 
-              ($1, $2, $3, $4, $5, $6, $7, $8);
+              ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, $5, $6);
           `,
       [
-        activityId,
+        nanoid(),
         orgId ?? "",
         orgText ?? "",
         name,
-        created.toISOString(),
-        lastAccessed.toISOString(),
         active,
-        activity.parentActivityId || null,
+        parentActivityId || null,
       ],
     );
   } catch (error) {
@@ -283,14 +296,14 @@ export async function getChildActivities(
  * @param parentActivityId The ID of the parent activity
  */
 export async function createChildActivity(
-  activity: Activity,
+  activity: ActivityCreate,
   parentActivityId: string,
 ): Promise<void> {
-  // Set the parentActivityId on the activity object
-  activity.parentActivityId = parentActivityId;
-
-  // Use the updated createActivity function which now handles parent_id
-  await createActivity(activity);
+  // Create a new activity with the parent ID
+  await createActivity({
+    ...activity,
+    parentActivityId
+  });
 }
 
 /**
