@@ -9,6 +9,7 @@ import { key, KeymapConfig } from "./common/Keymapping.mts";
 import { KeysContext } from "./common/Context.mts";
 import { Item } from "./common/useActionList.mts";
 import { getCurrentContextActivities } from "../models/context.mts";
+import { activateActivity } from "../commands/navigation.mts";
 
 type ActivityItem = { id: string; display: string; data: Activity };
 type ActivityNavigateStates = "initial" | "find";
@@ -17,25 +18,6 @@ const ActivityNavigate: React.FC = () => {
   const [mode, setMode] = useState<ActivityNavigateStates>("find");
   const [items, setItems] = useState<Array<ActivityItem>>([]);
   const [loading, setLoading] = useState(true);
-
-  const itemActionKeymap = (item: Item): KeymapConfig => [
-    {
-      sequence: [key("\r", "return")],
-      description: "Item action: default",
-      name: "item-action-default",
-      handler: () => {
-        //console.log(`default action for ${item.display}`);
-      },
-    },
-    {
-      sequence: [key(" ")],
-      description: "Item action: handy keybind",
-      name: "item-act-handy",
-      handler: () => {
-        //console.log(`handy action for ${item.display}`);
-      },
-    },
-  ];
 
   const fetchActivities = async () => {
     try {
@@ -52,6 +34,28 @@ const ActivityNavigate: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const itemActionKeymap = (item: Item): KeymapConfig => [
+    {
+      sequence: [key("\r", "return")],
+      description: "activate acivity",
+      name: "activity-activate",
+      handler: () => {
+        const activity = item.data;
+        activateActivity(activity.activityId);
+        fetchActivities();
+        // go back to Root or ActivityRoot
+      },
+    },
+    {
+      sequence: [key(" ")],
+      description: "Item action: handy keybind",
+      name: "item-act-handy",
+      handler: () => {
+        //console.log(`handy action for ${item.display}`);
+      },
+    },
+  ];
 
   useEffect(() => {
     fetchActivities();
@@ -87,8 +91,12 @@ const ActivityNavigate: React.FC = () => {
   return (
     <Box flexDirection="column">
       <Text>mode: {mode}</Text>
-      {mode === "find" && (
-        <ActionList initialItems={items} actionKeymap={itemActionKeymap} />
+      {loading ? (
+        <Text>Loading activities...</Text>
+      ) : (
+        mode === "find" && (
+          <ActionList initialItems={items} actionKeymap={itemActionKeymap} />
+        )
       )}
     </Box>
   );

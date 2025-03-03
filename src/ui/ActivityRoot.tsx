@@ -36,7 +36,7 @@ const ActivityRoot: React.FC = () => {
           },
           {
             sequence: [key("s")],
-            description: "activity selectin",
+            description: "activity selection",
             name: "activity-select",
             handler: () => {
               setMode("selection");
@@ -44,9 +44,9 @@ const ActivityRoot: React.FC = () => {
             },
           },
           {
-            sequence: [key("n")],
+            sequence: [key("g")],
             description: "navigate",
-            name: "activity-navgate",
+            name: "activity-navigate",
             handler: () => {
               setMode("navigation");
               keymap.popKeymap();

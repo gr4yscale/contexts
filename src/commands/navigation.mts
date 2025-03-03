@@ -13,10 +13,7 @@ import { buildMenu } from "../menus.mts";
 
 import { getAllWorkspaces, WorkspaceDTO } from "../models/workspace.mts";
 
-import {
-  viewWorkspace,
-  viewFirstWorkspaceForActivity,
-} from "../workspaces.mts";
+import { viewWorkspaceForActivity } from "../workspaces.mts";
 
 import {
   getActivityById,
@@ -69,37 +66,28 @@ export const switchActivity = async () => {
   });
 };
 
-// todo: overload this with activityId or Activity
 export const activateActivity = async (id: ActivityId) => {
   let activity: Activity | null;
   activity = await getActivityById(id);
   if (!activity) return false;
 
-  const previousActivity = await getCurrentActivity();
-  if (previousActivity && activity) {
-    await updateActivityHistory(id, previousActivity.activityId);
-  }
+  const viewed = await viewWorkspaceForActivity(activity);
 
-  //TOFIX make activity creation explicit
-  // if (!activity) {
-  //   //console.log(`activity not found, creating for id: ${id}`);
-  //   activity = createActivity(id);
-  //   $`notify-send "Created new activity: ${id}"`;
-  // }
+  if (viewed) {
+    const lastAccessed = new Date();
+    await updateActivity({ activityId: id, lastAccessed });
 
-  const lastAccessed = new Date();
-  await updateActivity({ activityId: id, lastAccessed });
+    const previousActivity = await getCurrentActivity();
+    if (previousActivity && activity) {
+      await updateActivityHistory(id, previousActivity.activityId);
+    }
 
-  // TOFIX: update activity history based on this result?
-  const result = await viewFirstWorkspaceForActivity(activity.activityId);
-
-  if (result) {
     $`notify-send -a activity -t 500 "${activity.name}"`;
   } else {
     $`notify-send "No workspace for activity: ${id}"`;
   }
 
-  return result;
+  return viewed;
 };
 
 export const toggleActivity = async (id: ActivityId) => {

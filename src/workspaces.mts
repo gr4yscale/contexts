@@ -5,9 +5,11 @@ import {
   getWorkspaceById,
   createWorkspaceForActivity,
   deleteWorkspaceById,
+  WorkspaceDTO,
 } from "./models/workspace.mts";
 
 import { getCurrentActivity } from "./models/activity.mts";
+import { Activity } from "./types.mts";
 
 $.verbose = false; // suppress stdout from zx subprocess calls
 
@@ -30,12 +32,27 @@ export async function viewWorkspace(workspaceId: number) {
   }
 }
 
-export async function viewFirstWorkspaceForActivity(activityId: string) {
-  const workspaces = await getWorkspacesForActivity(activityId);
-  if (workspaces && workspaces[0]) {
-    await $`dwmc viewex ${workspaces[0].id}`;
-    return true;
+export async function viewWorkspaceForActivity(activity: Activity) {
+  let workspaces = await getWorkspacesForActivity(activity.activityId);
+  let workspace: WorkspaceDTO | null;
+  if (!workspaces || workspaces.length === 0) {
+    // TOFIX: return a Promise without null here; throw an error if it failed
+    workspace = await createWorkspaceForActivity(
+      activity.activityId,
+      activity.name,
+    );
+    if (workspace) {
+      await $`dwmc viewex ${workspace.id}`;
+      return true;
+    }
+  } else {
+    //TOFIX needs cleanup from multiple workspaces approach
+    if (workspaces && workspaces[0]) {
+      await $`dwmc viewex ${workspaces[0].id}`;
+      return true;
+    }
   }
+
   return false;
 }
 
@@ -75,26 +92,13 @@ export async function viewPreviousWorkspaceForCurrentActivity() {
   }
 }
 
-// TOFIX better error handling
-export const createWorkspaceForCurrentActivity = async (name: string) => {
-  const currentActivity = await getCurrentActivity();
-  if (currentActivity) {
-    const workspace = await createWorkspaceForActivity(
-      currentActivity.activityId,
-      name,
-    );
-    if (workspace) {
-      $`notify-send "Created workspace for activity ${currentActivity.activityId}"`;
-      viewWorkspace(workspace.id);
-    }
-  }
-};
-
 export const deleteCurrentWorkspace = async () => {
   const currentWorkspace = await getWorkspaceById(currentWorkspaceId);
   if (currentWorkspace) {
     await deleteWorkspaceById(currentWorkspaceId);
-    viewWorkspace(previousWorkspaceId);
+    if (previousWorkspaceId) {
+      viewWorkspace(previousWorkspaceId);
+    }
   }
 };
 
