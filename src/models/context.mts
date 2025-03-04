@@ -301,3 +301,61 @@ export async function getContextActivities(
     throw error;
   }
 }
+
+/**
+ * Gets the most recently created context
+ * @returns The most recent context or null if none exists
+ */
+export async function getCurrentContext(): Promise<Context | null> {
+  try {
+    const client = await getConnection();
+
+    // Get the most recent context
+    const contextResult = await client.query(
+      `SELECT * FROM contexts ORDER BY created DESC LIMIT 1;`,
+    );
+
+    if (contextResult.rows.length === 0) {
+      return null;
+    }
+
+    const context = contextResult.rows[0];
+
+    // Get the associated activities
+    const activitiesResult = await client.query(
+      `SELECT activity_id FROM context_activities WHERE context_id = $1;`,
+      [context.context_id],
+    );
+
+    const activityIds = activitiesResult.rows.map((row) => row.activity_id);
+
+    return {
+      contextId: context.context_id,
+      name: context.name,
+      created: new Date(context.created),
+      activityIds,
+    };
+  } catch (error) {
+    console.error("Error getting current context:", error);
+    throw error;
+  }
+}
+
+/**
+ * Gets all activities for the current (most recently created) context
+ * @returns Array of Activity objects or empty array if no current context exists
+ */
+export async function getCurrentContextActivities(): Promise<Activity[]> {
+  try {
+    const currentContext = await getCurrentContext();
+
+    if (!currentContext) {
+      return [];
+    }
+
+    return await getContextActivities(currentContext.contextId);
+  } catch (error) {
+    console.error("Error getting current context activities:", error);
+    throw error;
+  }
+}

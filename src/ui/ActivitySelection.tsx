@@ -7,6 +7,11 @@ import { key, KeymapConfig } from "./common/Keymapping.mts";
 import { KeysContext } from "./common/Context.mts";
 
 import { activityTree, ActivityTreeItem } from "../models/activity.mts";
+import {
+  createContext,
+  getCurrentContext,
+  updateContext,
+} from "../models/context.mts";
 
 type ActivityItem = {
   id: string;
@@ -106,11 +111,37 @@ const ActivitySelection: React.FC = () => {
           initialItems={items}
           onSelected={async (items) => {
             const activities = items.map((item) => item.activity);
-            const firstActivity = activities[0];
-            if (firstActivity) {
-              await handleCommand("activateActivity", firstActivity.activityId);
-              // TOFIX: move activateActivity out of navigation.mts
-              //fetchActivities();
+            const activityIds = activities.map(
+              (activity) => activity.activityId,
+            );
+
+            try {
+              // Update the last created context with the selected activities
+              const currentContext = await getCurrentContext();
+
+              if (currentContext) {
+                await updateContext({
+                  contextId: currentContext.contextId,
+                  activityIds: activityIds,
+                });
+
+                console.log(
+                  `Updated context: ${currentContext.name} with ${activityIds.length} activities`,
+                );
+              } else {
+                // Fallback to creating a new context if no current context exists
+                const contextName = `Context ${new Date().toLocaleString()}`;
+                const newContext = await createContext({
+                  name: contextName,
+                  activityIds: activityIds,
+                });
+
+                console.log(
+                  `Created new context: ${newContext.name} with ${activityIds.length} activities`,
+                );
+              }
+            } catch (error) {
+              console.error("Error updating context:", error);
             }
           }}
         />
