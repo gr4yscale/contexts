@@ -11,7 +11,11 @@ import {
 
 import { buildMenu } from "../menus.mts";
 
-import { getAllWorkspaces, WorkspaceDTO } from "../models/workspace.mts";
+import {
+  getAllWorkspaces,
+  WorkspaceDTO,
+  getWorkspacesForActivity,
+} from "../models/workspace.mts";
 
 import { viewWorkspaceForActivity } from "../workspaces.mts";
 
@@ -178,20 +182,28 @@ export const swapActivity = async () => {
 // we need the client/window that we want to send to be focused,
 // so this commmand needs to be handled via socket, not TUI
 
-export const sendWindowToAnotherWorkspace = async () => {
-  const workspaces = await getAllWorkspaces();
+export const sendWindowToAnotherActivity = async () => {
+  const activities = await getAllActivities();
+  const sorted = activities.sort(
+    (l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime(),
+  );
 
-  const menuItem = (w: WorkspaceDTO) => ({
-    display: `${w.name} - ${w.activityName || "No activity associated"}`,
+  const menuItem = (activity: Activity) => ({
+    display: `${activity.name}`,
     handler: async (selectedIndex?: number) => {
       if (selectedIndex !== undefined) {
-        await $`dwmc tagex ${w.id.toString()}`;
+        const workspaces = await getWorkspacesForActivity(activity.activityId);
+        if (workspaces && workspaces[0]) {
+          await $`dwmc tagex ${workspaces[0].id.toString()}`;
+        } else {
+          $`notify-send "No workspace found for activity: ${activity.name}"`;
+        }
       }
     },
   });
 
   await buildMenu({
-    display: `Workspace:`,
-    builder: () => workspaces.map(menuItem),
+    display: `Send window to activity:`,
+    builder: () => sorted.map(menuItem),
   });
 };

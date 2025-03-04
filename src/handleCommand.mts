@@ -4,7 +4,7 @@ import {
   toggleActivity,
   switchActivity,
   swapActivity,
-  sendWindowToAnotherWorkspace,
+  sendWindowToAnotherActivity,
   showTUI,
 } from "./commands/navigation.mts";
 import { linkGroupStore, stickyLinkStore } from "./commands/links.mts";
@@ -70,8 +70,8 @@ export const handleCommand = async (
       await swapActivity();
       break;
     }
-    case "sendWindowToAnotherWorkspace": {
-      await sendWindowToAnotherWorkspace();
+    case "sendWindowToAnotherActivity": {
+      await sendWindowToAnotherActivity();
       break;
     }
     case "toggleActivity": {
