@@ -4,16 +4,17 @@ import { nanoid } from "nanoid";
 // Hack
 import { fs } from "zx";
 import { parse, stringify } from "yaml";
+import { getCurrentContext } from "./context.mts";
 
 export type ActivityTreeItem = Activity & {
   depth?: number;
+  selected: boolean;
 };
 
 type ActivityHistoryDoc = {
   currentActivityId: string;
   previousActivityId: string;
 };
-
 
 // Define ActivityCreate type as a partial of Activity with required fields
 export type ActivityCreate = {
@@ -29,7 +30,7 @@ export type ActivityCreate = {
 export async function createActivity(activity: ActivityCreate): Promise<void> {
   const client = await getConnection();
   const { orgId, orgText, name, parentActivityId } = activity;
-  
+
   // Use provided values or defaults
   const active = activity.active ?? true;
 
@@ -53,6 +54,41 @@ export async function createActivity(activity: ActivityCreate): Promise<void> {
     );
   } catch (error) {
     console.error("Error creating activity:", error);
+    throw error;
+  }
+}
+
+/**
+ * Fetches the activity tree for the last created context
+ * Sets the selected field based on whether the activity is in the context
+ * @returns Array of activities with depth and selection information
+ */
+export async function contextActivityTree(): Promise<ActivityTreeItem[]> {
+  try {
+    // Get all activities in the tree
+    const allActivities = await activityTree();
+
+    // Get the current context
+    const currentContext = await getCurrentContext();
+
+    if (!currentContext) {
+      // If no context exists, return all activities as unselected
+      return allActivities.map((activity) => ({
+        ...activity,
+        selected: false,
+      }));
+    }
+
+    // Get the set of activity IDs in the context for faster lookup
+    const contextActivityIds = new Set(currentContext.activityIds);
+
+    // Map the activities, setting selected based on whether they're in the context
+    return allActivities.map((activity) => ({
+      ...activity,
+      selected: contextActivityIds.has(activity.activityId),
+    }));
+  } catch (error) {
+    console.error("Error getting context activity tree:", error);
     throw error;
   }
 }
@@ -302,7 +338,7 @@ export async function createChildActivity(
   // Create a new activity with the parent ID
   await createActivity({
     ...activity,
-    parentActivityId
+    parentActivityId,
   });
 }
 
@@ -385,6 +421,7 @@ export async function activityTree(): Promise<ActivityTreeItem[]> {
       active: row.active,
       parentActivityId: row.parent_id,
       depth: row.depth,
+      selected: false,
     }));
   } catch (error) {
     console.error("Error getting activity tree:", error);
