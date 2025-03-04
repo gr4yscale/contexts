@@ -7,7 +7,6 @@ export interface WorkspaceDTO {
   activityName?: string;
 }
 
-
 export async function getAllWorkspaces(): Promise<WorkspaceDTO[]> {
   const client = await getConnection();
   const result = await client.query(`
@@ -93,7 +92,7 @@ export async function createWorkspaceForActivity(
         name: row.name,
       };
     }
-    //console.log("Failed to create workspace - no available IDs found");
+    throw new Error("Failed to create workspace - no available IDs found");
   } catch (error: any) {
     if (error.message?.includes("workspace_id_seq")) {
       throw new Error("Maximum number of workspaces reached");
@@ -108,7 +107,6 @@ export async function updateWorkspace(
   try {
     const fields: string[] = [];
     const values: any[] = [];
-    const params: string[] = [];
 
     const { id, activityId, name } = workspace;
 
@@ -121,7 +119,6 @@ export async function updateWorkspace(
     fieldMappings.forEach(([field, value]) => {
       if (value !== undefined) {
         fields.push(`${field} = $${paramIndex}`);
-        params.push(`$${paramIndex}`);
         values.push(value);
         paramIndex++;
       }
