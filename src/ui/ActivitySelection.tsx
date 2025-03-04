@@ -38,8 +38,7 @@ const ActivitySelection: React.FC = () => {
         display:
           "  ".repeat(activity.depth || 0) +
           (activity.depth || 0 > 0 ? "└─ " : "") +
-          activity.name +
-          (activity.selected ? " ✓" : ""),
+          activity.name,
       }));
 
       setItems(newItems);

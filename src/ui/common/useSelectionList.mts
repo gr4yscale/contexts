@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export type Item = {
   id: string;
@@ -43,16 +43,32 @@ const useSelectionList = <T extends Item>({
   const [items, setItems] = useState<T[]>(initialItems);
   const [searchString, setSearchString] = useState<string>("");
   const [highlightedIndex, setHighlightedIndex] = useState<number>(0);
+  // Track selection state separately using a Map with item IDs as keys
+  // Initialize selection state from initialItems
+  const [selectionState, setSelectionState] = useState<Map<string, boolean>>(
+    new Map(initialItems.map((item) => [item.id, item.selected || false])),
+  );
+
+  // Update items to reflect current selection state whenever items change
+  useEffect(() => {
+    const updatedItems = items.map((item) => ({
+      ...item,
+      selected: selectionState.get(item.id) || false,
+    }));
+
+    if (JSON.stringify(updatedItems) !== JSON.stringify(items)) {
+      setItems(updatedItems);
+    }
+  }, [selectionState]);
 
   const toggleSelectionByIndex = (index: number): void => {
     if (index >= 0 && index < items.length) {
-      const updatedItems = items.map((item, i) => {
-        if (i === index) {
-          return { ...item, selected: !item.selected };
-        }
-        return item;
-      });
-      setItems(updatedItems);
+      const item = items[index];
+      const newSelectionState = new Map(selectionState);
+      const currentSelected = selectionState.get(item.id) || false;
+      newSelectionState.set(item.id, !currentSelected);
+      setSelectionState(newSelectionState);
+      // The useEffect will update the items array
     } else {
       throw new Error("Index out of bounds");
     }
@@ -67,7 +83,7 @@ const useSelectionList = <T extends Item>({
       )
       .map((item) => ({
         ...item,
-        selected: false,
+        selected: selectionState.get(item.id) || false,
       }));
 
     setSearchString(newSearchString);
@@ -77,7 +93,14 @@ const useSelectionList = <T extends Item>({
 
   const clearSearchString = (): void => {
     setSearchString("");
-    setItems(initialItems);
+
+    // Show all items with their current selection state
+    const updatedItems = initialItems.map((item) => ({
+      ...item,
+      selected: selectionState.get(item.id) || false,
+    }));
+
+    setItems(updatedItems);
     setHighlightedIndex(0);
   };
 
@@ -91,7 +114,7 @@ const useSelectionList = <T extends Item>({
       )
       .map((item) => ({
         ...item,
-        selected: false,
+        selected: selectionState.get(item.id) || false,
       }));
 
     setItems(filteredItems);
@@ -116,7 +139,13 @@ const useSelectionList = <T extends Item>({
   };
 
   const getSelectedItems = (): T[] => {
-    return items.filter((item) => item.selected);
+    // Get all selected items from the full initialItems list based on selection state
+    return initialItems
+      .filter((item) => selectionState.get(item.id) === true)
+      .map((item) => ({
+        ...item,
+        selected: true,
+      })) as T[];
   };
 
   // TOFIX: hacks

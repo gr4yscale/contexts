@@ -103,6 +103,12 @@ const SelectionList: React.FC<SelectionListProps> = ({
             handler: toggleSelectionAtHighlightedIndex,
           },
           {
+            sequence: [key("", "delete")],
+            description: "Back to find mode",
+            name: "find mode",
+            handler: findMode,
+          },
+          {
             sequence: [key("\r", "return")],
             description: "commit mode",
             name: "commit",
