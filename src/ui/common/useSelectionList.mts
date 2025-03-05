@@ -169,6 +169,7 @@ const useSelectionList = <T extends Item>({
   };
 
   const commitMode = (): void => {
+    setItems(getSelectedItems());
     setMode("commit");
   };
 
