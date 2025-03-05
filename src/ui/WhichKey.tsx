@@ -30,6 +30,8 @@ const WhichKey: React.FC = () => {
   return (
     <Box flexDirection="column">
       <Text>
+        ---------------------------------
+        <Newline />
         last key: {lastKeyPressed}
         <Newline />
         last cmd: {lastCommandExecuted}

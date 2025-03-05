@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Box, useInput, useStdout } from "ink";
+import { Box, useInput } from "ink";
 import { KeysContext } from "./Context.mts";
 
 import { Keymap, key } from "./Keymapping.mts";
@@ -28,7 +28,6 @@ const keymap = Keymap([]);
 
 const Root: React.FC = () => {
   const [routePath, setRoutePath] = useState("/");
-  const { write } = useStdout();
 
   // global key handling
   useInput((input, key) => {
@@ -38,7 +37,8 @@ const Root: React.FC = () => {
         result.handler();
       }
     } else {
-      write(`unhandled input received: ${input}`);
+      // unhandled key event
+      // console.log (info level)
     }
   });
 

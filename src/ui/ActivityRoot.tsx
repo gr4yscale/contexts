@@ -77,7 +77,6 @@ const ActivityRoot: React.FC = () => {
 
   return (
     <Box flexDirection="column">
-      <Text>mode: {mode}</Text>
       {mode === "currentActivity" && <CurrentActivityActions />}
       {mode === "navigation" && <ActivityNavigate />}
       {mode === "selection" && <ActivitySelection />}

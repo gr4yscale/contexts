@@ -89,8 +89,7 @@ const ActivityNavigate: React.FC = () => {
   }, [mode]);
 
   return (
-    <Box flexDirection="column">
-      <Text>mode: {mode}</Text>
+    <Box>
       {loading ? (
         <Text>Loading activities...</Text>
       ) : (

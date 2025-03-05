@@ -158,7 +158,6 @@ const SelectionList: React.FC<SelectionListProps> = ({
 
   return (
     <Box flexDirection="column">
-      <Text>mode: {mode}</Text>
       {getItems().map((i: Item) => (
         <Box key={i.id} paddingLeft={2}>
           <Text>

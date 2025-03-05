@@ -104,7 +104,6 @@ const ActivitySelection: React.FC = () => {
 
   return (
     <Box>
-      <Text>mode: {mode}</Text>
       {mode === "find" && (
         <SelectionList
           initialItems={items}
@@ -115,7 +114,6 @@ const ActivitySelection: React.FC = () => {
             );
 
             try {
-              // Update the last created context with the selected activities
               const currentContext = await getCurrentContext();
 
               if (currentContext) {
@@ -123,21 +121,9 @@ const ActivitySelection: React.FC = () => {
                   contextId: currentContext.contextId,
                   activityIds: activityIds,
                 });
-
-                console.log(
-                  `Updated context: ${currentContext.name} with ${activityIds.length} activities`,
-                );
               } else {
-                // Fallback to creating a new context if no current context exists
-                const contextName = `Context ${new Date().toLocaleString()}`;
-                const newContext = await createContext({
-                  name: contextName,
                   activityIds: activityIds,
                 });
-
-                console.log(
-                  `Created new context: ${newContext.name} with ${activityIds.length} activities`,
-                );
               }
             } catch (error) {
               console.error("Error updating context:", error);
