@@ -18,6 +18,7 @@ type ActivityHistoryDoc = {
 
 // Define ActivityCreate type as a partial of Activity with required fields
 export type ActivityCreate = {
+  activityId?: string;
   name: string;
   orgId?: string;
   orgText?: string;
@@ -27,14 +28,31 @@ export type ActivityCreate = {
   parentActivityId?: string;
 };
 
-export async function createActivity(activity: ActivityCreate): Promise<void> {
+export async function createActivity(
+  activity: ActivityCreate,
+): Promise<string> {
   const client = await getConnection();
   const { orgId, orgText, name, parentActivityId } = activity;
 
   // Use provided values or defaults
   const active = activity.active ?? true;
+  const activityId = activity.activityId || nanoid();
 
   try {
+    // If parentActivityId is provided, check if it exists
+    if (parentActivityId) {
+      const parentExists = await client.query(
+        "SELECT 1 FROM activities WHERE activityId = $1",
+        [parentActivityId],
+      );
+
+      if (parentExists.rows.length === 0) {
+        throw new Error(
+          `Parent activity with ID ${parentActivityId} does not exist`,
+        );
+      }
+    }
+
     await client.query(
       `
               INSERT INTO activities (
@@ -44,7 +62,7 @@ export async function createActivity(activity: ActivityCreate): Promise<void> {
               ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, $5, $6);
           `,
       [
-        nanoid(),
+        activityId,
         orgId ?? "",
         orgText ?? "",
         name,
@@ -52,6 +70,8 @@ export async function createActivity(activity: ActivityCreate): Promise<void> {
         parentActivityId || null,
       ],
     );
+
+    return activityId;
   } catch (error) {
     console.error("Error creating activity:", error);
     throw error;
@@ -330,13 +350,14 @@ export async function getChildActivities(
  * Creates a new activity as a child of the specified parent activity
  * @param activity The activity to create
  * @param parentActivityId The ID of the parent activity
+ * @returns The ID of the created activity
  */
 export async function createChildActivity(
   activity: ActivityCreate,
   parentActivityId: string,
-): Promise<void> {
+): Promise<string> {
   // Create a new activity with the parent ID
-  await createActivity({
+  return await createActivity({
     ...activity,
     parentActivityId,
   });

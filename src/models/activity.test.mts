@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { getConnection } from "../db.mts";
+import { setupTestDatabase, teardownTestDatabase } from "../testUtils.mts";
 import {
   createActivity,
   getActivityById,
@@ -8,11 +9,12 @@ import {
   deleteActivity,
   getActiveActivities,
   activityTree,
+  getChildActivities,
+  ActivityCreate,
 } from "./activity.mts";
 import { Activity } from "../types.mts";
 import * as fs from "fs";
 import * as path from "path";
-import { setupTestDatabase, teardownTestDatabase } from "../testUtils.mts";
 
 const isIntegrationTest = process.env.RUN_INTEGRATION_TESTS === "true";
 
@@ -77,12 +79,12 @@ testSuite("Activity Model Integration Tests", () => {
 
   it("should create an activity", async () => {
     // Create an activity
-    await createActivity(testActivity1);
+    const activityId = await createActivity(testActivity1);
 
     // Verify the activity was created
-    const activity = await getActivityById(testActivity1.activityId);
+    const activity = await getActivityById(activityId);
     expect(activity).toBeDefined();
-    expect(activity?.activityId).toBe(testActivity1.activityId);
+    expect(activity?.activityId).toBe(activityId);
     expect(activity?.name).toBe(testActivity1.name);
     expect(activity?.orgId).toBe(testActivity1.orgId);
     expect(activity?.orgText).toBe(testActivity1.orgText);
@@ -91,14 +93,14 @@ testSuite("Activity Model Integration Tests", () => {
 
   it("should get an activity by ID", async () => {
     // Create an activity
-    await createActivity(testActivity1);
+    const activityId = await createActivity(testActivity1);
 
     // Get the activity by ID
-    const activity = await getActivityById(testActivity1.activityId);
+    const activity = await getActivityById(activityId);
 
     // Verify the activity was retrieved
     expect(activity).toBeDefined();
-    expect(activity?.activityId).toBe(testActivity1.activityId);
+    expect(activity?.activityId).toBe(activityId);
     expect(activity?.name).toBe(testActivity1.name);
     expect(activity?.orgId).toBe(testActivity1.orgId);
     expect(activity?.orgText).toBe(testActivity1.orgText);
@@ -115,8 +117,8 @@ testSuite("Activity Model Integration Tests", () => {
 
   it("should get all activities", async () => {
     // Create test activities
-    await createActivity(testActivity1);
-    await createActivity(testActivity2);
+    const activityId1 = await createActivity(testActivity1);
+    const activityId2 = await createActivity(testActivity2);
 
     // Get all activities
     const activities = await getAllActivities();
@@ -125,12 +127,8 @@ testSuite("Activity Model Integration Tests", () => {
     expect(activities).toHaveLength(2);
 
     // Find activities by ID
-    const activity1 = activities.find(
-      (a) => a.activityId === testActivity1.activityId,
-    );
-    const activity2 = activities.find(
-      (a) => a.activityId === testActivity2.activityId,
-    );
+    const activity1 = activities.find((a) => a.activityId === activityId1);
+    const activity2 = activities.find((a) => a.activityId === activityId2);
 
     expect(activity1).toBeDefined();
     expect(activity1?.name).toBe(testActivity1.name);
@@ -205,119 +203,85 @@ testSuite("Activity Model Integration Tests", () => {
 
   it("should create an activity with a parent-child relationship", async () => {
     // Create parent activity
-    await createActivity(testActivity1);
+    const parentId = await createActivity(testActivity1);
 
     // Create child activity with parent reference
-    const childActivity: Activity = {
+    const childActivity: ActivityCreate = {
       activityId: "child-activity-1",
       name: "Child Activity 1",
-      created: new Date(),
-      lastAccessed: new Date(),
       active: true,
-      parentActivityId: testActivity1.activityId,
+      parentActivityId: parentId,
     };
 
-    await createActivity(childActivity);
+    const childId = await createActivity(childActivity);
 
     // Verify the child activity was created with correct parent reference
-    const retrievedChild = await getActivityById(childActivity.activityId);
+    const retrievedChild = await getActivityById(childId);
     expect(retrievedChild).toBeDefined();
-    expect(retrievedChild?.parentActivityId).toBe(testActivity1.activityId);
+    expect(retrievedChild?.parentActivityId).toBe(parentId);
   });
 
   it("should get child activities of a parent", async () => {
-    // First create a test function to get children
-    const getChildActivities = async (
-      parentId: string,
-    ): Promise<Activity[]> => {
-      const client = await getConnection();
-      const result = await client.query(
-        "SELECT * FROM activities WHERE parent_id = $1;",
-        [parentId],
-      );
-
-      if (result.rows.length === 0) {
-        return [];
-      }
-
-      return result.rows.map((row: any) => ({
-        activityId: row.activityid,
-        orgId: row.orgid,
-        orgText: row.orgtext,
-        name: row.name,
-        created: new Date(row.created),
-        lastAccessed: new Date(row.lastaccessed),
-        active: row.active,
-        parentActivityId: row.parent_id,
-      }));
-    };
-
     // Create parent activity
-    await createActivity(testActivity1);
+    const parentId = await createActivity(testActivity1);
 
     // Create multiple child activities
-    const childActivity1: Activity = {
+    const childActivity1: ActivityCreate = {
       activityId: "child-activity-1",
       name: "Child Activity 1",
-      created: new Date(),
-      lastAccessed: new Date(),
       active: true,
-      parentActivityId: testActivity1.activityId,
+      parentActivityId: parentId,
     };
 
-    const childActivity2: Activity = {
+    const childActivity2: ActivityCreate = {
       activityId: "child-activity-2",
       name: "Child Activity 2",
-      created: new Date(),
-      lastAccessed: new Date(),
       active: false,
-      parentActivityId: testActivity1.activityId,
+      parentActivityId: parentId,
     };
 
-    await createActivity(childActivity1);
-    await createActivity(childActivity2);
+    const childId1 = await createActivity(childActivity1);
+    const childId2 = await createActivity(childActivity2);
 
     // Get children of parent
-    const children = await getChildActivities(testActivity1.activityId);
+    const children = await getChildActivities(parentId);
 
     // Verify children were retrieved correctly
     expect(children).toHaveLength(2);
     expect(children.map((c) => c.activityId).sort()).toEqual(
-      [childActivity1.activityId, childActivity2.activityId].sort(),
+      [childId1, childId2].sort(),
     );
 
     // All children should have the correct parent ID
     children.forEach((child) => {
-      expect(child.parentActivityId).toBe(testActivity1.activityId);
+      expect(child.parentActivityId).toBe(parentId);
     });
   });
 
   it("should fail deleting a parent activity which has children", async () => {
     // Create parent activity
-    await createActivity(testActivity1);
+    const parentId = await createActivity(testActivity1);
 
     // Create child activity
-    const childActivity: Activity = {
+    const childActivity: ActivityCreate = {
       activityId: "child-activity-1",
       name: "Child Activity 1",
-      created: new Date(),
-      lastAccessed: new Date(),
       active: true,
-      parentActivityId: testActivity1.activityId,
+      parentActivityId: parentId,
     };
 
-    await createActivity(childActivity);
+    const childId = await createActivity(childActivity);
 
     // Verify both activities exist
-    const parentBefore = await getActivityById(testActivity1.activityId);
-    const childBefore = await getActivityById(childActivity.activityId);
+    const parentBefore = await getActivityById(parentId);
+    const childBefore = await getActivityById(childId);
     expect(parentBefore).not.toBeNull();
     expect(childBefore).not.toBeNull();
 
     // Try to delete the parent (should fail due to foreign key constraint)
     let error: any;
     try {
-      await deleteActivity(testActivity1.activityId);
+      await deleteActivity(parentId);
       // If we get here, the test should fail
       expect(true).toBe(false); // This should not be reached
     } catch (e) {
@@ -329,52 +293,48 @@ testSuite("Activity Model Integration Tests", () => {
     expect(error.message).toContain("foreign key constraint");
 
     // Verify both activities still exist
-    const parentAfter = await getActivityById(testActivity1.activityId);
-    const childAfter = await getActivityById(childActivity.activityId);
+    const parentAfter = await getActivityById(parentId);
+    const childAfter = await getActivityById(childId);
     expect(parentAfter).not.toBeNull();
     expect(childAfter).not.toBeNull();
   });
 
   it("should delete parent and children when cascade parameter is true", async () => {
     // Create parent activity
-    await createActivity(testActivity1);
+    const parentId = await createActivity(testActivity1);
 
     // Create child activity
-    const childActivity: Activity = {
+    const childActivity: ActivityCreate = {
       activityId: "child-activity-1",
       name: "Child Activity 1",
-      created: new Date(),
-      lastAccessed: new Date(),
       active: true,
-      parentActivityId: testActivity1.activityId,
+      parentActivityId: parentId,
     };
 
-    await createActivity(childActivity);
+    const childId = await createActivity(childActivity);
 
     // Create grandchild activity
-    const grandchildActivity: Activity = {
+    const grandchildActivity: ActivityCreate = {
       activityId: "grandchild-activity-1",
       name: "Grandchild Activity 1",
-      created: new Date(),
-      lastAccessed: new Date(),
       active: true,
-      parentActivityId: childActivity.activityId,
+      parentActivityId: childId,
     };
 
-    await createActivity(grandchildActivity);
+    const grandchildId = await createActivity(grandchildActivity);
 
     // Verify all activities exist
-    expect(await getActivityById(testActivity1.activityId)).not.toBeNull();
-    expect(await getActivityById(childActivity.activityId)).not.toBeNull();
-    expect(await getActivityById(grandchildActivity.activityId)).not.toBeNull();
+    expect(await getActivityById(parentId)).not.toBeNull();
+    expect(await getActivityById(childId)).not.toBeNull();
+    expect(await getActivityById(grandchildId)).not.toBeNull();
 
     // Delete the parent with cascade=true
-    await deleteActivity(testActivity1.activityId, true);
+    await deleteActivity(parentId, true);
 
     // Verify all activities are deleted
-    expect(await getActivityById(testActivity1.activityId)).toBeNull();
-    expect(await getActivityById(childActivity.activityId)).toBeNull();
-    expect(await getActivityById(grandchildActivity.activityId)).toBeNull();
+    expect(await getActivityById(parentId)).toBeNull();
+    expect(await getActivityById(childId)).toBeNull();
+    expect(await getActivityById(grandchildId)).toBeNull();
   });
 
   it("should retrieve activity tree with correct hierarchy and depth", async () => {
@@ -383,49 +343,37 @@ testSuite("Activity Model Integration Tests", () => {
     // ├── Child 1
     // │   └── Grandchild 1
     // └── Child 2
-    
+
     // Create root activity
-    const rootActivity: Activity = {
+    const rootId = await createActivity({
       activityId: "root-activity",
       name: "Root Activity",
-      created: new Date(),
-      lastAccessed: new Date(),
       active: true,
-    };
-    await createActivity(rootActivity);
+    });
 
     // Create first child activity
-    const child1Activity: Activity = {
+    const child1Id = await createActivity({
       activityId: "child-activity-1",
       name: "Child Activity 1",
-      created: new Date(),
-      lastAccessed: new Date(),
       active: true,
-      parentActivityId: rootActivity.activityId,
-    };
-    await createActivity(child1Activity);
+      parentActivityId: rootId,
+    });
 
     // Create second child activity
-    const child2Activity: Activity = {
+    const child2Id = await createActivity({
       activityId: "child-activity-2",
       name: "Child Activity 2",
-      created: new Date(),
-      lastAccessed: new Date(),
       active: true,
-      parentActivityId: rootActivity.activityId,
-    };
-    await createActivity(child2Activity);
+      parentActivityId: rootId,
+    });
 
     // Create grandchild activity
-    const grandchildActivity: Activity = {
+    const grandchildId = await createActivity({
       activityId: "grandchild-activity",
       name: "Grandchild Activity",
-      created: new Date(),
-      lastAccessed: new Date(),
       active: true,
-      parentActivityId: child1Activity.activityId,
-    };
-    await createActivity(grandchildActivity);
+      parentActivityId: child1Id,
+    });
 
     // Get the activity tree
     const tree = await activityTree();
@@ -434,10 +382,10 @@ testSuite("Activity Model Integration Tests", () => {
     expect(tree).toHaveLength(4); // Root + 2 children + 1 grandchild
 
     // Find each activity in the tree
-    const rootInTree = tree.find(a => a.activityId === rootActivity.activityId);
-    const child1InTree = tree.find(a => a.activityId === child1Activity.activityId);
-    const child2InTree = tree.find(a => a.activityId === child2Activity.activityId);
-    const grandchildInTree = tree.find(a => a.activityId === grandchildActivity.activityId);
+    const rootInTree = tree.find((a) => a.activityId === rootId);
+    const child1InTree = tree.find((a) => a.activityId === child1Id);
+    const child2InTree = tree.find((a) => a.activityId === child2Id);
+    const grandchildInTree = tree.find((a) => a.activityId === grandchildId);
 
     // Verify all activities are in the tree
     expect(rootInTree).toBeDefined();
@@ -453,15 +401,17 @@ testSuite("Activity Model Integration Tests", () => {
 
     // Verify parent-child relationships
     expect(rootInTree?.parentActivityId).toBeNull();
-    expect(child1InTree?.parentActivityId).toBe(rootActivity.activityId);
-    expect(child2InTree?.parentActivityId).toBe(rootActivity.activityId);
-    expect(grandchildInTree?.parentActivityId).toBe(child1Activity.activityId);
+    expect(child1InTree?.parentActivityId).toBe(rootId);
+    expect(child2InTree?.parentActivityId).toBe(rootId);
+    expect(grandchildInTree?.parentActivityId).toBe(child1Id);
 
     // Verify ordering (parents should come before their children)
-    const rootIndex = tree.findIndex(a => a.activityId === rootActivity.activityId);
-    const child1Index = tree.findIndex(a => a.activityId === child1Activity.activityId);
-    const child2Index = tree.findIndex(a => a.activityId === child2Activity.activityId);
-    const grandchildIndex = tree.findIndex(a => a.activityId === grandchildActivity.activityId);
+    const rootIndex = tree.findIndex((a) => a.activityId === rootId);
+    const child1Index = tree.findIndex((a) => a.activityId === child1Id);
+    const child2Index = tree.findIndex((a) => a.activityId === child2Id);
+    const grandchildIndex = tree.findIndex(
+      (a) => a.activityId === grandchildId,
+    );
 
     expect(rootIndex).toBeLessThan(child1Index);
     expect(rootIndex).toBeLessThan(child2Index);
@@ -475,58 +425,50 @@ testSuite("Activity Model Integration Tests", () => {
     //     └── Level 2
     //         └── Level 3 (should be included)
     //             └── Level 4 (should NOT be included)
-    
-    // Create activities for each level
-    const activities: Activity[] = [];
-    
+
     // Create root activity (level 0)
-    const rootActivity: Activity = {
+    const rootId = await createActivity({
       activityId: "depth-root",
       name: "Depth Root",
-      created: new Date(),
-      lastAccessed: new Date(),
       active: true,
-    };
-    await createActivity(rootActivity);
-    activities.push(rootActivity);
-    
+    });
+
     // Create child activities for levels 1-4
-    let parentId = rootActivity.activityId;
+    let parentId = rootId;
+    const levelIds = [rootId];
+
     for (let i = 1; i <= 4; i++) {
-      const activity: Activity = {
+      const activityId = await createActivity({
         activityId: `depth-level-${i}`,
         name: `Depth Level ${i}`,
-        created: new Date(),
-        lastAccessed: new Date(),
         active: true,
         parentActivityId: parentId,
-      };
-      await createActivity(activity);
-      activities.push(activity);
-      parentId = activity.activityId;
+      });
+      levelIds.push(activityId);
+      parentId = activityId;
     }
-    
+
     // Get the activity tree
     const tree = await activityTree();
-    
+
     // Find our test activities in the tree
-    const treeActivityIds = tree.map(a => a.activityId);
-    
+    const treeActivityIds = tree.map((a) => a.activityId);
+
     // Verify levels 0-3 are included
     expect(treeActivityIds).toContain("depth-root");
     expect(treeActivityIds).toContain("depth-level-1");
     expect(treeActivityIds).toContain("depth-level-2");
     expect(treeActivityIds).toContain("depth-level-3");
-    
+
     // Verify level 4 is NOT included (due to depth limit of 3)
     expect(treeActivityIds).not.toContain("depth-level-4");
-    
+
     // Verify correct depth values for included activities
-    const level0 = tree.find(a => a.activityId === "depth-root");
-    const level1 = tree.find(a => a.activityId === "depth-level-1");
-    const level2 = tree.find(a => a.activityId === "depth-level-2");
-    const level3 = tree.find(a => a.activityId === "depth-level-3");
-    
+    const level0 = tree.find((a) => a.activityId === "depth-root");
+    const level1 = tree.find((a) => a.activityId === "depth-level-1");
+    const level2 = tree.find((a) => a.activityId === "depth-level-2");
+    const level3 = tree.find((a) => a.activityId === "depth-level-3");
+
     expect(level0?.depth).toBe(0);
     expect(level1?.depth).toBe(1);
     expect(level2?.depth).toBe(2);
