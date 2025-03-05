@@ -1,19 +1,11 @@
 import { Activity } from "../types.mts";
 import { getConnection } from "../db.mts";
 import { nanoid } from "nanoid";
-// Hack
-import { fs } from "zx";
-import { parse, stringify } from "yaml";
 import { getCurrentContext } from "./context.mts";
 
 export type ActivityTreeItem = Activity & {
   depth?: number;
   selected: boolean;
-};
-
-type ActivityHistoryDoc = {
-  currentActivityId: string;
-  previousActivityId: string;
 };
 
 // Define ActivityCreate type as a partial of Activity with required fields
@@ -269,29 +261,60 @@ export async function getActiveActivities(): Promise<Activity[]> {
   }
 }
 
-// TOFIX hack
 export async function updateActivityHistory(
   currentActivityId: string,
   previousActivityId: string,
 ): Promise<void> {
   try {
-    const state: ActivityHistoryDoc = {
-      currentActivityId,
-      previousActivityId,
-    };
-    const stringified = stringify(state);
-    fs.writeFileSync("./data/state-mini.yml", stringified);
+    const client = await getConnection();
+
+    // Check if the previous activity ID exists or is empty
+    let validPreviousId = null;
+    if (previousActivityId && previousActivityId.trim() !== "") {
+      const prevActivityExists = await client.query(
+        "SELECT 1 FROM activities WHERE activityId = $1",
+        [previousActivityId],
+      );
+
+      if (prevActivityExists.rows.length > 0) {
+        validPreviousId = previousActivityId;
+      }
+    }
+
+    // Insert a new record in the activity_history table
+    await client.query(
+      `INSERT INTO activity_history (current_activity_id, previous_activity_id)
+       VALUES ($1, $2)`,
+      [currentActivityId, validPreviousId],
+    );
+
+    // Update the lastAccessed timestamp for the current activity
+    await client.query(
+      `UPDATE activities SET lastAccessed = CURRENT_TIMESTAMP 
+       WHERE activityId = $1`,
+      [currentActivityId],
+    );
   } catch (error) {
-    console.error("Error updating activity state:", error);
+    console.error("Error updating activity history:", error);
     throw error;
   }
 }
 
 export async function getCurrentActivity(): Promise<Activity | null> {
   try {
-    const file = fs.readFileSync("./data/state-mini.yml", "utf8");
-    const parsed = parse(file) as ActivityHistoryDoc;
-    const currentActivityId = parsed["currentActivityId"] as string;
+    const client = await getConnection();
+
+    // Get the most recent activity history record
+    const result = await client.query(
+      `SELECT current_activity_id FROM activity_history
+       ORDER BY timestamp DESC LIMIT 1`,
+    );
+
+    if (result.rows.length === 0) {
+      return null;
+    }
+
+    const currentActivityId = result.rows[0].current_activity_id;
     return getActivityById(currentActivityId);
   } catch (error) {
     console.error("Error retrieving current activity:", error);
@@ -301,9 +324,22 @@ export async function getCurrentActivity(): Promise<Activity | null> {
 
 export async function getPreviousActivity(): Promise<Activity | null> {
   try {
-    const file = fs.readFileSync("./data/state-mini.yml", "utf8");
-    const parsed = parse(file) as ActivityHistoryDoc;
-    const previousActivityId = parsed["previousActivityId"] as string;
+    const client = await getConnection();
+
+    // Get the most recent activity history record
+    const result = await client.query(
+      `SELECT previous_activity_id FROM activity_history
+       ORDER BY timestamp DESC LIMIT 1`,
+    );
+
+    if (
+      result.rows.length === 0 ||
+      result.rows[0].previous_activity_id === null
+    ) {
+      return null;
+    }
+
+    const previousActivityId = result.rows[0].previous_activity_id;
     return getActivityById(previousActivityId);
   } catch (error) {
     console.error("Error retrieving previous activity:", error);

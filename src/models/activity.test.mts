@@ -9,12 +9,13 @@ import {
   deleteActivity,
   getActiveActivities,
   activityTree,
+  updateActivityHistory,
+  getCurrentActivity,
+  getPreviousActivity,
   getChildActivities,
   ActivityCreate,
 } from "./activity.mts";
 import { Activity } from "../types.mts";
-import * as fs from "fs";
-import * as path from "path";
 
 const isIntegrationTest = process.env.RUN_INTEGRATION_TESTS === "true";
 
@@ -60,6 +61,7 @@ testSuite("Activity Model Integration Tests", () => {
 
     // Clear existing data
     await client.query("DELETE FROM activities");
+    await client.query("DELETE FROM activity_history");
   });
 
   // Clean up after all tests
@@ -416,6 +418,129 @@ testSuite("Activity Model Integration Tests", () => {
     expect(rootIndex).toBeLessThan(child1Index);
     expect(rootIndex).toBeLessThan(child2Index);
     expect(child1Index).toBeLessThan(grandchildIndex);
+  });
+
+  it("should update activity history and retrieve current activity", async () => {
+    // Create two test activities
+    const activityId1 = await createActivity(testActivity1);
+    const activityId2 = await createActivity(testActivity2);
+
+    // Update activity history (simulate switching from activity2 to activity1)
+    await updateActivityHistory(activityId1, activityId2);
+
+    // Get current activity
+    const currentActivity = await getCurrentActivity();
+
+    // Verify current activity is testActivity1
+    expect(currentActivity).not.toBeNull();
+    expect(currentActivity?.activityId).toBe(activityId1);
+
+    // Get previous activity
+    const previousActivity = await getPreviousActivity();
+
+    // Verify previous activity is testActivity2
+    expect(previousActivity).not.toBeNull();
+    expect(previousActivity?.activityId).toBe(activityId2);
+  });
+
+  it("should update lastAccessed timestamp when activity becomes current", async () => {
+    // Create test activity
+    const activityId = await createActivity(testActivity1);
+
+    // Get the initial lastAccessed timestamp
+    const initialActivity = await getActivityById(activityId);
+    const initialTimestamp = initialActivity?.lastAccessed;
+
+    // Wait a small amount of time to ensure timestamp difference
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // Update activity history to make it the current activity
+    // Use empty string as previous ID to avoid foreign key constraint
+    await updateActivityHistory(activityId, "");
+
+    // Get the updated activity
+    const updatedActivity = await getActivityById(activityId);
+    const updatedTimestamp = updatedActivity?.lastAccessed;
+
+    // Verify lastAccessed timestamp was updated
+    expect(updatedTimestamp).not.toEqual(initialTimestamp);
+    expect(updatedTimestamp?.getTime()).toBeGreaterThan(
+      initialTimestamp?.getTime() || 0,
+    );
+  });
+
+  it("should maintain history of activity transitions", async () => {
+    // Create three test activities
+    const activityId1 = await createActivity(testActivity1);
+    const activityId2 = await createActivity(testActivity2);
+
+    const testActivity3: ActivityCreate = {
+      activityId: "test-activity-3",
+      name: "Test Activity 3",
+      active: true,
+      orgId: "org-id-3",
+      orgText: "* Test Org Text 3",
+    };
+    const activityId3 = await createActivity(testActivity3);
+
+    // Simulate a sequence of activity transitions
+    // First transition: null -> activity1
+    await updateActivityHistory(activityId1, "");
+
+    // Second transition: activity1 -> activity2
+    await updateActivityHistory(activityId2, activityId1);
+
+    // Third transition: activity2 -> activity3
+    await updateActivityHistory(activityId3, activityId2);
+
+    // Verify current activity is activity3
+    const currentActivity = await getCurrentActivity();
+    expect(currentActivity?.activityId).toBe(activityId3);
+
+    // Verify previous activity is activity2
+    const previousActivity = await getPreviousActivity();
+    expect(previousActivity?.activityId).toBe(activityId2);
+
+    // Verify history records in database
+    const client = await getConnection();
+    const result = await client.query(
+      `SELECT current_activity_id, previous_activity_id 
+       FROM activity_history 
+       ORDER BY timestamp ASC`,
+    );
+
+    // Should have 3 history records
+    expect(result.rows.length).toBeGreaterThanOrEqual(3);
+
+    // Check the sequence of transitions
+    const transitions = result.rows.slice(-3); // Get the last 3 transitions
+
+    expect(transitions[0].current_activity_id).toBe(activityId1);
+    expect(transitions[0].previous_activity_id).toBe(null);
+
+    expect(transitions[1].current_activity_id).toBe(activityId2);
+    expect(transitions[1].previous_activity_id).toBe(activityId1);
+
+    expect(transitions[2].current_activity_id).toBe(activityId3);
+    expect(transitions[2].previous_activity_id).toBe(activityId2);
+  });
+
+  it("should handle null previous activity in history", async () => {
+    // Create test activity
+    const activityId = await createActivity(testActivity1);
+
+    // Update activity history with null previous activity
+    await updateActivityHistory(activityId, "");
+
+    // Get current and previous activities
+    const currentActivity = await getCurrentActivity();
+    const previousActivity = await getPreviousActivity();
+
+    // Verify current activity is set
+    expect(currentActivity?.activityId).toBe(activityId);
+
+    // Verify previous activity is null
+    expect(previousActivity).toBeNull();
   });
 
   it("should limit activity tree depth to 3 levels", async () => {
