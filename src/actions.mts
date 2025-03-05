@@ -1,9 +1,16 @@
 import { Activity } from "./types.mts";
+import {
+  switchActivity,
+  swapActivity,
+  sendWindowToAnotherActivity,
+  showTUI,
+} from "./commands/navigation.mts";
 
 export enum ActionType {
   BASE = "base",
   CURRENT_ACTIVITY = "currentActivity",
   RESOURCE = "resource",
+  NAVIGATION = "navigation",
 }
 
 export interface Action {
@@ -30,6 +37,11 @@ export interface ResourceAction extends Action {
   handler: (resourceId: string) => Promise<void> | void;
 }
 
+// navigation actions
+export interface NavigationAction extends Action {
+  type: ActionType.NAVIGATION;
+  handler: () => Promise<void> | void;
+}
 export const actions: Record<string, Action> = {};
 
 export function registerAction(action: Action): void {
@@ -130,12 +142,75 @@ export const runRangerAction: BaseAction = {
   },
 };
 
+export const navigateGlobalLeader: NavigationAction = {
+  id: "globalLeader",
+  name: "Global Leader Key",
+  type: ActionType.NAVIGATION,
+  handler: async () => {
+    await showTUI();
+  },
+};
+
+export const navigateActivityNavigate: NavigationAction = {
+  id: "activityNavigate",
+  name: "Activity Navigation",
+  type: ActionType.NAVIGATION,
+  handler: async () => {
+    await showTUI();
+  },
+};
+
+export const navigateActivitySelect: NavigationAction = {
+  id: "activitySelect",
+  name: "Activity Selection",
+  type: ActionType.NAVIGATION,
+  handler: async () => {
+    await showTUI();
+  },
+};
+
+export const navigateSwapActivityAction: NavigationAction = {
+  id: "activitySwap",
+  name: "Activity Swap",
+  type: ActionType.NAVIGATION,
+  handler: async () => {
+    await swapActivity();
+  },
+};
+
+export const navigateSendWindowToAnotherActivityAction: NavigationAction = {
+  id: "sendWindowToAnotherActivity",
+  name: "Send Window To Another Activity",
+  type: ActionType.NAVIGATION,
+  handler: async () => {
+    await sendWindowToAnotherActivity();
+  },
+};
+
+export const navigateActivitySwitchOldAction: NavigationAction = {
+  id: "switchActivity",
+  name: "Switch Activity",
+  type: ActionType.NAVIGATION,
+  handler: async () => {
+    await switchActivity();
+  },
+};
+
 registerAction(runFirefoxAction);
 registerAction(runEmacsAction);
 registerAction(runRangerAction);
+
 registerAction(currentActivityRenameAction);
 registerAction(currentActivityAssignToParentAction);
 registerAction(currentActivityCreateChildActivityAction);
 registerAction(currentActivityDestroyAction);
+
+registerAction(navigateGlobalLeader);
+registerAction(navigateActivityNavigate);
+registerAction(navigateActivitySelect);
+registerAction(navigateSwapActivityAction);
+registerAction(navigateSendWindowToAnotherActivityAction);
+registerAction(navigateActivitySwitchOldAction);
+
 registerAction(openResourceAction);
 registerAction(resourcePlayInMpvAction);
