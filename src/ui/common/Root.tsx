@@ -10,6 +10,7 @@ import ActivityNavigate from "../ActivityNavigate.tsx";
 import Workspace from "../Workspace.tsx";
 import WhichKey from "../WhichKey.tsx";
 import Home from "../Home.tsx";
+import ActionsDemo from "../ActionsDemo.tsx";
 
 import {
   registerCommandListener,
@@ -22,6 +23,7 @@ const routes = [
   { path: "/activitySelect", component: ActivitySelection },
   { path: "/activityNavigate", component: ActivityNavigate },
   { path: "/workspace", component: Workspace },
+  { path: "/actions", component: ActionsDemo },
 ];
 
 // define root keymap
@@ -88,6 +90,12 @@ const Root: React.FC = () => {
           description: "Select Activities",
           name: "activities-select",
           handler: () => setRoutePath("/activitySelect"),
+        },
+        {
+          sequence: [key("x")],
+          description: "Actions Demo",
+          name: "show-actions-demo",
+          handler: () => setRoutePath("/actions"),
         },
       ]);
     }
