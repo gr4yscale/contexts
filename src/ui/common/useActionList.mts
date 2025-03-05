@@ -37,7 +37,7 @@ type Return<T> = {
 const useActionList = <T extends Item>({
   initialItems,
 }: Props<T>): Return<T> => {
-  const [mode, setMode] = useState<Modes>("find");
+  const [mode, setMode] = useState<Modes>("select");
   const [items, setItems] = useState<T[]>(initialItems);
   const [searchString, setSearchString] = useState<string>("");
   const [highlightedIndex, setHighlightedIndex] = useState<number>(0);
