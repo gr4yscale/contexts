@@ -3,6 +3,7 @@ import { Activity } from "./types.mts";
 export enum ActionType {
   BASE = "base",
   CURRENT_ACTIVITY = "currentActivity",
+  RESOURCE = "resource",
 }
 
 export interface Action {
@@ -22,6 +23,11 @@ export interface CurrentActivityAction extends Action {
 export interface BaseAction extends Action {
   type: ActionType.BASE;
   handler: () => Promise<void> | void;
+}
+
+export interface ResourceAction extends Action {
+  type: ActionType.RESOURCE;
+  handler: (resourceId: string) => Promise<void> | void;
 }
 
 export const actions: Record<string, Action> = {};
@@ -52,14 +58,84 @@ export const runFirefoxAction: BaseAction = {
   },
 };
 
-export const assignCurrentActivityToParentAction: CurrentActivityAction = {
-  id: "assignCurrentActivityToParent",
-  name: "Assign to Parent",
+export const runEmacsAction: BaseAction = {
+  id: "runEmacs",
+  name: "Run Emacs",
+  type: ActionType.BASE,
+  handler: async () => {
+    console.log("Running Emacs...");
+  },
+};
+
+export const currentActivityRenameAction: CurrentActivityAction = {
+  id: "currentActivityRename",
+  name: "Rename Activity",
+  type: ActionType.CURRENT_ACTIVITY,
+  handler: async (activity: Activity) => {
+    console.log(`Renaming activity ${activity.id}...`);
+  },
+};
+
+export const currentActivityAssignToParentAction: CurrentActivityAction = {
+  id: "currentActivityAssignToParent",
+  name: "Assign Activity to Parent",
   type: ActionType.CURRENT_ACTIVITY,
   handler: async (activity: Activity) => {
     console.log(`Assigning activity ${activity.id} to parent...`);
   },
 };
 
+export const currentActivityCreateChildActivityAction: CurrentActivityAction = {
+  id: "currentActivityCreateChildActivity",
+  name: "Create Child Activity",
+  type: ActionType.CURRENT_ACTIVITY,
+  handler: async (activity: Activity) => {
+    console.log(`Creating child activity for ${activity.id}...`);
+  },
+};
+
+export const currentActivityDestroyAction: CurrentActivityAction = {
+  id: "currentActivityDestroy",
+  name: "Delete Activity",
+  type: ActionType.CURRENT_ACTIVITY,
+  handler: async (activity: Activity) => {
+    console.log(`Deleting activity ${activity.id}...`);
+  },
+};
+
+export const openResourceAction: ResourceAction = {
+  id: "openResource",
+  name: "Open Resource",
+  type: ActionType.RESOURCE,
+  handler: async (resourceId: string) => {
+    console.log(`Opening resource ${resourceId}...`);
+  },
+};
+
+export const resourcePlayInMpvAction: ResourceAction = {
+  id: "resourcePlayInMpv",
+  name: "Play in MPV",
+  type: ActionType.RESOURCE,
+  handler: async (resourceId: string) => {
+    console.log(`Playing resource ${resourceId} in MPV...`);
+  },
+};
+
+export const runRangerAction: BaseAction = {
+  id: "runRanger",
+  name: "Run Ranger",
+  type: ActionType.BASE,
+  handler: async () => {
+    console.log("Running Ranger file manager...");
+  },
+};
+
 registerAction(runFirefoxAction);
-registerAction(assignCurrentActivityToParentAction);
+registerAction(runEmacsAction);
+registerAction(runRangerAction);
+registerAction(currentActivityRenameAction);
+registerAction(currentActivityAssignToParentAction);
+registerAction(currentActivityCreateChildActivityAction);
+registerAction(currentActivityDestroyAction);
+registerAction(openResourceAction);
+registerAction(resourcePlayInMpvAction);
