@@ -6,11 +6,11 @@ import { createElement } from "react";
 import { render } from "ink";
 
 import { initializeDB } from "./db.mts";
-import { handleCommand } from "./handleCommand.mts";
-
-// import { activitiesActive } from "./activityList.mts";
+import { executeAction } from "./actions.mts";
 
 import Root from "./ui/common/Root.tsx";
+
+$.verbose = false; // suppress stdout from zx subprocess calls
 
 fs.removeSync("/tmp/contexts.sock");
 
@@ -18,21 +18,11 @@ const server = createServer((socket: Socket) => {
   socket.setEncoding("utf8");
   socket.on("data", async (data: string) => {
     try {
-      let response;
-      // TOFIX: lock while existing command is being handled
-      if (data.includes("|")) {
-        const cmd = data.split("|")[0];
-        const args = data.split("|")[1];
-        response = await handleCommand(cmd, args);
-      } else {
-        response = await handleCommand(data);
-      }
-      if (response) {
-        console.log(response);
-        socket.write(response);
-      }
+      await executeAction(data);
+      // TOFIX argument parsing
+      // TOFIX action responses
     } catch (e) {
-      const msg = `Activities: Error handling command ${data}!`;
+      const msg = `Error executing action ${data}!`;
       $`notify-send "${msg}"`;
       console.log(msg);
       console.log(e);
@@ -47,13 +37,11 @@ server.listen("/tmp/contexts.sock", () => {
 try {
   await initializeDB();
 } catch (e) {
-  $`notify-send "Activities: Database initialization error occurred."`;
+  $`notify-send "Database initialization error occurred."`;
   console.error("Database initialization error:", e);
 }
 
-$.verbose = false; // suppress stdout from zx subprocess calls
-
-// handleCommand("storeBrowserStates");
+render(createElement(Root, null));
 
 // setInterval(
 //   () => {
@@ -61,5 +49,3 @@ $.verbose = false; // suppress stdout from zx subprocess calls
 //   },
 //   15 * 60 * 1000,
 // );
-
-render(createElement(Root, null));

@@ -13,9 +13,9 @@ import Home from "../Home.tsx";
 import ActionsDemo from "../ActionsDemo.tsx";
 
 import {
-  registerCommandListener,
-  unregisterCommandListener,
-} from "../../handleCommand.mts";
+  registerActionListener,
+  unregisterActionListener,
+} from "../../actions.mts";
 
 const routes = [
   { path: "/", component: Home },
@@ -62,10 +62,10 @@ const Root: React.FC = () => {
       }
     };
 
-    registerCommandListener(listener);
+    registerActionListener(listener);
 
     return () => {
-      unregisterCommandListener(listener);
+      unregisterActionListener(listener);
     };
   }, []);
 

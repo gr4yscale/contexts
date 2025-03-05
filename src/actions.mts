@@ -42,7 +42,24 @@ export interface NavigationAction extends Action {
   type: ActionType.NAVIGATION;
   handler: () => Promise<void> | void;
 }
+
+
+type Listener = (command: string) => void;
+
+let listeners: Listener[] = [];
+
 export const actions: Record<string, Action> = {};
+
+
+export const registerActionListener = (listener: Listener) => {
+  listeners.push(listener);
+};
+
+export const unregisterActionListener = (listener: Listener) => {
+  const idx = listeners.indexOf(listener);
+  listeners.splice(idx, 1);
+};
+
 
 export function registerAction(action: Action): void {
   actions[action.id] = action;
@@ -59,6 +76,10 @@ export async function executeAction(id: string, ...args: any[]): Promise<void> {
   }
 
   await action.handler(...args);
+
+  for (const listener of listeners) {
+    listener(id);
+  }
 }
 
 export const runFirefoxAction: BaseAction = {
