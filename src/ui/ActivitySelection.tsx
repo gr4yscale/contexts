@@ -122,6 +122,8 @@ const ActivitySelection: React.FC = () => {
                   activityIds: activityIds,
                 });
               } else {
+                await createContext({
+                  name: `Context ${new Date().toLocaleString()}`,
                   activityIds: activityIds,
                 });
               }
