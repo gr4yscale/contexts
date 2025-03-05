@@ -57,13 +57,23 @@ export const handleCommand = async (
   // activity lifecycle
 
   switch (command) {
+    case "globalLeader": {
+      await showTUI();
+      break;
+    }
     // navigation
-    case "switchActivity": {
+    case "activityNavigate": {
+      await showTUI();
+      // listener on Root component will change route
+      break;
+    }
+    case "activityNavigateOld": {
       await switchActivity();
       break;
     }
-    case "globalLeader": {
+    case "activitySelect": {
       await showTUI();
+      // listener on Root component will change route
       break;
     }
     case "swapActivity": {

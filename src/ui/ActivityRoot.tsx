@@ -84,7 +84,7 @@ const ActivityRoot: React.FC = () => {
         <TextInput
           callback={(name: string) => {
             if (name === "") return; // TODO validation
-            createActivity({name})
+            createActivity({ name });
             setMode("initial");
           }}
         />

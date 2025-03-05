@@ -6,7 +6,7 @@ import { Keymap, key } from "./Keymapping.mts";
 
 import ActivityRoot from "../ActivityRoot.tsx";
 import ActivitySelection from "../ActivitySelection.tsx";
-//import ActivityNavigate from "../ActivityNavigate.tsx";
+import ActivityNavigate from "../ActivityNavigate.tsx";
 import Workspace from "../Workspace.tsx";
 import WhichKey from "../WhichKey.tsx";
 import Home from "../Home.tsx";
@@ -19,7 +19,8 @@ import {
 const routes = [
   { path: "/", component: Home },
   { path: "/activity", component: ActivityRoot },
-  { path: "/activitySelection", component: ActivitySelection },
+  { path: "/activitySelect", component: ActivitySelection },
+  { path: "/activityNavigate", component: ActivityNavigate },
   { path: "/workspace", component: Workspace },
 ];
 
@@ -42,12 +43,20 @@ const Root: React.FC = () => {
     }
   });
 
-  // listen for "showHome" command coming via unix socket
+  // listen for commands coming in via unix socket
   useEffect(() => {
     const listener = (command: string) => {
       // TOFIX: check command type in handleCommand
-      if (command === "globalLeader") {
-        setRoutePath("/");
+      switch (command) {
+        case "globalLeader":
+          setRoutePath("/");
+          break;
+        case "activityNavigate":
+          setRoutePath("/activityNavigate");
+          break;
+        case "activitySelect":
+          setRoutePath("/activitySelect");
+          break;
       }
     };
 
@@ -78,7 +87,7 @@ const Root: React.FC = () => {
           sequence: [key("s")],
           description: "Select Activities",
           name: "activities-select",
-          handler: () => setRoutePath("/activitySelection"),
+          handler: () => setRoutePath("/activitySelect"),
         },
       ]);
     }
