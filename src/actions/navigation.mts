@@ -1,6 +1,6 @@
 import { $ } from "zx";
 
-import { ActionType, NavigationAction, registerAction } from "../actions.mts";
+import { ActionType, Action, registerAction } from "../actions.mts";
 import { Activity, ActivityId } from "../types.mts";
 
 import { getWorkspacesForActivity } from "../models/workspace.mts";
@@ -23,6 +23,12 @@ import {
 } from "../activityList.mts";
 
 import { buildMenu } from "../menus.mts";
+
+// actions that navigate betwen activities
+interface NavigationAction extends Action {
+  type: ActionType.NAVIGATION;
+  handler: (activityId?: string) => Promise<void> | void;
+}
 
 /** views the dwm tag which is reserved for the TUI
  */
