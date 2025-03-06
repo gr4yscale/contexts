@@ -3,13 +3,21 @@ import { Box, Text } from "ink";
 
 import QuickSelectList from "./common/QuickSelectList.tsx";
 
+//           ^^ use with activities list
+
 import {
   runFirefoxAction,
   runEmacsAction,
   runRangerAction,
 } from "../actions/base.mts";
+import {
+  currentActivityRenameAction,
+  currentActivityAssignToParentAction,
+  currentActivityCreateChildActivityAction,
+  currentActivityDestroyAction,
+} from "../actions/currentActivity.mts";
 
-import { Action, executeAction } from "../actions.mts";
+import { Action, executeAction, ActionType } from "../actions.mts";
 import { getCurrentActivity } from "../models/activity.mts";
 import { Activity } from "../types.mts";
 
@@ -25,6 +33,10 @@ const ActionExecute: React.FC<Props> = ({ keys = "asdfghjkl;" }) => {
     runFirefoxAction,
     runEmacsAction,
     runRangerAction,
+    currentActivityRenameAction,
+    currentActivityAssignToParentAction,
+    currentActivityCreateChildActivityAction,
+    currentActivityDestroyAction,
   ]);
 
   const fetchCurrentActivity = async () => {
@@ -53,8 +65,15 @@ const ActionExecute: React.FC<Props> = ({ keys = "asdfghjkl;" }) => {
           </Box>
           <QuickSelectList
             keys={keys}
-            onSelected={(selectedAction: Action) => {
-              executeAction(selectedAction.id);
+            onSelected={(action: Action) => {
+              if (
+                action.type === ActionType.CURRENT_ACTIVITY &&
+                currentActivity
+              ) {
+                executeAction(action.id, currentActivity);
+              } else {
+                executeAction(action.id);
+              }
             }}
             initialItems={actions.map((action) => ({
               id: action.id,
