@@ -9,7 +9,8 @@ import { key, KeymapConfig } from "./common/Keymapping.mts";
 import { KeysContext } from "./common/Context.mts";
 import { Item } from "./common/useActionList.mts";
 import { getCurrentContextActivities } from "../models/context.mts";
-import { activateActivity } from "../commands/navigation.mts";
+
+import { executeAction } from "../actions.mts";
 
 type ActivityItem = { id: string; display: string; data: Activity };
 type ActivityNavigateStates = "initial" | "find";
@@ -42,7 +43,7 @@ const ActivityNavigate: React.FC = () => {
       name: "activity-activate",
       handler: () => {
         const activity = item.data;
-        activateActivity(activity.activityId);
+        executeAction("activateActivity", activity.activityId);
         fetchActivities();
         // go back to Root or ActivityRoot
       },

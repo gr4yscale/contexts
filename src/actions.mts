@@ -1,10 +1,4 @@
 import { Activity } from "./types.mts";
-import {
-  switchActivity,
-  swapActivity,
-  sendWindowToAnotherActivity,
-  showTUI,
-} from "./commands/navigation.mts";
 
 export enum ActionType {
   BASE = "base",
@@ -20,36 +14,35 @@ export interface Action {
   handler: (...args: any[]) => Promise<void> | void;
 }
 
+// actions that are generic, not context specific
+export interface BaseAction extends Action {
+  type: ActionType.BASE;
+  handler: () => Promise<void> | void;
+}
+
 // actions that operate on the current activity
 export interface CurrentActivityAction extends Action {
   type: ActionType.CURRENT_ACTIVITY;
   handler: (activity: Activity) => Promise<void> | void;
 }
 
-// base actions
-export interface BaseAction extends Action {
-  type: ActionType.BASE;
-  handler: () => Promise<void> | void;
+// actions that navigate betwen activities
+export interface NavigationAction extends Action {
+  type: ActionType.NAVIGATION;
+  handler: (activityId?: string) => Promise<void> | void;
 }
 
+// actions that act on a resource
 export interface ResourceAction extends Action {
   type: ActionType.RESOURCE;
   handler: (resourceId: string) => Promise<void> | void;
 }
-
-// navigation actions
-export interface NavigationAction extends Action {
-  type: ActionType.NAVIGATION;
-  handler: () => Promise<void> | void;
-}
-
 
 type Listener = (command: string) => void;
 
 let listeners: Listener[] = [];
 
 export const actions: Record<string, Action> = {};
-
 
 export const registerActionListener = (listener: Listener) => {
   listeners.push(listener);
@@ -59,7 +52,6 @@ export const unregisterActionListener = (listener: Listener) => {
   const idx = listeners.indexOf(listener);
   listeners.splice(idx, 1);
 };
-
 
 export function registerAction(action: Action): void {
   actions[action.id] = action;
@@ -163,60 +155,6 @@ export const runRangerAction: BaseAction = {
   },
 };
 
-export const navigateGlobalLeader: NavigationAction = {
-  id: "globalLeader",
-  name: "Global Leader Key",
-  type: ActionType.NAVIGATION,
-  handler: async () => {
-    await showTUI();
-  },
-};
-
-export const navigateActivityNavigate: NavigationAction = {
-  id: "activityNavigate",
-  name: "Activity Navigation",
-  type: ActionType.NAVIGATION,
-  handler: async () => {
-    await showTUI();
-  },
-};
-
-export const navigateActivitySelect: NavigationAction = {
-  id: "activitySelect",
-  name: "Activity Selection",
-  type: ActionType.NAVIGATION,
-  handler: async () => {
-    await showTUI();
-  },
-};
-
-export const navigateSwapActivityAction: NavigationAction = {
-  id: "activitySwap",
-  name: "Activity Swap",
-  type: ActionType.NAVIGATION,
-  handler: async () => {
-    await swapActivity();
-  },
-};
-
-export const navigateSendWindowToAnotherActivityAction: NavigationAction = {
-  id: "sendWindowToAnotherActivity",
-  name: "Send Window To Another Activity",
-  type: ActionType.NAVIGATION,
-  handler: async () => {
-    await sendWindowToAnotherActivity();
-  },
-};
-
-export const navigateActivitySwitchOldAction: NavigationAction = {
-  id: "switchActivity",
-  name: "Switch Activity",
-  type: ActionType.NAVIGATION,
-  handler: async () => {
-    await switchActivity();
-  },
-};
-
 registerAction(runFirefoxAction);
 registerAction(runEmacsAction);
 registerAction(runRangerAction);
@@ -225,13 +163,6 @@ registerAction(currentActivityRenameAction);
 registerAction(currentActivityAssignToParentAction);
 registerAction(currentActivityCreateChildActivityAction);
 registerAction(currentActivityDestroyAction);
-
-registerAction(navigateGlobalLeader);
-registerAction(navigateActivityNavigate);
-registerAction(navigateActivitySelect);
-registerAction(navigateSwapActivityAction);
-registerAction(navigateSendWindowToAnotherActivityAction);
-registerAction(navigateActivitySwitchOldAction);
 
 registerAction(openResourceAction);
 registerAction(resourcePlayInMpvAction);

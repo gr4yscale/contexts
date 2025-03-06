@@ -6,6 +6,12 @@ import { createElement } from "react";
 import { render } from "ink";
 
 import { initializeDB } from "./db.mts";
+
+import "./actions/base.mts";
+import "./actions/navigation.mts";
+import "./actions/currentActivity.mts";
+import "./actions/resource.mts";
+
 import { executeAction } from "./actions.mts";
 
 import Root from "./ui/common/Root.tsx";

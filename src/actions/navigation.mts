@@ -1,23 +1,9 @@
 import { $ } from "zx";
-import { nanoid } from "nanoid";
 
+import { ActionType, NavigationAction, registerAction } from "../actions.mts";
 import { Activity, ActivityId } from "../types.mts";
 
-import {
-  buildActivityList,
-  formatActivitiesListExtended,
-  enabledActivityListTypes,
-} from "../activityList.mts";
-
-import { buildMenu } from "../menus.mts";
-
-import {
-  getAllWorkspaces,
-  WorkspaceDTO,
-  getWorkspacesForActivity,
-} from "../models/workspace.mts";
-
-import { viewWorkspaceForActivity } from "../workspaces.mts";
+import { getWorkspacesForActivity } from "../models/workspace.mts";
 
 import {
   getActivityById,
@@ -28,6 +14,18 @@ import {
   updateActivity,
 } from "../models/activity.mts";
 
+import { viewWorkspaceForActivity } from "../workspaces.mts";
+
+import {
+  buildActivityList,
+  formatActivitiesListExtended,
+  enabledActivityListTypes,
+} from "../activityList.mts";
+
+import { buildMenu } from "../menus.mts";
+
+/** views the dwm tag which is reserved for the TUI
+ */
 export const showTUI = async () => {
   // dwm tag 1 is reserved for the TUI
   // a dedicated kitty terminal emulator resides there
@@ -94,84 +92,6 @@ export const activateActivity = async (id: ActivityId) => {
   return viewed;
 };
 
-export const toggleActivity = async (id: ActivityId) => {
-  console.log("not implemented");
-  // const currentActivity = await getCurrentActivity();
-  // if (!currentActivity || id !== currentActivity.activityId) {
-  //   await activateActivity(id);
-  // }
-};
-
-const slugify = (str: string) => {
-  str = str.replace(/^\s+|\s+$/g, ""); // trim leading/trailing white space
-  str = str.toLowerCase(); // convert string to lowercase
-  str = str
-    .replace(/[^a-z0-9 -]/g, "") // remove any non-alphanumeric characters
-    .replace(/\s+/g, "-") // replace spaces with hyphens
-    .replace(/-+/g, "-"); // remove consecutive hyphens
-  return str;
-};
-
-//export const createActivityForOrgItem = async (args: string) => {
-
-// export const activateActivityForOrgId = async (args: string) => {
-//   const { orgId, orgText } = JSON.parse(args);
-
-//   // TOFIX neuter for activity activation by orgId for now
-//   return;
-
-//   // new way
-
-//   // create an org id if it doesn't exist
-//   // pass orgId and orgtText in to command to createActivity
-//   // create an activity with orgId set; sluggify activity text, include orgId at the end, add orgItem tag
-//   // get the activityID back from contextc
-//   // set activityID property on org element
-
-//   // old way
-
-//   // prompt the user for final title / confirm (get from org element text)
-//   // create an activityID based on slugified title
-//   // get the activityID back from contextc
-//   // set activityID property on org element
-
-//   const display = slugify(orgText as string);
-
-//   let activity: Activity | undefined;
-
-//   // TOFIX
-//   //activity = activityByOrgId(orgId);
-
-//   if (!activity) {
-//     //console.log(`activity not found, creating for id: ${orgId}`);
-//     // try-catch? storeState?
-//     activity = createActivityForOrgId(nanoid(), orgId, display);
-//     // SET ORGTASK TAG HERE
-//     $`notify-send "Created new activity for orgId: ${orgId}"`;
-//   }
-
-//   // get the response by a client that closes the connection after a response, or
-//   // shelling to emacs from contexts, to find an org element and update activityId property
-
-//   // return the activityId to emacs somehow - check how we get the response from handleCommand
-
-//   //TODO was allocateWorkspcae
-//   if (await viewWorkspace(activity)) {
-//     const previousActivity = await getPreviousActivity();
-//     if (previousActivity) {
-//       updateActivityHistory(activity.activityId, previousActivity.activityId);
-//     }
-
-//     //TOFIX
-//     const lastAccessed = new Date();
-//     await updateActivity({ lastAccessed });
-
-//     $`notify-send -a activity -t 500 "${activity.dwmTag}: ${activity.name}"`;
-//   }
-
-//   return `activityId:  ${activity.activityId}  orgId: ${activity.orgId}`;
-// };
-
 export const swapActivity = async () => {
   const previousActivity = await getPreviousActivity();
   if (previousActivity) {
@@ -207,3 +127,76 @@ export const sendWindowToAnotherActivity = async () => {
     builder: () => sorted.map(menuItem),
   });
 };
+
+export const navigateGlobalLeader: NavigationAction = {
+  id: "globalLeader",
+  name: "Global Leader Key",
+  type: ActionType.NAVIGATION,
+  handler: async () => {
+    await showTUI();
+  },
+};
+
+export const navigateActivityNavigate: NavigationAction = {
+  id: "activityNavigate",
+  name: "Activity Navigation",
+  type: ActionType.NAVIGATION,
+  handler: async () => {
+    await showTUI();
+  },
+};
+
+export const navigateActivitySelect: NavigationAction = {
+  id: "activitySelect",
+  name: "Activity Selection",
+  type: ActionType.NAVIGATION,
+  handler: async () => {
+    await showTUI();
+  },
+};
+
+export const navigateSwapActivityAction: NavigationAction = {
+  id: "activitySwap",
+  name: "Activity Swap",
+  type: ActionType.NAVIGATION,
+  handler: async () => {
+    await swapActivity();
+  },
+};
+
+export const navigateSendWindowToAnotherActivityAction: NavigationAction = {
+  id: "sendWindowToAnotherActivity",
+  name: "Send Window To Another Activity",
+  type: ActionType.NAVIGATION,
+  handler: async () => {
+    await sendWindowToAnotherActivity();
+  },
+};
+
+export const navigateActivitySwitchOldAction: NavigationAction = {
+  id: "switchActivity",
+  name: "Switch Activity",
+  type: ActionType.NAVIGATION,
+  handler: async () => {
+    await switchActivity();
+  },
+};
+
+export const navigateActivateActivityAction: NavigationAction = {
+  id: "activateActivity",
+  name: "Activate Activity",
+  type: ActionType.NAVIGATION,
+  handler: async (activityId?: string) => {
+    if (activityId) {
+      await activateActivity(activityId);
+    }
+  },
+};
+
+registerAction(navigateGlobalLeader);
+registerAction(navigateActivityNavigate);
+registerAction(navigateActivitySelect);
+registerAction(navigateSwapActivityAction);
+registerAction(navigateSendWindowToAnotherActivityAction);
+registerAction(navigateActivitySwitchOldAction);
+registerAction(navigateActivateActivityAction);
