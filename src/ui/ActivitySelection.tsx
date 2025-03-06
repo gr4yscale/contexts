@@ -29,9 +29,7 @@ const ActivitySelection: React.FC = () => {
     try {
       const tree = await contextActivityTree();
 
-      const limited = tree.slice(0, 20);
-
-      const newItems = limited.map((activity) => ({
+      const newItems = tree.map((activity) => ({
         id: activity.activityId,
         activity,
         selected: activity.selected,

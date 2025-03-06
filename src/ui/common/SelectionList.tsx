@@ -29,6 +29,30 @@ const SelectionList: React.FC<SelectionListProps> = ({
     highlightUp,
   } = useSelectionList<Item>({ initialItems });
 
+  // paging
+  const [currentPage, setCurrentPage] = React.useState(0);
+  const itemsPerPage = 20;
+
+  const nextPage = () => {
+    const items = getItems();
+    const maxPage = Math.ceil(items.length / itemsPerPage) - 1;
+    if (currentPage < maxPage) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 0) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const getCurrentPageItems = () => {
+    const items = getItems();
+    const startIndex = currentPage * itemsPerPage;
+    return items.slice(startIndex, startIndex + itemsPerPage);
+  };
+
   const { keymap }: any = useContext(KeysContext);
 
   // shared keymap, persists regardless of mode
@@ -116,6 +140,18 @@ const SelectionList: React.FC<SelectionListProps> = ({
               commitMode();
             },
           },
+          {
+            sequence: [key("[")],
+            description: "Previous page",
+            name: "prevPage",
+            handler: prevPage,
+          },
+          {
+            sequence: [key("]")],
+            description: "Next page",
+            name: "nextPage",
+            handler: nextPage,
+          },
         ];
         break;
 
@@ -148,17 +184,35 @@ const SelectionList: React.FC<SelectionListProps> = ({
     };
   }, [mode, toggleSelectionAtHighlightedIndex]); // the keymapping side effects depend on the mode state variable; useEffect will run every render without mode defined in the useEffect deps array
 
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [mode]);
+
   // Update the search string with freeform text when we are in find mode
   useInput(
     (input, key) => {
-      if (input != "" && !key.return) filterBySearchString(input);
+      if (input != "" && !key.return) {
+        filterBySearchString(input);
+        setCurrentPage(0);
+      }
     },
     { isActive: mode === "find" },
   );
 
   return (
     <Box flexDirection="column">
-      {getItems().map((i: Item) => (
+      {mode === "select" && (
+        <Box marginBottom={1}>
+          <Text>
+            Page {currentPage + 1} of{" "}
+            {Math.ceil(getItems().length / itemsPerPage)}
+          </Text>
+        </Box>
+      )}
+      {(mode === "select"
+        ? getCurrentPageItems()
+        : getItems().slice(0, itemsPerPage)
+      ).map((i: Item) => (
         <Box key={i.id} paddingLeft={2}>
           <Text>
             {i.highlighted && mode === "select" ? "> " : "  "}
