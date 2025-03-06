@@ -4,18 +4,20 @@ import { KeysContext } from "./Context.mts";
 
 import { Keymap, key } from "./Keymapping.mts";
 
-import ActivityRoot from "../ActivityRoot.tsx";
-import ActivitySelection from "../ActivitySelection.tsx";
-import ActivityNavigate from "../ActivityNavigate.tsx";
-import Workspace from "../Workspace.tsx";
-import WhichKey from "../WhichKey.tsx";
-import Home from "../Home.tsx";
-import ActionsDemo from "../ActionsDemo.tsx";
-
 import {
   registerActionListener,
   unregisterActionListener,
 } from "../../actions.mts";
+
+import Home from "../Home.tsx";
+import WhichKey from "../WhichKey.tsx";
+
+import ActivityRoot from "../ActivityRoot.tsx";
+import ActivitySelection from "../ActivitySelection.tsx";
+import ActivityNavigate from "../ActivityNavigate.tsx";
+import ActionRoot from "../ActionRoot.tsx";
+
+import Workspace from "../Workspace.tsx";
 
 const routes = [
   { path: "/", component: Home },
@@ -23,7 +25,7 @@ const routes = [
   { path: "/activitySelect", component: ActivitySelection },
   { path: "/activityNavigate", component: ActivityNavigate },
   { path: "/workspace", component: Workspace },
-  { path: "/actions", component: ActionsDemo },
+  { path: "/actions", component: ActionRoot },
 ];
 
 // define root keymap

@@ -115,6 +115,7 @@ const ActionList: React.FC<ActionListProps> = ({
   // item-specific keymap for actions on highlighted item, coming from props
   useEffect(() => {
     if (mode !== "select") return;
+
     const item = highlightedItem();
     if (actionKeymap && item) {
       const map = actionKeymap(item);
