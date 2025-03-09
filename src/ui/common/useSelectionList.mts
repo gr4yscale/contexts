@@ -173,6 +173,12 @@ const useSelectionList = <T extends Item>({
     setMode("commit");
   };
 
+  const highlightToIndex = (index: number): void => {
+    if (index >= 0 && index < items.length) {
+      setHighlightedIndex(index);
+    }
+  };
+
   return {
     items,
     mode,
@@ -183,6 +189,7 @@ const useSelectionList = <T extends Item>({
     getSelectedItems,
     highlightDown,
     highlightUp,
+    highlightToIndex,
     toggleSelectionAtHighlightedIndex,
     findMode,
     selectMode,

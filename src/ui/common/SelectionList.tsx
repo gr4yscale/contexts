@@ -27,6 +27,7 @@ const SelectionList: React.FC<SelectionListProps> = ({
     toggleSelectionAtHighlightedIndex,
     highlightDown,
     highlightUp,
+    highlightToIndex,
   } = useSelectionList<Item>({ initialItems });
 
   // paging
@@ -38,12 +39,70 @@ const SelectionList: React.FC<SelectionListProps> = ({
     const maxPage = Math.ceil(items.length / itemsPerPage) - 1;
     if (currentPage < maxPage) {
       setCurrentPage(currentPage + 1);
+      // Reset highlight to first item on the new page
+      const newPageStartIndex = (currentPage + 1) * itemsPerPage;
+      highlightToIndex(newPageStartIndex);
     }
   };
 
   const prevPage = () => {
     if (currentPage > 0) {
       setCurrentPage(currentPage - 1);
+      // Reset highlight to first item on the new page
+      const newPageStartIndex = (currentPage - 1) * itemsPerPage;
+      highlightToIndex(newPageStartIndex);
+    }
+  };
+
+  const handleHighlightDown = () => {
+    if (mode === "select") {
+      const items = getItems();
+      const currentPageStartIndex = currentPage * itemsPerPage;
+      const currentPageEndIndex = Math.min(
+        (currentPage + 1) * itemsPerPage - 1,
+        items.length - 1,
+      );
+
+      // Get the current highlighted index from the items
+      const currentHighlightedIndex = items.findIndex(
+        (item) => item.highlighted,
+      );
+
+      if (currentHighlightedIndex >= currentPageEndIndex) {
+        // If at the end of the page, go to the first item on the page
+        highlightToIndex(currentPageStartIndex);
+      } else {
+        // Otherwise just move down
+        highlightDown();
+      }
+    } else {
+      highlightDown();
+    }
+  };
+
+  const handleHighlightUp = () => {
+    if (mode === "select") {
+      const items = getItems();
+      const currentPageStartIndex = currentPage * itemsPerPage;
+      const currentPageEndIndex = Math.min(
+        (currentPage + 1) * itemsPerPage - 1,
+        items.length - 1,
+      );
+
+      // Get the current highlighted index from the items
+      const currentHighlightedIndex = items.findIndex(
+        (item) => item.highlighted,
+      );
+
+      if (currentHighlightedIndex <= currentPageStartIndex) {
+        // If at the start of the page, go to the last item on the page
+        highlightToIndex(currentPageEndIndex);
+      } else {
+        // Otherwise just move up
+        highlightUp();
+      }
+    } else {
+      highlightUp();
     }
   };
 
@@ -112,13 +171,13 @@ const SelectionList: React.FC<SelectionListProps> = ({
             sequence: [key("j")],
             description: "Move down",
             name: "moveDown",
-            handler: highlightDown,
+            handler: handleHighlightDown,
           },
           {
             sequence: [key("k")],
             description: "Move up",
             name: "moveUp",
-            handler: highlightUp,
+            handler: handleHighlightUp,
           },
           {
             sequence: [key(" ")],
