@@ -1,20 +1,19 @@
 import React, { useEffect, useState, useContext } from "react";
-import { Box, Text } from "ink";
+import { Box } from "ink";
 
 import { key, KeymapConfig } from "./common/Keymapping.mts";
 import { KeysContext } from "./common/Context.mts";
 
-import CurrentActivityActions from "./CurrentActivityActions.tsx";
 import ActivityNavigate from "./ActivityNavigate.tsx";
-import ActivitySelection from "./ActivitySelection.tsx";
+import ContextActivitySelection from "./ContextActivitySelection.tsx";
 import TextInput from "./TextInput.tsx";
+
 import { createActivity } from "../models/activity.mts";
 
 type ActivityRootStates =
   | "initial"
   | "selection"
   | "navigation"
-  | "currentActivity"
   | "createActivity";
 
 const ActivityRoot: React.FC = () => {
@@ -33,7 +32,7 @@ const ActivityRoot: React.FC = () => {
             description: "current activity actions",
             name: "current-activity-actions",
             handler: () => {
-              setMode("currentActivity");
+              //setMode("currentActivity");
               keymap.popKeymap();
             },
           },
@@ -77,9 +76,8 @@ const ActivityRoot: React.FC = () => {
 
   return (
     <Box flexDirection="column">
-      {mode === "currentActivity" && <CurrentActivityActions />}
       {mode === "navigation" && <ActivityNavigate />}
-      {mode === "selection" && <ActivitySelection />}
+      {mode === "selection" && <ContextActivitySelection />}
       {mode === "createActivity" && (
         <TextInput
           callback={(name: string) => {

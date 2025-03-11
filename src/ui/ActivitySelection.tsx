@@ -1,17 +1,11 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Box, Text } from "ink";
+import { Box } from "ink";
 import { Activity } from "../types.mts";
-import { handleCommand } from "../handleCommand.mts";
 import SelectionList from "./common/SelectionList.tsx";
-import { key, KeymapConfig } from "./common/Keymapping.mts";
+import { KeymapConfig } from "./common/Keymapping.mts";
 import { KeysContext } from "./common/Context.mts";
 
-import { contextActivityTree, ActivityTreeItem } from "../models/activity.mts";
-import {
-  createContext,
-  getCurrentContext,
-  updateContext,
-} from "../models/context.mts";
+import { activityTree, ActivityTreeItem } from "../models/activity.mts";
 
 type ActivityItem = {
   id: string;
@@ -21,13 +15,17 @@ type ActivityItem = {
 
 type ActivityStates = "initial" | "find";
 
-const ActivitySelection: React.FC = () => {
+interface Props {
+  onSelected?: (selectedItems: Item[]) => Promise<void>;
+}
+
+const ActivitySelection: React.FC<Props> = ({ onSelected }) => {
   const [mode, setMode] = useState<ActivityStates>("initial");
   const [items, setItems] = useState<Array<ActivityItem>>([]);
 
   const fetchActivities = async () => {
     try {
-      const tree = await contextActivityTree();
+      const tree = await activityTree();
 
       const newItems = tree.map((activity) => ({
         id: activity.activityId,
@@ -58,38 +56,11 @@ const ActivitySelection: React.FC = () => {
 
     switch (mode) {
       case "initial":
-        keymapConfig = [
-          // {
-          //   sequence: [key("g")],
-          //   description: "show activity list",
-          //   name: "activity-list-show",
-          //   handler: () => {
-          //     setMode("find");
-          //     keymap.popKeymap();
-          //   },
-          // },
-          // {
-          //   sequence: [key("x")],
-          //   description: "Filter activity goto list",
-          //   name: "filter-activity-list",
-          //   handler: () => {
-          //     console.log("filter workspace");
-          //   },
-          // },
-        ];
+        keymapConfig = [];
         break;
 
       case "find":
-        keymapConfig = [
-          // {
-          //   sequence: [key("z")],
-          //   description: "Initial mode",
-          //   name: "set-mode-initial",
-          //   handler: () => {
-          //     setMode("initial");
-          //   },
-          // },
-        ];
+        keymapConfig = [];
         break;
     }
 
@@ -103,33 +74,7 @@ const ActivitySelection: React.FC = () => {
   return (
     <Box>
       {mode === "find" && (
-        <SelectionList
-          initialItems={items}
-          onSelected={async (items) => {
-            const activities = items.map((item) => item.activity);
-            const activityIds = activities.map(
-              (activity) => activity.activityId,
-            );
-
-            try {
-              const currentContext = await getCurrentContext();
-
-              if (currentContext) {
-                await updateContext({
-                  contextId: currentContext.contextId,
-                  activityIds: activityIds,
-                });
-              } else {
-                await createContext({
-                  name: `Context ${new Date().toLocaleString()}`,
-                  activityIds: activityIds,
-                });
-              }
-            } catch (error) {
-              console.error("Error updating context:", error);
-            }
-          }}
-        />
+        <SelectionList initialItems={items} onSelected={onSelected} />
       )}
     </Box>
   );

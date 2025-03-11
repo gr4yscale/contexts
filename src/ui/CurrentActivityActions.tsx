@@ -5,6 +5,7 @@ import { getCurrentActivity } from "../models/activity.mts";
 import { KeysContext } from "./common/Context.mts";
 import { key, KeymapConfig } from "./common/Keymapping.mts";
 import TextInput from "./TextInput.tsx";
+import ActivitySelection from "./ActivitySelection.tsx";
 
 type ActivityStates = "initial" | "createChild" | "assignParent" | "rename";
 
@@ -130,11 +131,11 @@ const CurrentActivityActions: React.FC = () => {
           {mode === "assignParent" && (
             <Box flexDirection="column">
               <Text>Assign parent for: {currentActivity?.name}</Text>
-              {
-                // TODO: put SelectionList here
-                // TODO: in the onSelected callback of ActionList, call `assignCurrentActivityToParent`
-                // setMode("initial");
-              }
+              <ActivitySelection
+                onSelected={async (items) => {
+                  console.log(items);
+                }}
+              />
             </Box>
           )}
 

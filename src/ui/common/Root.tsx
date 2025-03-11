@@ -13,18 +13,16 @@ import Home from "../Home.tsx";
 import WhichKey from "../WhichKey.tsx";
 
 import ActivityRoot from "../ActivityRoot.tsx";
-import ActivitySelection from "../ActivitySelection.tsx";
 import ActivityNavigate from "../ActivityNavigate.tsx";
+
+import ContextActivitySelection from "../ContextActivitySelection.tsx";
+
 import ActionRoot from "../ActionRoot.tsx";
-
-import Workspace from "../Workspace.tsx";
-
 const routes = [
   { path: "/", component: Home },
   { path: "/activity", component: ActivityRoot },
-  { path: "/activitySelect", component: ActivitySelection },
+  { path: "/activitySelect", component: ContextActivitySelection },
   { path: "/activityNavigate", component: ActivityNavigate },
-  { path: "/workspace", component: Workspace },
   { path: "/actions", component: ActionRoot },
 ];
 
