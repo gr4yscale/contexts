@@ -9,6 +9,7 @@ import {
   getCurrentContext,
   updateContext,
 } from "../models/context.mts";
+import { executeAction } from "../actions.mts";
 
 type ContextActivityItem = {
   id: string;
@@ -72,6 +73,7 @@ const ContextActivitySelection: React.FC = () => {
                   activityIds: activityIds,
                 });
               }
+              executeAction("activityNavigate");
             } catch (error) {
               console.error("Error updating context:", error);
             }
