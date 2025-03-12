@@ -18,12 +18,19 @@ import ActivityNavigate from "../ActivityNavigate.tsx";
 import ContextActivitySelection from "../ContextActivitySelection.tsx";
 
 import ActionRoot from "../ActionRoot.tsx";
+import CurrentActivityActions from "../CurrentActivityActions.tsx";
+
+// consider adding props here that would set initial state of ActivityRoot
+// so that we can keep everything together (not making more components)
+
 const routes = [
   { path: "/", component: Home },
   { path: "/activity", component: ActivityRoot },
   { path: "/activitySelect", component: ContextActivitySelection },
   { path: "/activityNavigate", component: ActivityNavigate },
   { path: "/actions", component: ActionRoot },
+  { path: "/currentActivityActions", component: CurrentActivityActions },
+  // getting more specific would map an action to a component + state - do we want this?
 ];
 
 // define root keymap
@@ -45,7 +52,7 @@ const Root: React.FC = () => {
     }
   });
 
-  // listen for commands coming in via unix socket
+  // listen for actions dispatched via unix socket interface
   useEffect(() => {
     const listener = (command: string) => {
       // TOFIX: check command type in handleCommand
@@ -58,6 +65,10 @@ const Root: React.FC = () => {
           break;
         case "activitySelect":
           setRoutePath("/activitySelect");
+          break;
+        case "currentActivityAssignToParent": // set mode state with route?
+        case "currentActivityCreateChildActivity": // or check the *route* via context
+          setRoutePath("/currentActivityActions");
           break;
       }
     };
