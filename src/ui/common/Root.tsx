@@ -27,7 +27,7 @@ import CurrentActivityDelete from "../CurrentActivityDelete.tsx";
 const routes = [
   { path: "/", component: Home },
   { path: "/activity", component: ActivityRoot },
-  { path: "/activitySelect", component: ContextActivitySelection },
+  { path: "/contextActivitySelect", component: ContextActivitySelection },
   { path: "/activityNavigate", component: ActivityNavigate },
   { path: "/actionExecute", component: ActionExecute },
   {
@@ -72,8 +72,8 @@ const Root: React.FC = () => {
         case "activityNavigate":
           setRoutePath("/activityNavigate");
           break;
-        case "activitySelect":
-          setRoutePath("/activitySelect");
+        case "contextActivitySelect":
+          setRoutePath("/contextActivitySelect");
           break;
         case "actionExecute":
           setRoutePath("/actionExecute");

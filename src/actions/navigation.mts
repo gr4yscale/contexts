@@ -152,8 +152,8 @@ export const navigateActivityNavigate: NavigationAction = {
   },
 };
 
-export const navigateActivitySelect: NavigationAction = {
-  id: "activitySelect",
+export const navigateContextActivitySelect: NavigationAction = {
+  id: "contextActivitySelect",
   name: "Activity Selection",
   type: ActionType.NAVIGATION,
   handler: async () => {
@@ -210,7 +210,7 @@ export const navigateActivateActivityAction: NavigationAction = {
 
 registerAction(navigateGlobalLeader);
 registerAction(navigateActivityNavigate);
-registerAction(navigateActivitySelect);
+registerAction(navigateContextActivitySelect);
 registerAction(navigateActionExecute);
 registerAction(navigateSwapActivityAction);
 registerAction(navigateSendWindowToAnotherActivityAction);
