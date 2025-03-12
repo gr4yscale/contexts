@@ -14,11 +14,9 @@ import WhichKey from "../WhichKey.tsx";
 
 import ActivityRoot from "../ActivityRoot.tsx";
 import ActivityNavigate from "../ActivityNavigate.tsx";
-
 import ContextActivitySelection from "../ContextActivitySelection.tsx";
-
-import ActionRoot from "../ActionRoot.tsx";
 import CurrentActivityActions from "../CurrentActivityActions.tsx";
+import ActionExecute from "../ActionExecute.tsx";
 
 // consider adding props here that would set initial state of ActivityRoot
 // so that we can keep everything together (not making more components)
@@ -28,9 +26,9 @@ const routes = [
   { path: "/activity", component: ActivityRoot },
   { path: "/activitySelect", component: ContextActivitySelection },
   { path: "/activityNavigate", component: ActivityNavigate },
-  { path: "/actions", component: ActionRoot },
   { path: "/currentActivityActions", component: CurrentActivityActions },
   // getting more specific would map an action to a component + state - do we want this?
+  { path: "/actionExecute", component: ActionExecute },
 ];
 
 // define root keymap
@@ -69,6 +67,9 @@ const Root: React.FC = () => {
         case "currentActivityAssignToParent": // set mode state with route?
         case "currentActivityCreateChildActivity": // or check the *route* via context
           setRoutePath("/currentActivityActions");
+        case "actionExecute":
+          setRoutePath("/actionExecute");
+          break;
           break;
       }
     };

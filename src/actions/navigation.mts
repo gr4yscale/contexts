@@ -161,6 +161,15 @@ export const navigateActivitySelect: NavigationAction = {
   },
 };
 
+export const navigateActionExecute: NavigationAction = {
+  id: "actionExecute",
+  name: "Action Execute",
+  type: ActionType.NAVIGATION,
+  handler: async () => {
+    await showTUI();
+  },
+};
+
 export const navigateSwapActivityAction: NavigationAction = {
   id: "activitySwap",
   name: "Activity Swap",
@@ -202,6 +211,7 @@ export const navigateActivateActivityAction: NavigationAction = {
 registerAction(navigateGlobalLeader);
 registerAction(navigateActivityNavigate);
 registerAction(navigateActivitySelect);
+registerAction(navigateActionExecute);
 registerAction(navigateSwapActivityAction);
 registerAction(navigateSendWindowToAnotherActivityAction);
 registerAction(navigateActivitySwitchOldAction);
