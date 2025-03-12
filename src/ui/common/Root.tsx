@@ -12,7 +12,7 @@ import {
 import Home from "../Home.tsx";
 import WhichKey from "../WhichKey.tsx";
 
-import ActivityRoot from "../ActivityRoot.tsx";
+import ActivityCreate from "../ActivityCreate.tsx";
 import ActivityNavigate from "../ActivityNavigate.tsx";
 import ContextActivitySelection from "../ContextActivitySelection.tsx";
 import ActionExecute from "../ActionExecute.tsx";
@@ -26,9 +26,9 @@ import CurrentActivityDelete from "../CurrentActivityDelete.tsx";
 
 const routes = [
   { path: "/", component: Home },
-  { path: "/activity", component: ActivityRoot },
-  { path: "/contextActivitySelect", component: ContextActivitySelection },
+  { path: "/activityCreate", component: ActivityCreate },
   { path: "/activityNavigate", component: ActivityNavigate },
+  { path: "/contextActivitySelect", component: ContextActivitySelection },
   { path: "/actionExecute", component: ActionExecute },
   {
     path: "/currentActivityAssignToParent",
