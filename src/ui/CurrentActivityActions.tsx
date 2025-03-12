@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { Box, Text } from "ink";
-import { Activity } from "../types.mts";
-import { getCurrentActivity } from "../models/activity.mts";
+import { useCurrentActivity } from "./common/useCurrentActivity.mts";
 import { KeysContext } from "./common/Context.mts";
 import { key, KeymapConfig } from "./common/Keymapping.mts";
 import TextInput from "./TextInput.tsx";
@@ -11,25 +10,8 @@ type ActivityStates = "initial" | "createChild" | "assignParent" | "rename";
 
 const CurrentActivityActions: React.FC = () => {
   const [mode, setMode] = useState<ActivityStates>("initial");
-  const [currentActivity, setCurrentActivity] = useState<Activity | null>(null);
-  const [loading, setLoading] = useState(true);
-
+  const { currentActivity, loading } = useCurrentActivity();
   const { keymap }: any = useContext(KeysContext);
-
-  const fetchCurrentActivity = async () => {
-    try {
-      const activity = await getCurrentActivity();
-      setCurrentActivity(activity);
-    } catch (error) {
-      console.error("Error fetching current activity:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchCurrentActivity();
-  }, []);
 
   // Stub functions for activity actions
   const createChildActivityForCurrentActivity = () => {

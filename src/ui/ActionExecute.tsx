@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Box, Text } from "ink";
+import { useCurrentActivity } from "./common/useCurrentActivity.mts";
 
 import QuickSelectList from "./common/QuickSelectList.tsx";
 
@@ -18,16 +19,12 @@ import {
 } from "../actions/currentActivity.mts";
 
 import { Action, executeAction, ActionType } from "../actions.mts";
-import { getCurrentActivity } from "../models/activity.mts";
-import { Activity } from "../types.mts";
-
 interface Props {
   keys?: string;
 }
 
 const ActionExecute: React.FC<Props> = ({ keys = "asdfghjkl;" }) => {
-  const [currentActivity, setCurrentActivity] = useState<Activity | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { currentActivity, loading } = useCurrentActivity();
 
   const [actions, setActions] = useState<Action[]>([
     runFirefoxAction,
@@ -39,20 +36,6 @@ const ActionExecute: React.FC<Props> = ({ keys = "asdfghjkl;" }) => {
     currentActivityDestroyAction,
   ]);
 
-  const fetchCurrentActivity = async () => {
-    try {
-      const activity = await getCurrentActivity();
-      setCurrentActivity(activity);
-    } catch (error) {
-      console.error("Error fetching current activity:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchCurrentActivity();
-  }, []);
 
   return (
     <Box flexDirection="column">
