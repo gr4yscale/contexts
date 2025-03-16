@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Text } from "ink";
 import { useCurrentActivity } from "./common/useCurrentActivity.mts";
 import TextInput from "./TextInput.tsx";
-import { executeAction } from "../actions.mts";
+import { updateActivity } from "../models/activity.mts";
 
 const CurrentActivityRename: React.FC = () => {
   const { currentActivity, loading } = useCurrentActivity();
@@ -19,9 +19,12 @@ const CurrentActivityRename: React.FC = () => {
           <TextInput
             callback={(name: string) => {
               if (name === "") return; // TODO validation
-              console.log(`Renaming to: ${name}`);
-              // Implementation would go here
-              executeAction("actionExecute");
+              if (currentActivity) {
+                updateActivity({
+                  activityId: currentActivity.activityId,
+                  name: name
+                });
+              }
             }}
           />
         </Box>
