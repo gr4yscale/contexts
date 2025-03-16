@@ -2,12 +2,19 @@ import React, { useContext, useEffect, useState } from "react";
 import { Box, Newline, Text } from "ink";
 import { KeysContext } from "./common/Context.mts";
 import { Keymap, KeyEvent } from "./common/Keymapping.mts";
+import { useCurrentActivity } from "./common/useCurrentActivity.mts";
+import {
+  registerActionListener,
+  unregisterActionListener,
+} from "../actions.mts";
 
 const WhichKey: React.FC = () => {
   const { keymap }: any = useContext(KeysContext);
+  const { currentActivity, fetchCurrentActivity } = useCurrentActivity();
 
   const [lastKeyPressed, setLastKeyPressed] = useState("");
   const [lastCommandExecuted, setLastCommandExecuted] = useState("");
+  const [lastActionExecuted, setLastActionExecuted] = useState("");
   const [keyCommandPairs, setKeyCommandPairs] = useState([]);
 
   useEffect(() => {
@@ -27,14 +34,30 @@ const WhichKey: React.FC = () => {
     });
   }, []);
 
+  // listen for actions executed
+  useEffect(() => {
+    const listener = (action: string) => {
+      setLastActionExecuted(action);
+      fetchCurrentActivity();
+    };
+
+    registerActionListener(listener);
+
+    return () => {
+      unregisterActionListener(listener);
+    };
+  }, []);
+
   return (
     <Box flexDirection="column">
       <Text>
         ---------------------------------
         <Newline />
-        last key: {lastKeyPressed}
+        {currentActivity?.name || "None"}
         <Newline />
-        last cmd: {lastCommandExecuted}
+        {lastKeyPressed} | {lastCommandExecuted}
+        <Newline />
+        {lastActionExecuted}
         <Newline />
         ---------------------------------
         <Newline />

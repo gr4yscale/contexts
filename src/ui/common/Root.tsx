@@ -142,7 +142,7 @@ const Root: React.FC = () => {
   return (
     <KeysContext.Provider value={{ keymap }}>
       <Box>{Component && <Component />}</Box>
-      <Box>
+      <Box flexDirection="column">
         <WhichKey />
       </Box>
     </KeysContext.Provider>
