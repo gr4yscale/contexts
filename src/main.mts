@@ -47,11 +47,11 @@ try {
   console.error("Database initialization error:", e);
 }
 
-render(createElement(Root, null));
+// write to an alternate screen, to preserve previous terminal contents
+process.stdout.write("\x1b[?1049h");
 
-// setInterval(
-//   () => {
-//     handleCommand("storeBrowserStates");
-//   },
-//   15 * 60 * 1000,
-// );
+const instance = render(createElement(Root, null));
+
+// restore previous terminal contents
+await instance.waitUntilExit();
+process.stdout.write("\x1b[?1049l");
