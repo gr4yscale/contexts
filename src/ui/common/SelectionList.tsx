@@ -184,12 +184,14 @@ const SelectionList: React.FC<SelectionListProps> = ({
             description: "Select items",
             name: "selectItems",
             handler: toggleSelectionAtHighlightedIndex,
+            hidden: true,
           },
           {
             sequence: [key("", "delete")],
             description: "Back to find mode",
             name: "find mode",
             handler: findMode,
+            hidden: true,
           },
           {
             sequence: [key("\r", "return")],
@@ -198,6 +200,7 @@ const SelectionList: React.FC<SelectionListProps> = ({
             handler: () => {
               commitMode();
             },
+            hidden: true,
           },
           {
             sequence: [key("[")],
@@ -259,7 +262,7 @@ const SelectionList: React.FC<SelectionListProps> = ({
   );
 
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" width="100%">
       {mode === "select" && (
         <Box marginBottom={1}>
           <Text>

@@ -99,6 +99,7 @@ const ActionList: React.FC<ActionListProps> = ({
             description: "Back to find mode",
             name: "back-find",
             handler: findMode,
+            hidden: true,
           },
         ];
 
@@ -136,7 +137,7 @@ const ActionList: React.FC<ActionListProps> = ({
   );
 
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" width="100%">
       {getItems().map((i: Item) => (
         <Box key={i.id} paddingLeft={2}>
           <Text>

@@ -143,14 +143,19 @@ const Root: React.FC = () => {
     <Box
       flexDirection="column"
       width={187}
-      height={52}
+      height={54}
       overflow="hidden"
       borderStyle="single"
-      borderColor="white"
+      borderColor="gray"
       margin={2}
     >
       <KeysContext.Provider value={{ keymap }}>
-        <Box height="80%" justifyContent="center">
+        <Box
+          alignSelf="center"
+          justifyContent="space-around"
+          flexGrow={1}
+          width={150}
+        >
           {Component && <Component />}
         </Box>
         <WhichKey />

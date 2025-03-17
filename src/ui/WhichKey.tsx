@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Box, Newline, Spacer, Text } from "ink";
+import { Box, Spacer, Text } from "ink";
 import { KeysContext } from "./common/Context.mts";
 import { Keymap, KeyEvent } from "./common/Keymapping.mts";
 import { useCurrentActivity } from "./common/useCurrentActivity.mts";
@@ -51,37 +51,49 @@ const WhichKey: React.FC = () => {
   return (
     <Box
       flexDirection="column"
-      height={"20%"}
+      height={5}
       borderStyle="single"
-      borderTopColor="white"
+      borderTopColor="gray"
       borderLeft={false}
       borderRight={false}
       borderBottom={false}
       overflow={"hidden"}
+      justifyContent="flex-end"
     >
       <Box
-        flexDirection="row"
-        height={4}
-        borderStyle="single"
-        borderColor="green"
-        justifyContent="space-evenly"
+        flexDirection="column"
+        height={3}
+        justifyContent="flex-start"
+        flexWrap="wrap"
       >
-        <Text>{currentActivity?.name || "None"}</Text>
+        {keyCommandPairs.map((item: string) => (
+          <Box marginLeft={1} marginRight={2}>
+            <Text key={item}>{item}</Text>
+          </Box>
+        ))}
+      </Box>
+      <Box
+        flexDirection="row"
+        height={2}
+        borderStyle="single"
+        borderTopColor="gray"
+        borderLeft={false}
+        borderRight={false}
+        borderBottom={false}
+        paddingLeft={1}
+        paddingRight={1}
+      >
+        <Text>{lastActionExecuted}</Text>
         <Spacer />
-        <Text backgroundColor="white" color="black">
-          {lastKeyPressed}{" "}
-        </Text>
+        <Box marginLeft={2} marginRight={2}>
+          <Text backgroundColor="white" color="black">
+            {lastKeyPressed}
+          </Text>
+        </Box>
         <Text>{lastCommandExecuted}</Text>
         <Spacer />
-        <Text>{lastActionExecuted}</Text>
+        <Text>{currentActivity?.name || "None"}</Text>
       </Box>
-
-      {keyCommandPairs.map((item: string) => (
-        <Text key={item}>
-          {item}
-          <Newline />
-        </Text>
-      ))}
     </Box>
   );
 };

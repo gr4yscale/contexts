@@ -47,6 +47,7 @@ const ActivityNavigate: React.FC = () => {
         fetchActivities();
         // go back to Root or ActivityRoot
       },
+      hidden: true,
     },
     {
       sequence: [key(" ")],
@@ -55,6 +56,7 @@ const ActivityNavigate: React.FC = () => {
       handler: () => {
         //console.log(`handy action for ${item.display}`);
       },
+      hidden: true,
     },
   ];
 
