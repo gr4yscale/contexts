@@ -2,14 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Box, useInput } from "ink";
 import { KeysContext } from "./Context.mts";
 
-import { Keymap, key } from "./Keymapping.mts";
+import { Keymap } from "./Keymapping.mts";
 
 import {
   registerActionListener,
   unregisterActionListener,
 } from "../../actions.mts";
 
-import Home from "../Home.tsx";
 import WhichKey from "../WhichKey.tsx";
 
 import ActivityCreate from "../ActivityCreate.tsx";
@@ -25,7 +24,7 @@ import CurrentActivityDelete from "../CurrentActivityDelete.tsx";
 // so that we can keep everything together (not making more components)
 
 const routes = [
-  { path: "/", component: Home },
+  { path: "/", component: ActivityNavigate},
   { path: "/activityCreate", component: ActivityCreate },
   { path: "/activityNavigate", component: ActivityNavigate },
   { path: "/contextActivitySelect", component: ContextActivitySelection },
@@ -99,42 +98,6 @@ const Root: React.FC = () => {
       unregisterActionListener(listener);
     };
   }, []);
-
-  // define root keymap
-  useEffect(() => {
-    if (routePath === "/") {
-      keymap.pushKeymap([
-        {
-          sequence: [key("w")],
-          description: "Show Workspaces",
-          name: "workspaces-show",
-          handler: () => setRoutePath("/workspace"),
-        },
-        {
-          sequence: [key("a")],
-          description: "Activities",
-          name: "show-activities-root",
-          handler: () => setRoutePath("/activity"),
-        },
-        {
-          sequence: [key("s")],
-          description: "Select Activities",
-          name: "activities-select",
-          handler: () => setRoutePath("/activitySelect"),
-        },
-        {
-          sequence: [key("x")],
-          description: "Actions Demo",
-          name: "show-actions-demo",
-          handler: () => setRoutePath("/actions"),
-        },
-      ]);
-    }
-
-    return () => {
-      keymap.popKeymap();
-    };
-  }, [routePath]);
 
   const route = routes.find((r) => r.path === routePath);
   const Component = route ? route?.component : null;
