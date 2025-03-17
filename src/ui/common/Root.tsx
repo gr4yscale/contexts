@@ -110,7 +110,7 @@ const Root: React.FC = () => {
       overflow="hidden"
       borderStyle="single"
       borderColor="gray"
-      margin={2}
+      margin={0}
     >
       <KeysContext.Provider value={{ keymap }}>
         <Box
@@ -118,6 +118,9 @@ const Root: React.FC = () => {
           justifyContent="space-around"
           flexGrow={1}
           width={150}
+          paddingTop={3}
+          paddingLeft={18}
+          paddingRight={18}
         >
           {Component && <Component />}
         </Box>

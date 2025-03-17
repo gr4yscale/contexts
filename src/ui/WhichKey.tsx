@@ -61,25 +61,13 @@ const WhichKey: React.FC = () => {
       justifyContent="flex-end"
     >
       <Box
-        flexDirection="column"
-        height={3}
-        justifyContent="flex-start"
-        flexWrap="wrap"
-      >
-        {keyCommandPairs.map((item: string) => (
-          <Box marginLeft={1} marginRight={2}>
-            <Text key={item}>{item}</Text>
-          </Box>
-        ))}
-      </Box>
-      <Box
         flexDirection="row"
-        height={2}
+        height={4}
         borderStyle="single"
-        borderTopColor="gray"
+        borderBottomColor="gray"
         borderLeft={false}
         borderRight={false}
-        borderBottom={false}
+        borderTop={false}
         paddingLeft={1}
         paddingRight={1}
       >
@@ -93,6 +81,18 @@ const WhichKey: React.FC = () => {
         <Text>{lastCommandExecuted}</Text>
         <Spacer />
         <Text>{currentActivity?.name || "None"}</Text>
+      </Box>
+      <Box
+        flexDirection="column"
+        height={4}
+        justifyContent="flex-start"
+        flexWrap="wrap"
+      >
+        {keyCommandPairs.map((item: string) => (
+          <Box key={item} marginLeft={1} marginRight={2}>
+            <Text>{item}</Text>
+          </Box>
+        ))}
       </Box>
     </Box>
   );
