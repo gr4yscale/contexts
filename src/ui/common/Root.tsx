@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Box, useInput } from "ink";
+import { Box, useInput, useStdout } from "ink";
 import { KeysContext } from "./Context.mts";
 
 import { Keymap } from "./Keymapping.mts";
@@ -24,7 +24,7 @@ import CurrentActivityDelete from "../CurrentActivityDelete.tsx";
 // so that we can keep everything together (not making more components)
 
 const routes = [
-  { path: "/", component: ActivityNavigate},
+  { path: "/", component: ActivityNavigate },
   { path: "/activityCreate", component: ActivityCreate },
   { path: "/activityNavigate", component: ActivityNavigate },
   { path: "/contextActivitySelect", component: ContextActivitySelection },
@@ -46,6 +46,7 @@ const keymap = Keymap([]);
 
 const Root: React.FC = () => {
   const [routePath, setRoutePath] = useState("/");
+  const [columns, rows] = useStdoutDimensions();
 
   // global key handling
   useInput((input, key) => {
@@ -105,8 +106,8 @@ const Root: React.FC = () => {
   return (
     <Box
       flexDirection="column"
-      width={187}
-      height={54}
+      width={columns}
+      height={rows}
       overflow="hidden"
       borderStyle="single"
       borderColor="gray"
@@ -131,3 +132,21 @@ const Root: React.FC = () => {
 };
 
 export default Root;
+
+const useStdoutDimensions = (): [number, number] => {
+  const { stdout } = useStdout();
+  const [dimensions, setDimensions] = useState<[number, number]>([
+    stdout.columns,
+    stdout.rows,
+  ]);
+
+  useEffect(() => {
+    const handler = () => setDimensions([stdout.columns, stdout.rows]);
+    stdout.on("resize", handler);
+    return () => {
+      stdout.off("resize", handler);
+    };
+  }, [stdout]);
+
+  return dimensions;
+};
