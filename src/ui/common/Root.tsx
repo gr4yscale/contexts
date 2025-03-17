@@ -140,12 +140,22 @@ const Root: React.FC = () => {
   const Component = route ? route?.component : null;
 
   return (
-    <KeysContext.Provider value={{ keymap }}>
-      <Box>{Component && <Component />}</Box>
-      <Box flexDirection="column">
+    <Box
+      flexDirection="column"
+      width={187}
+      height={52}
+      overflow="hidden"
+      borderStyle="single"
+      borderColor="white"
+      margin={2}
+    >
+      <KeysContext.Provider value={{ keymap }}>
+        <Box height="80%" justifyContent="center">
+          {Component && <Component />}
+        </Box>
         <WhichKey />
-      </Box>
-    </KeysContext.Provider>
+      </KeysContext.Provider>
+    </Box>
   );
 };
 

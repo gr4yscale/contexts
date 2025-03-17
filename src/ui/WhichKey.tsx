@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Box, Newline, Text } from "ink";
+import { Box, Newline, Spacer, Text } from "ink";
 import { KeysContext } from "./common/Context.mts";
 import { Keymap, KeyEvent } from "./common/Keymapping.mts";
 import { useCurrentActivity } from "./common/useCurrentActivity.mts";
@@ -49,19 +49,33 @@ const WhichKey: React.FC = () => {
   }, []);
 
   return (
-    <Box flexDirection="column">
-      <Text>
-        ---------------------------------
-        <Newline />
-        {currentActivity?.name || "None"}
-        <Newline />
-        {lastKeyPressed} | {lastCommandExecuted}
-        <Newline />
-        {lastActionExecuted}
-        <Newline />
-        ---------------------------------
-        <Newline />
-      </Text>
+    <Box
+      flexDirection="column"
+      height={"20%"}
+      borderStyle="single"
+      borderTopColor="white"
+      borderLeft={false}
+      borderRight={false}
+      borderBottom={false}
+      overflow={"hidden"}
+    >
+      <Box
+        flexDirection="row"
+        height={4}
+        borderStyle="single"
+        borderColor="green"
+        justifyContent="space-evenly"
+      >
+        <Text>{currentActivity?.name || "None"}</Text>
+        <Spacer />
+        <Text backgroundColor="white" color="black">
+          {lastKeyPressed}{" "}
+        </Text>
+        <Text>{lastCommandExecuted}</Text>
+        <Spacer />
+        <Text>{lastActionExecuted}</Text>
+      </Box>
+
       {keyCommandPairs.map((item: string) => (
         <Text key={item}>
           {item}
