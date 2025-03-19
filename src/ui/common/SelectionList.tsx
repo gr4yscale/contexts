@@ -8,11 +8,13 @@ interface SelectionListProps {
   initialItems: Item[];
   onSelected?: (selectedItems: Item[]) => void;
   onAct?: (selectedItems: Item[]) => void;
+  confirm?: boolean;
 }
 
 const SelectionList: React.FC<SelectionListProps> = ({
   initialItems,
   onSelected,
+  confirm,
 }) => {
   const {
     mode,
@@ -27,7 +29,6 @@ const SelectionList: React.FC<SelectionListProps> = ({
     toggleSelectionAtHighlightedIndex,
     highlightDown,
     highlightUp,
-    highlightToIndex,
   } = useSelectionList<Item>({ initialItems });
 
   // paging
@@ -195,10 +196,15 @@ const SelectionList: React.FC<SelectionListProps> = ({
           },
           {
             sequence: [key("\r", "return")],
-            description: "commit mode",
-            name: "commit",
+            description: confirm ? "commit mode" : "select",
+            name: "commit/select",
             handler: () => {
-              commitMode();
+              if (confirm) {
+                commitMode();
+              } else {
+                onSelected && onSelected(getSelectedItems());
+                findMode();
+              }
             },
             hidden: true,
           },
@@ -280,7 +286,7 @@ const SelectionList: React.FC<SelectionListProps> = ({
       {mode === "select" && (
         <Box marginTop={1} flexDirection="row-reverse">
           <Text color="gray" backgroundColor="black">
-            {currentPage + 1} 
+            {currentPage + 1}
             {" / "}
             {Math.ceil(getItems().length / itemsPerPage)}
           </Text>
