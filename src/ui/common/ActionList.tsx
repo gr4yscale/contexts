@@ -137,7 +137,7 @@ const ActionList: React.FC<ActionListProps> = ({
   );
 
   return (
-    <Box flexDirection="column" width="100%">
+    <Box flexDirection="column" width="100%" padding={1}>
       {getItems().map((i: Item) => (
         <Box key={i.id} paddingLeft={2}>
           <Text>

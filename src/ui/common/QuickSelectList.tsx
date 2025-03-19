@@ -86,14 +86,14 @@ const QuickSelectList: React.FC<QuickSelectListProps> = ({
   }, [appendToSequence, clearSequence, keys]);
 
   return (
-    <Box flexDirection="column">
-      <Box marginBottom={1}>
-        <Text>Current sequence: {currentSequence}</Text>
+    <Box flexDirection="column" padding={1}>
+      <Box marginLeft={2}>
+        <Text>{currentSequence}</Text>
       </Box>
       {items.map((item: Item) => (
         <Box key={item.id} paddingLeft={2}>
-          <Text>
-            <Text bold color="yellow">
+          <Text color="white">
+            <Text bold color="cyan">
               {getItemSequence(item)}
             </Text>{" "}
             {item.display}

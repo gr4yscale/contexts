@@ -25,7 +25,8 @@ const ActivityNavigate: React.FC = () => {
       const activities = await getCurrentContextActivities();
       const newItems = activities.map((activity) => ({
         id: activity.activityId,
-        display: activity.name,
+        display: `${activity.name}`,
+        //display: `${activity.lastAccessed}  ${activity.name}`,
         data: activity,
       }));
       setItems(newItems);
@@ -92,7 +93,7 @@ const ActivityNavigate: React.FC = () => {
   }, [mode]);
 
   return (
-    <Box>
+    <Box borderStyle="single" borderColor="gray">
       {loading ? (
         <Text>Loading activities...</Text>
       ) : (

@@ -51,7 +51,6 @@ const WhichKey: React.FC = () => {
   return (
     <Box
       flexDirection="column"
-      height={5}
       borderStyle="single"
       borderTopColor="gray"
       borderLeft={false}
@@ -62,7 +61,6 @@ const WhichKey: React.FC = () => {
     >
       <Box
         flexDirection="row"
-        height={4}
         borderStyle="single"
         borderBottomColor="gray"
         borderLeft={false}
@@ -71,26 +69,26 @@ const WhichKey: React.FC = () => {
         paddingLeft={1}
         paddingRight={1}
       >
-        <Text>{lastActionExecuted}</Text>
+        <Text color="magenta">{lastActionExecuted}</Text>
         <Spacer />
         <Box marginLeft={2} marginRight={2}>
           <Text backgroundColor="white" color="black">
             {lastKeyPressed}
           </Text>
         </Box>
-        <Text>{lastCommandExecuted}</Text>
+        <Text color="magenta">{lastCommandExecuted}</Text>
         <Spacer />
-        <Text>{currentActivity?.name || "None"}</Text>
+        <Text color="cyan">{currentActivity?.name || "None"}</Text>
       </Box>
       <Box
-        flexDirection="column"
-        height={4}
+        flexDirection="row"
         justifyContent="flex-start"
         flexWrap="wrap"
+        flexShrink={1}
       >
         {keyCommandPairs.map((item: string) => (
           <Box key={item} marginLeft={1} marginRight={2}>
-            <Text>{item}</Text>
+            <Text color="blackBright">{item}</Text>
           </Box>
         ))}
       </Box>

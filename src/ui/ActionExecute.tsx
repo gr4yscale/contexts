@@ -36,16 +36,12 @@ const ActionExecute: React.FC<Props> = ({ keys = "asdfghjkl;" }) => {
     currentActivityDestroyAction,
   ]);
 
-
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" borderStyle="single" borderColor="gray">
       {loading ? (
         <Text>Loading...</Text>
       ) : (
         <>
-          <Box marginBottom={1}>
-            <Text bold>Actions Execute</Text>
-          </Box>
           <QuickSelectList
             keys={keys}
             onSelected={(action: Action) => {

@@ -49,7 +49,7 @@ const ContextActivitySelection: React.FC = () => {
   }, []);
 
   return (
-    <Box>
+    <Box borderStyle="single" borderColor="gray">
       {mode === "find" && (
         <SelectionList
           initialItems={items}

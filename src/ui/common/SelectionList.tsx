@@ -262,15 +262,7 @@ const SelectionList: React.FC<SelectionListProps> = ({
   );
 
   return (
-    <Box flexDirection="column" width="100%">
-      {mode === "select" && (
-        <Box marginBottom={1}>
-          <Text>
-            Page {currentPage + 1} of{" "}
-            {Math.ceil(getItems().length / itemsPerPage)}
-          </Text>
-        </Box>
-      )}
+    <Box flexDirection="column" width="100%" padding={1}>
       {(mode === "select"
         ? getCurrentPageItems()
         : getItems().slice(0, itemsPerPage)
