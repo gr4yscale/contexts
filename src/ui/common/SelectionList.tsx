@@ -267,14 +267,25 @@ const SelectionList: React.FC<SelectionListProps> = ({
         ? getCurrentPageItems()
         : getItems().slice(0, itemsPerPage)
       ).map((i: Item) => (
-        <Box key={i.id} paddingLeft={2}>
-          <Text>
-            {i.highlighted && mode === "select" ? "> " : "  "}
-            {i.selected ? "* " : "  "}
-            {i.display}
+        <Box key={i.id}>
+          <Text
+            color={i.selected ? "cyan" : i.highlighted ? "blackBright" : "gray"}
+            backgroundColor={i.highlighted ? "black" : undefined}
+          >
+            {i.highlighted && mode === "select" ? "  " : "  "}
+            {i.display.padEnd(100, " ")}
           </Text>
         </Box>
       ))}
+      {mode === "select" && (
+        <Box marginTop={1} flexDirection="row-reverse">
+          <Text color="gray" backgroundColor="black">
+            {currentPage + 1} 
+            {" / "}
+            {Math.ceil(getItems().length / itemsPerPage)}
+          </Text>
+        </Box>
+      )}
     </Box>
   );
 };
