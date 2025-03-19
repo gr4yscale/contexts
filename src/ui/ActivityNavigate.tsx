@@ -23,7 +23,16 @@ const ActivityNavigate: React.FC = () => {
   const fetchActivities = async () => {
     try {
       const activities = await getCurrentContextActivities();
-      const newItems = activities.map((activity) => ({
+      const sortedActivities = [...activities].sort((a, b) => {
+        if (!a.lastAccessed) return 1;
+        if (!b.lastAccessed) return -1;
+        return (
+          new Date(b.lastAccessed).getTime() -
+          new Date(a.lastAccessed).getTime()
+        );
+      });
+
+      const newItems = sortedActivities.map((activity) => ({
         id: activity.activityId,
         display: `${activity.name}`,
         //display: `${activity.lastAccessed}  ${activity.name}`,

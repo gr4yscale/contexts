@@ -82,8 +82,7 @@ export const activateActivity = async (id: ActivityId) => {
   const viewed = await viewWorkspaceForActivity(activity);
 
   if (viewed) {
-    const lastAccessed = new Date();
-    await updateActivity({ activityId: id, lastAccessed });
+    await updateActivity({ activityId: id, lastAccessed: new Date() });
 
     const previousActivity = await getCurrentActivity();
     if (previousActivity && activity) {
