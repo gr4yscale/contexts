@@ -24,6 +24,7 @@ import CurrentActivityDelete from "../CurrentActivityDelete.tsx";
 // so that we can keep everything together (not making more components)
 
 const routes = [
+  { path: "/dummy", component: Box },
   { path: "/", component: ActivityNavigate },
   { path: "/activityCreate", component: ActivityCreate },
   { path: "/activityNavigate", component: ActivityNavigate },
@@ -70,6 +71,10 @@ const Root: React.FC = () => {
           setRoutePath("/");
           break;
         case "activityNavigate":
+          setRoutePath("/activityNavigate");
+          break;
+        case "activateActivity":
+          setRoutePath("/dummy"); // hack to force a re-render
           setRoutePath("/activityNavigate");
           break;
         case "contextActivitySelect":
