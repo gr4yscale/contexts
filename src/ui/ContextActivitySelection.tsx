@@ -73,7 +73,7 @@ const ContextActivitySelection: React.FC = () => {
                   activityIds: activityIds,
                 });
               }
-              executeAction("activityNavigate");
+              await executeAction("activityNavigate");
             } catch (error) {
               console.error("Error updating context:", error);
             }

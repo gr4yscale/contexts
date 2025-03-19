@@ -24,7 +24,7 @@ import {
 
 import { buildMenu } from "../menus.mts";
 
-// actions that navigate betwen activities
+// actions that navigate to workspaces (dwm tag) of activities
 interface NavigationAction extends Action {
   type: ActionType.NAVIGATION;
   handler: (activityId?: string) => Promise<void> | void;

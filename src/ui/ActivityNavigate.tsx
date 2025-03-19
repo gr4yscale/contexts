@@ -11,6 +11,7 @@ import { Item } from "./common/useActionList.mts";
 import { getCurrentContextActivities } from "../models/context.mts";
 
 import { executeAction } from "../actions.mts";
+import QuickSelectList from "./common/QuickSelectList.tsx";
 
 type ActivityItem = { id: string; display: string; data: Activity };
 type ActivityNavigateStates = "initial" | "find";
@@ -51,11 +52,9 @@ const ActivityNavigate: React.FC = () => {
       sequence: [key("\r", "return")],
       description: "activate acivity",
       name: "activity-activate",
-      handler: () => {
+      handler: async () => {
         const activity = item.data;
-        executeAction("activateActivity", activity.activityId);
-        fetchActivities();
-        // go back to Root or ActivityRoot
+        await executeAction("activateActivity", activity.activityId);
       },
       hidden: true,
     },
@@ -107,7 +106,13 @@ const ActivityNavigate: React.FC = () => {
         <Text>Loading activities...</Text>
       ) : (
         mode === "find" && (
-          <ActionList initialItems={items} actionKeymap={itemActionKeymap} />
+          <QuickSelectList
+            initialItems={items}
+            onSelected={(item) => {
+              const activity = item.data;
+              executeAction("activateActivity", activity.activityId);
+            }}
+          />
         )
       )}
     </Box>
@@ -115,3 +120,5 @@ const ActivityNavigate: React.FC = () => {
 };
 
 export default ActivityNavigate;
+
+//<ActionList initialItems={items} actionKeymap={itemActionKeymap} />

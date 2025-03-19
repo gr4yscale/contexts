@@ -139,10 +139,13 @@ const ActionList: React.FC<ActionListProps> = ({
   return (
     <Box flexDirection="column" width="100%" padding={1}>
       {getItems().map((i: Item) => (
-        <Box key={i.id} paddingLeft={2}>
-          <Text>
-            {i.highlighted && mode === "select" ? "> " : "  "}
-            {i.display}
+        <Box key={i.id}>
+          <Text
+            color={i.highlighted ? "cyan" : "gray"}
+            backgroundColor={i.highlighted ? "black" : undefined}
+          >
+            {i.highlighted && mode === "select" ? "  " : "  "}
+            {i.display.padEnd(100, " ")}
           </Text>
         </Box>
       ))}
