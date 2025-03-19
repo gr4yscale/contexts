@@ -106,24 +106,25 @@ const Root: React.FC = () => {
   return (
     <Box
       flexDirection="column"
-      width={columns}
-      height={rows}
+      width={columns - 2}
+      height={rows - 1}
       overflow="hidden"
-      borderStyle="single"
-      borderColor="gray"
-      margin={0}
+      margin={1}
     >
       <KeysContext.Provider value={{ keymap }}>
         <Box
+          flexDirection="column"
           alignSelf="center"
-          justifyContent="space-around"
+          justifyContent="center"
           flexGrow={1}
           width={150}
-          paddingTop={3}
-          paddingLeft={18}
-          paddingRight={18}
+          paddingLeft={22}
+          paddingRight={22}
         >
-          {Component && <Component />}
+          {
+            Component && <Component />
+            // <Component {...params } />
+          }
         </Box>
         <WhichKey />
       </KeysContext.Provider>
@@ -132,6 +133,9 @@ const Root: React.FC = () => {
 };
 
 export default Root;
+
+//https://github.com/vadimdemedes/ink/issues/263#issuecomment-765106184
+//https://github.com/vadimdemedes/ink/issues/263#issuecomment-1030379127
 
 const useStdoutDimensions = (): [number, number] => {
   const { stdout } = useStdout();
