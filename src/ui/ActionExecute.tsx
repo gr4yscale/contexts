@@ -15,6 +15,7 @@ import {
   currentActivityRenameAction,
   currentActivityAssignToParentAction,
   currentActivityCreateChildActivityAction,
+  currentActivityCreateSiblingActivityAction,
   currentActivityDestroyAction,
 } from "../actions/currentActivity.mts";
 
@@ -33,6 +34,7 @@ const ActionExecute: React.FC<Props> = ({ keys = "asdfghjkl;" }) => {
     currentActivityRenameAction,
     currentActivityAssignToParentAction,
     currentActivityCreateChildActivityAction,
+    currentActivityCreateSiblingActivityAction,
     currentActivityDestroyAction,
   ]);
 

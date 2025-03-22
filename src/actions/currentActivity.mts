@@ -1,6 +1,6 @@
 import { ActionType, Action, registerAction } from "../actions.mts";
-
 import { Activity } from "../types.mts";
+import { createActivity } from "../models/activity.mts";
 
 // actions that operate on the current activity
 interface CurrentActivityAction extends Action {
@@ -31,9 +31,27 @@ export const currentActivityCreateChildActivityAction: CurrentActivityAction = {
   name: "Create Child Activity",
   type: ActionType.CURRENT_ACTIVITY,
   handler: async (activity: Activity) => {
-    console.log(`Creating child activity for ${activity.activityId}...`);
+    const childActivityId = await createActivity({
+      name: `Child of ${activity.name}`,
+      parentActivityId: activity.activityId,
+    });
+    console.log(`Created child activity with ID: ${childActivityId}`);
   },
 };
+
+export const currentActivityCreateSiblingActivityAction: CurrentActivityAction =
+  {
+    id: "currentActivityCreateSiblingActivity",
+    name: "Create Sibling Activity",
+    type: ActionType.CURRENT_ACTIVITY,
+    handler: async (activity: Activity) => {
+      const siblingActivityId = await createActivity({
+        name: `Sibling of ${activity.name}`,
+        parentActivityId: activity.parentActivityId,
+      });
+      console.log(`Created sibling activity with ID: ${siblingActivityId}`);
+    },
+  };
 
 export const currentActivityDestroyAction: CurrentActivityAction = {
   id: "currentActivityDestroy",
@@ -47,4 +65,5 @@ export const currentActivityDestroyAction: CurrentActivityAction = {
 registerAction(currentActivityRenameAction);
 registerAction(currentActivityAssignToParentAction);
 registerAction(currentActivityCreateChildActivityAction);
+registerAction(currentActivityCreateSiblingActivityAction);
 registerAction(currentActivityDestroyAction);
