@@ -1,9 +1,11 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Box, Text } from "ink";
 import { useInput } from "ink";
 import { Item } from "../../types.mts";
 import { useFilter } from "./useFilter.mts";
 import { usePagination } from "./usePagination.mts";
+import { KeymapConfig, key } from "./Keymapping.mts";
+import { KeysContext } from "./Context.mts";
 
 interface BaseListProps {
   items: Item[];
@@ -12,36 +14,97 @@ interface BaseListProps {
 }
 
 const BaseList: React.FC<BaseListProps> = ({ items, pageSize, onSelect }) => {
+
   // Apply filtering hook
-  const { filterMode, filterText, filteredItems, handleFilterKey } = useFilter({
+  const { filterMode, filterText, filteredItems, handleFilterKey, resetFilter } = useFilter({
     items,
   });
 
   // Apply pagination hook to filtered items
-  const { currentPage, totalPages, currentItems, handlePaginationKey } =
+  const { currentPage, totalPages, currentItems, nextPage, prevPage } =
     usePagination({
       items: filteredItems,
       pageSize,
     });
 
-  // Handle keyboard input
-  useInput((input, key) => {
-    // First check if filter is handling the key
-    if (handleFilterKey(input)) {
-      return;
-    }
+  const { keymap }: any = useContext(KeysContext);
 
-    // Then check if pagination is handling the key
-    if (handlePaginationKey(input)) {
-      return;
-    }
+  // Set up keymapping for navigation and selection
+  useEffect(() => {
+    const keymapConfig: KeymapConfig = [
+      {
+        sequence: [key("[")],
+        description: "Previous page",
+        name: "prevPage",
+        handler: () => {
+          prevPage();
+          setSelectedIndex(0);
+        },
+      },
+      {
+        sequence: [key("]")],
+        description: "Next page",
+        name: "nextPage",
+        handler: () => {
+          nextPage();
+          setSelectedIndex(0);
+        },
+      },
+      {
+        sequence: [key("", "upArrow")],
+        description: "Move up",
+        name: "moveUp",
+        handler: () => {
+          setSelectedIndex(prev => Math.max(0, prev - 1));
+        },
+      },
+      {
+        sequence: [key("", "downArrow")],
+        description: "Move down",
+        name: "moveDown",
+        handler: () => {
+          setSelectedIndex(prev => Math.min(currentItems.length - 1, prev + 1));
+        },
+      },
+      {
+        sequence: [key("\r", "return")],
+        description: "Select item",
+        name: "selectItem",
+        handler: () => {
+          if (currentItems.length > 0 && onSelect) {
+            onSelect(currentItems[selectedIndex]);
+          }
+        },
+      },
+      {
+        sequence: [key("/")],
+        description: "Filter",
+        name: "filter",
+        handler: () => {
+          handleFilterKey("/", {});
+          setSelectedIndex(0);
+        },
+      },
+    ];
 
-    // Handle selection (Enter key)
-    if (key.return && currentItems.length > 0 && onSelect) {
-      onSelect(currentItems[0]);
-    }
-  });
+    keymap.pushKeymap(keymapConfig);
 
+    return () => {
+      keymap.popKeymap();
+    };
+  }, [currentItems, selectedIndex, onSelect, nextPage, prevPage]);
+
+  // Only use useInput for filter mode
+  useInput(
+    (input, key) => {
+      if (filterMode) {
+        if (handleFilterKey(input, key)) {
+          setSelectedIndex(0);
+        }
+      }
+    },
+    { isActive: filterMode }
+  );
   // Render empty state
   if (filteredItems.length === 0) {
     return (
@@ -71,7 +134,9 @@ const BaseList: React.FC<BaseListProps> = ({ items, pageSize, onSelect }) => {
       <Box flexDirection="column">
         {currentItems.map((item, index) => (
           <Box key={item.id}>
-            <Text>{item.display}</Text>
+            <Text color={index === selectedIndex ? "green" : undefined}>
+              {item.display}
+            </Text>
           </Box>
         ))}
       </Box>
