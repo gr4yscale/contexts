@@ -29,6 +29,7 @@ const SelectionList: React.FC<SelectionListProps> = ({
     toggleSelectionAtHighlightedIndex,
     highlightDown,
     highlightUp,
+    highlightToIndex,
   } = useSelectionList<Item>({ initialItems });
 
   // paging
