@@ -1,18 +1,18 @@
 import React from "react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render } from "ink-testing-library";
 import KeymapExample from "./KeymapExample.tsx";
 import TestHarness from "../common/TestHarness.tsx";
-import { Keymap } from "../common/Keymapping.mts";
+import { Keymap, KeymapInstance } from "../common/Keymapping.mts";
 
-let keymap: any;
+let keymap: KeymapInstance;
 
 describe("KeymapExample", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // replace the keymap for each test.
-    keymap = Keymap([]);
+    // replace the keymap for each test
     // this ^^ works because of the pattern where useEffect has keymap in its dependencies list
+    keymap = Keymap([]);
   });
 
   it("renders initial state correctly", () => {
