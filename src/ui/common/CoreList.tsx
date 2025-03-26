@@ -10,8 +10,11 @@ interface CoreListProps {
   lists?: Array<Array<any>>;
 }
 
-const CoreList: React.FC<CoreListProps> = ({ lists = [[{ id: 'test', display: 'Test Item' }]] }) => {
+const CoreList: React.FC<CoreListProps> = ({
+  lists = [[{ id: "test", display: "Test Item" }]],
+}) => {
   const { keymap } = useContext(KeysContext);
+
   const [mode, setMode] = useState<Modes>("find");
   const { currentList, currentListIndex, switchList } = useListSwitching(lists);
 
@@ -188,13 +191,21 @@ const CoreList: React.FC<CoreListProps> = ({ lists = [[{ id: 'test', display: 'T
     <Box flexDirection="column" width="100%" padding={1}>
       <Box>
         <Text color="gray" backgroundColor="black">
-          List {currentListIndex + 1} of {lists.length} - {currentList.length} items
+          List {currentListIndex + 1} of {lists.length} - {currentList.length}{" "}
+          items
         </Text>
       </Box>
       <Box>
         {currentList.map((item, index) => (
-          <Text key={index}>{item.display || item.id || JSON.stringify(item)}</Text>
+          <Text key={index}>
+            {item.display || item.id || JSON.stringify(item)}
+          </Text>
         ))}
+      </Box>
+      <Box marginTop={1}>
+        <Text color="blue" backgroundColor="black">
+          Mode: {mode}
+        </Text>
       </Box>
     </Box>
   );
