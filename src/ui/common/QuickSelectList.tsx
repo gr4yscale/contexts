@@ -33,7 +33,7 @@ const QuickSelectList: React.FC<QuickSelectListProps> = ({
     maxSequenceLength,
   });
 
-  const { keymap }: any = useContext(KeysContext);
+  const { keymap } = useContext(KeysContext);
 
   // Handle selection when sequence is complete
   useEffect(() => {

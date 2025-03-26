@@ -9,7 +9,7 @@ import {
 } from "../actions.mts";
 
 const WhichKey: React.FC = () => {
-  const { keymap }: any = useContext(KeysContext);
+  const { keymap } = useContext(KeysContext);
   const { currentActivity, fetchCurrentActivity } = useCurrentActivity();
 
   const [lastKeyPressed, setLastKeyPressed] = useState("");
@@ -21,10 +21,10 @@ const WhichKey: React.FC = () => {
     keymap.registerListener(() => {
       const state = keymap.getCurrentState();
 
-      const visible = state.keymap.filter((k: Keymap) => !k.hidden);
+      const visible = state.keymap.filter((k) => !k.hidden);
 
-      const pairs = visible.map((e: Keymap) => {
-        const keys = e.sequence.map((s: KeyEvent) => s.input);
+      const pairs = visible.map((e) => {
+        const keys = e.sequence.map((s) => s.input);
         return `(${keys.join("-")}) ${e.description}`;
       });
 
@@ -86,7 +86,7 @@ const WhichKey: React.FC = () => {
         flexWrap="wrap"
         flexShrink={1}
       >
-        {keyCommandPairs.map((item: string) => (
+        {keyCommandPairs.map((item) => (
           <Box key={item} marginLeft={1} marginRight={2}>
             <Text color="blackBright">{item}</Text>
           </Box>

@@ -27,7 +27,7 @@ const ActionList: React.FC<ActionListProps> = ({
     highlightUp,
   } = useActionList<Item>({ initialItems });
 
-  const { keymap }: any = useContext(KeysContext);
+  const { keymap } = useContext(KeysContext);
 
   // shared keymap, persists regardless of mode
   useEffect(() => {

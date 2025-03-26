@@ -27,7 +27,7 @@ const BaseList: React.FC<BaseListProps> = ({ items, pageSize, onSelect }) => {
       pageSize,
     });
 
-  const { keymap }: any = useContext(KeysContext);
+  const { keymap } = useContext(KeysContext);
 
   // Set up keymapping for navigation and selection
   useEffect(() => {

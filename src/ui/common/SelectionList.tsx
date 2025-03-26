@@ -116,7 +116,7 @@ const SelectionList: React.FC<SelectionListProps> = ({
     return items.slice(startIndex, startIndex + itemsPerPage);
   };
 
-  const { keymap }: any = useContext(KeysContext);
+  const { keymap } = useContext(KeysContext);
 
   // shared keymap, persists regardless of mode
   useEffect(() => {

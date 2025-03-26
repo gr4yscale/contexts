@@ -56,7 +56,21 @@ const sequenceMatches = (sequence: KeyEvent[], buffer: KeyEvent[]): boolean => {
   return sequence.every((event, index) => keyEventsMatch(event, buffer[index]));
 };
 
-export const Keymap = (initialConfig: KeymapConfig) => {
+export type KeymapInstance = {
+  handleKeyEvent: (input: string, key: Key) => KeymapResult | null;
+  resetState: () => void;
+  reset: () => void;
+  getCurrentConfig: () => KeymapConfig;
+  pushKeymap: (newConfig: KeymapConfig) => void;
+  popKeymap: () => boolean;
+  keyBuffer: KeyEvent[];
+  lastKeyPressed: string;
+  lastCommandExecuted: string;
+  registerListener: (listener: () => void) => void;
+  getCurrentState: () => { lastCommandExecuted: string; lastKeyPressed: string; keymap: KeymapConfig };
+};
+
+export const Keymap = (initialConfig: KeymapConfig): KeymapInstance => {
   let keyBuffer: KeyEvent[] = [];
   let keymapStack: KeymapConfig[] = [initialConfig];
   let listeners: Function[] = [];
