@@ -47,28 +47,6 @@ const ActivityNavigate: React.FC = () => {
     }
   };
 
-  const itemActionKeymap = (item: Item): KeymapConfig => [
-    {
-      sequence: [key("\r", "return")],
-      description: "activate acivity",
-      name: "activity-activate",
-      handler: async () => {
-        const activity = item.data;
-        await executeAction("activateActivity", activity.activityId);
-      },
-      hidden: true,
-    },
-    {
-      sequence: [key(" ")],
-      description: "Item action: handy keybind",
-      name: "item-act-handy",
-      handler: () => {
-        //console.log(`handy action for ${item.display}`);
-      },
-      hidden: true,
-    },
-  ];
-
   useEffect(() => {
     fetchActivities();
   }, []);
