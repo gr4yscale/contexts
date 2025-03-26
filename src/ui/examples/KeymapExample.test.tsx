@@ -30,7 +30,7 @@ describe("KeymapExample", () => {
   it("increments counter when 'a' key is pressed", async () => {
     const mockOnKeyPress = vi.fn();
 
-    const { lastFrame, stdin, rerender } = render(
+    const { lastFrame, stdin} = render(
       <TestHarness keymap={keymap}>
         <KeymapExample onKeyPress={mockOnKeyPress} />
       </TestHarness>,
@@ -41,13 +41,6 @@ describe("KeymapExample", () => {
     // First increment to 2
     stdin.write("a");
     stdin.write("a");
-
-    // Re-render to show updated state
-    rerender(
-      <TestHarness keymap={keymap}>
-        <KeymapExample onKeyPress={mockOnKeyPress} />
-      </TestHarness>,
-    );
 
     // Counter should be 2
     expect(lastFrame()).toContain("Counter: 2");
@@ -57,7 +50,7 @@ describe("KeymapExample", () => {
 
   it("decrements counter when 'd' key is pressed", async () => {
     const mockOnKeyPress = vi.fn();
-    const { lastFrame, stdin, rerender } = render(
+    const { lastFrame, stdin} = render(
       <TestHarness keymap={keymap}>
         <KeymapExample onKeyPress={mockOnKeyPress} />
       </TestHarness>,
@@ -69,13 +62,6 @@ describe("KeymapExample", () => {
     stdin.write("a");
     stdin.write("a");
 
-    // Re-render to show updated state
-    rerender(
-      <TestHarness keymap={keymap}>
-        <KeymapExample onKeyPress={mockOnKeyPress} />
-      </TestHarness>,
-    );
-
     // Counter should be 2
     expect(lastFrame()).toContain("Counter: 2");
 
@@ -83,13 +69,6 @@ describe("KeymapExample", () => {
 
     // Press 'd' key to decrement
     stdin.write("d");
-
-    // Re-render to show updated state
-    rerender(
-      <TestHarness keymap={keymap}>
-        <KeymapExample onKeyPress={mockOnKeyPress} />
-      </TestHarness>,
-    );
 
     // Counter should be decremented
     expect(lastFrame()).toContain("Counter: 1");
@@ -99,7 +78,7 @@ describe("KeymapExample", () => {
 
   it("resets counter when 'r' key is pressed", async () => {
     const mockOnKeyPress = vi.fn();
-    const { lastFrame, stdin, rerender } = render(
+    const { lastFrame, stdin} = render(
       <TestHarness keymap={keymap}>
         <KeymapExample onKeyPress={mockOnKeyPress} />
       </TestHarness>,
@@ -112,13 +91,6 @@ describe("KeymapExample", () => {
     stdin.write("a");
     stdin.write("a");
 
-    // Re-render to show updated state
-    rerender(
-      <TestHarness keymap={keymap}>
-        <KeymapExample onKeyPress={mockOnKeyPress} />
-      </TestHarness>,
-    );
-
     // Counter should be 3
     expect(lastFrame()).toContain("Counter: 3");
 
@@ -127,13 +99,6 @@ describe("KeymapExample", () => {
     // Press 'r' key to reset
     stdin.write("r");
 
-    // Re-render to show updated state
-    rerender(
-      <TestHarness keymap={keymap}>
-        <KeymapExample onKeyPress={mockOnKeyPress} />
-      </TestHarness>,
-    );
-
     // Counter should be reset to 0
     expect(lastFrame()).toContain("Counter: 0");
     expect(lastFrame()).toContain("Last key pressed: r");
@@ -141,7 +106,7 @@ describe("KeymapExample", () => {
   });
 
   it("prevents counter from going below 0", async () => {
-    const { lastFrame, stdin, rerender } = render(
+    const { lastFrame, stdin} = render(
       <TestHarness keymap={keymap}>
         <KeymapExample />
       </TestHarness>,
@@ -155,13 +120,6 @@ describe("KeymapExample", () => {
     // Try to decrement below 0
     stdin.write("d");
 
-    // Re-render to show updated state
-    rerender(
-      <TestHarness keymap={keymap}>
-        <KeymapExample />
-      </TestHarness>,
-    );
-
     // Counter should still be 0
     expect(lastFrame()).toContain("Counter: 0");
     expect(lastFrame()).toContain("Last key pressed: d");
@@ -169,7 +127,7 @@ describe("KeymapExample", () => {
 
   it("sets counter to 10 when 'gg' sequence is pressed", async () => {
     const mockOnKeyPress = vi.fn();
-    const { lastFrame, stdin, rerender } = render(
+    const { lastFrame, stdin } = render(
       <TestHarness keymap={keymap}>
         <KeymapExample onKeyPress={mockOnKeyPress} />
       </TestHarness>,
@@ -183,13 +141,6 @@ describe("KeymapExample", () => {
     // Press 'g' then 'g' for the sequence
     stdin.write("g");
     stdin.write("g");
-
-    // Re-render to show updated state
-    rerender(
-      <TestHarness keymap={keymap}>
-        <KeymapExample />
-      </TestHarness>,
-    );
 
     // Counter should be set to 10
     expect(lastFrame()).toContain("Counter: 10");
