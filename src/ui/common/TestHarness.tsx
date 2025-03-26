@@ -7,19 +7,28 @@ interface TestHarnessProps {
   children: React.ReactNode;
 }
 
+const keymap = Keymap([]);
+
+// Create a context value with the keymap
+const contextValue = {
+  keymap,
+};
+
 const TestHarness: React.FC<TestHarnessProps> = ({ children }) => {
-  const keymap = Keymap([]);
-
-  // Create a context value with the keymap
-  const contextValue = {
-    keymap,
-  };
-
   // This simulates the global key handling from Root.tsx
   useInput((input, key) => {
+    console.log("TestHarness received key:", input, key);
+
+    // Try to handle the key event
     const result = keymap.handleKeyEvent(input, key);
     if (result && result.handler) {
+      console.log(
+        "TestHarness executing handler for:",
+        result.name || "unnamed handler",
+      );
       result.handler();
+    } else {
+      console.log("TestHarness: No handler found for key", input);
     }
   });
 
@@ -31,34 +40,3 @@ const TestHarness: React.FC<TestHarnessProps> = ({ children }) => {
 };
 
 export default TestHarness;
-
-// import React, { PropsWithChildren } from "react";
-// import { useInput } from "ink";
-// import { KeysContext } from "./Context.mts";
-
-// import { Keymap } from "./Keymapping.mts";
-
-// // define root keymap
-// const keymap = Keymap([]);
-
-// const TestHarness: React.FC<PropsWithChildren> = ({ children }) => {
-//   // global key handling
-//   useInput((input, key) => {
-//     console.log("handling key", input);
-//     const result = keymap.handleKeyEvent(input, key);
-//     if (result) {
-//       if (result.handler) {
-//         console.log("handler found");
-//         result.handler();
-//       }
-//     } else {
-//       console.log("unhandled key");
-//     }
-//   });
-
-//   return (
-//     <KeysContext.Provider value={{ keymap }}>{children}</KeysContext.Provider>
-//   );
-// };
-
-//export default TestHarness;
