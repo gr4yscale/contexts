@@ -4,7 +4,7 @@ import { KeymapConfig, key } from "./Keymapping.mts";
 import { KeysContext } from "./Context.mts";
 import useListSwitching from "./useListSwitching.mts";
 
-export type Modes = "find" | "select";
+export type Modes = "search" | "select";
 
 interface CoreListProps {
   lists?: Array<Array<any>>;
@@ -15,7 +15,7 @@ const CoreList: React.FC<CoreListProps> = ({
 }) => {
   const { keymap } = useContext(KeysContext);
 
-  const [mode, setMode] = useState<Modes>("find");
+  const [mode, setMode] = useState<Modes>("search");
   const { currentList, currentListIndex, switchList } = useListSwitching(lists);
 
   // shared keymap, persists regardless of mode
@@ -32,7 +32,7 @@ const CoreList: React.FC<CoreListProps> = ({
     let keymapConfig: KeymapConfig = [];
 
     switch (mode) {
-      case "find":
+      case "search":
         keymapConfig = [
           {
             sequence: [key("\r", "return")],
@@ -122,10 +122,10 @@ const CoreList: React.FC<CoreListProps> = ({
           },
           {
             sequence: [key("", "delete")],
-            description: "Back to find mode",
-            name: "find mode",
+            description: "Back to search mode",
+            name: "search mode",
             handler: () => {
-              setMode("find");
+              setMode("search");
             },
             hidden: true,
           },
@@ -173,7 +173,7 @@ const CoreList: React.FC<CoreListProps> = ({
             description: "Toggle mode",
             name: "toggleMode",
             handler: () => {
-              setMode("find");
+              setMode("search");
             },
           },
         ];

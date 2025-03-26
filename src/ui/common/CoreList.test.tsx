@@ -36,8 +36,8 @@ describe("CoreList", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 100));
 
-      // Default mode should be search/find
-      expect(lastFrame()).toContain("Mode: find");
+      // Default mode should be search
+      expect(lastFrame()).toContain("Mode: search");
 
       // Switch to select mode
       stdin.write("\r");
@@ -47,7 +47,7 @@ describe("CoreList", () => {
       // Switch back to search mode
       stdin.write("\u007F"); // Delete key
       await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(lastFrame()).toContain("Mode: find");
+      expect(lastFrame()).toContain("Mode: search");
     });
     it("toggles between modes with backslash key", async () => {
       const { stdin, lastFrame } = render(
@@ -57,7 +57,7 @@ describe("CoreList", () => {
       );
 
       await new Promise((resolve) => setTimeout(resolve, 100));
-      expect(lastFrame()).toContain("Mode: find");
+      expect(lastFrame()).toContain("Mode: search");
 
       // Toggle to select mode with backslash
       stdin.write("\\");
@@ -67,7 +67,7 @@ describe("CoreList", () => {
       // Toggle back to search mode with backslash
       stdin.write("\\");
       await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(lastFrame()).toContain("Mode: find");
+      expect(lastFrame()).toContain("Mode: search");
     });
     it("switches from search mode to select mode when Enter is pressed", async () => {
       const { stdin, lastFrame } = render(
@@ -77,7 +77,7 @@ describe("CoreList", () => {
       );
 
       await new Promise((resolve) => setTimeout(resolve, 100));
-      expect(lastFrame()).toContain("Mode: find");
+      expect(lastFrame()).toContain("Mode: search");
 
       // Press Enter to switch to select mode
       stdin.write("\r");
