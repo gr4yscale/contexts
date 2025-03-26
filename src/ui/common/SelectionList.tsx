@@ -143,12 +143,10 @@ const SelectionList: React.FC<SelectionListProps> = ({
       case "find":
         keymapConfig = [
           {
-            sequence: [key("x")],
+            sequence: [key("\r", "return")],
             description: "Select mode",
             name: "mode-select",
             handler: () => {
-              console.log("selct mode");
-              keymap.popKeymap();
               selectMode();
             },
             hidden: true,
@@ -297,52 +295,12 @@ const SelectionList: React.FC<SelectionListProps> = ({
   // Update the search string with freeform text when we are in find mode
   useInput(
     (input, key) => {
-      console.log("SelectionList received key:", input, "mode:", mode);
-
-      // Special direct key handling for tests
-      if (input === "z") {
-        console.log("Direct handling of z key - setting test state");
-        setTestState(true);
-        return;
-      }
-
-      if (input === "]") {
-        console.log("Direct handling of ] key - next page");
-        nextPage();
-        return;
-      }
-
-      if (input === "[") {
-        console.log("Direct handling of [ key - previous page");
-        prevPage();
-        return;
-      }
-
-      if (mode === "select" && input === "j") {
-        console.log("Direct handling of j key in select mode");
-        handleHighlightDown();
-        return;
-      }
-
-      if (mode === "select" && input === "k") {
-        console.log("Direct handling of k key in select mode");
-        handleHighlightUp();
-        return;
-      }
-
-      if (mode === "find" && input === "x") {
-        console.log("Direct handling of x key in find mode");
-        selectMode();
-        return;
-      }
-
-      // Normal search string handling
-      if (mode === "find" && input !== "") {
+      if (!key.return && input !== "") {
         filterBySearchString(input);
         setCurrentPage(0);
       }
     },
-    { isActive: true }, // Always active for testing
+    { isActive:  mode === "find"}, // Always active for testing
   );
 
   return (
