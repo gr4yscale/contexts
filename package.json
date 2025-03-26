@@ -15,7 +15,9 @@
         "test:integration:workspace": "RUN_INTEGRATION_TESTS=true vitest run src/models/workspace.test.mts",
         "test:integration:activity": "RUN_INTEGRATION_TESTS=true vitest run src/models/activity.test.mts",
         "test:integration:context": "RUN_INTEGRATION_TESTS=true vitest run src/models/context.test.mts",
-        "test:ui:baselist": "vitest run src/ui/common/BaseList.test.tsx",
+        "test:ui:all": "vitest run src/ui/**/*.test.tsx",
+        "test:ui:keymapping": "yarn vitest run src/ui/examples/KeymapExample.test.tsx",
+        "test:ui:corelist": "vitest run src/ui/common/CoreList.test.tsx",
         "migrate:up": "tsx src/scripts/migrate.mts up",
         "migrate:down": "tsx src/scripts/migrate.mts down",
         "build": "esbuild src/main.mts --bundle --platform=node --format=esm --packages=external --outfile=build.mjs"
