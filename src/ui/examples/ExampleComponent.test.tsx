@@ -1,13 +1,13 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render } from "ink-testing-library";
-import KeymapExample from "./KeymapExample.tsx";
+import ExampleComponent from "./ExampleComponent.tsx";
 import TestHarness from "../common/TestHarness.tsx";
 import { Keymap, KeymapInstance } from "../common/Keymapping.mts";
 
 let keymap: KeymapInstance;
 
-describe("KeymapExample", () => {
+describe("ExampleComponent", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // replace the keymap for each test
@@ -18,7 +18,7 @@ describe("KeymapExample", () => {
   it("renders initial state correctly", () => {
     const { lastFrame } = render(
       <TestHarness keymap={keymap}>
-        <KeymapExample />
+        <ExampleComponent />
       </TestHarness>,
     );
 
@@ -30,9 +30,9 @@ describe("KeymapExample", () => {
   it("increments counter when 'a' key is pressed", async () => {
     const mockOnKeyPress = vi.fn();
 
-    const { lastFrame, stdin} = render(
+    const { lastFrame, stdin } = render(
       <TestHarness keymap={keymap}>
-        <KeymapExample onKeyPress={mockOnKeyPress} />
+        <ExampleComponent onKeyPress={mockOnKeyPress} />
       </TestHarness>,
     );
 
@@ -50,9 +50,9 @@ describe("KeymapExample", () => {
 
   it("decrements counter when 'd' key is pressed", async () => {
     const mockOnKeyPress = vi.fn();
-    const { lastFrame, stdin} = render(
+    const { lastFrame, stdin } = render(
       <TestHarness keymap={keymap}>
-        <KeymapExample onKeyPress={mockOnKeyPress} />
+        <ExampleComponent onKeyPress={mockOnKeyPress} />
       </TestHarness>,
     );
 
@@ -78,9 +78,9 @@ describe("KeymapExample", () => {
 
   it("resets counter when 'r' key is pressed", async () => {
     const mockOnKeyPress = vi.fn();
-    const { lastFrame, stdin} = render(
+    const { lastFrame, stdin } = render(
       <TestHarness keymap={keymap}>
-        <KeymapExample onKeyPress={mockOnKeyPress} />
+        <ExampleComponent onKeyPress={mockOnKeyPress} />
       </TestHarness>,
     );
 
@@ -106,9 +106,9 @@ describe("KeymapExample", () => {
   });
 
   it("prevents counter from going below 0", async () => {
-    const { lastFrame, stdin} = render(
+    const { lastFrame, stdin } = render(
       <TestHarness keymap={keymap}>
-        <KeymapExample />
+        <ExampleComponent />
       </TestHarness>,
     );
 
@@ -129,7 +129,7 @@ describe("KeymapExample", () => {
     const mockOnKeyPress = vi.fn();
     const { lastFrame, stdin } = render(
       <TestHarness keymap={keymap}>
-        <KeymapExample onKeyPress={mockOnKeyPress} />
+        <ExampleComponent onKeyPress={mockOnKeyPress} />
       </TestHarness>,
     );
 

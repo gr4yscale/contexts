@@ -7,7 +7,7 @@ interface KeymapExampleProps {
   onKeyPress?: (key: string) => void;
 }
 
-const KeymapExample: React.FC<KeymapExampleProps> = ({ onKeyPress }) => {
+const ExampleComponent: React.FC<ExampleComponentProps> = ({ onKeyPress }) => {
   const [lastKeyPressed, setLastKeyPressed] = useState<string>("");
   const [counter, setCounter] = useState<number>(0);
 
@@ -103,4 +103,4 @@ const KeymapExample: React.FC<KeymapExampleProps> = ({ onKeyPress }) => {
   );
 };
 
-export default KeymapExample;
+export default ExampleComponent;
