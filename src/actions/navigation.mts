@@ -142,6 +142,15 @@ export const navigateGlobalLeader: NavigationAction = {
   },
 };
 
+export const navigateTestbed: NavigationAction = {
+  id: "testbed",
+  name: "Testbed UI",
+  type: ActionType.NAVIGATION,
+  handler: async () => {
+    await showTUI();
+  },
+};
+
 export const navigateActivityNavigate: NavigationAction = {
   id: "activityNavigate",
   name: "Activity Navigation",
@@ -208,6 +217,7 @@ export const navigateActivateActivityAction: NavigationAction = {
 };
 
 registerAction(navigateGlobalLeader);
+registerAction(navigateTestbed);
 registerAction(navigateActivityNavigate);
 registerAction(navigateContextActivitySelect);
 registerAction(navigateActionExecute);

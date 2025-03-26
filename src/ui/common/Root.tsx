@@ -19,6 +19,7 @@ import CurrentActivityAssignToParent from "../CurrentActivityAssignToParent.tsx"
 import CurrentActivityCreateChild from "../CurrentActivityCreateChild.tsx";
 import CurrentActivityRename from "../CurrentActivityRename.tsx";
 import CurrentActivityDelete from "../CurrentActivityDelete.tsx";
+import Testbed from "../Testbed.tsx";
 
 // consider adding props here that would set initial state of ActivityRoot
 // so that we can keep everything together (not making more components)
@@ -40,6 +41,7 @@ const routes = [
   },
   { path: "/currentActivityRename", component: CurrentActivityRename },
   { path: "/currentActivityDelete", component: CurrentActivityDelete },
+  { path: "/testbed", component: Testbed },
 ];
 
 // define root keymap
@@ -94,6 +96,9 @@ const Root: React.FC = () => {
           break;
         case "currentActivityDelete":
           setRoutePath("/currentActivityDelete");
+          break;
+        case "testbed":
+          setRoutePath("/testbed");
           break;
       }
     };

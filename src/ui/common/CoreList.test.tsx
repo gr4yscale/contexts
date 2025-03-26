@@ -1,9 +1,9 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render } from "ink-testing-library";
-import CoreList from "./CoreList.tsx";
 import TestHarness from "./TestHarness.tsx";
 import { Keymap, KeymapInstance } from "./Keymapping.mts";
+import CoreList from "./CoreList.tsx";
 
 let keymap: KeymapInstance;
 
