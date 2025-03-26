@@ -7,6 +7,19 @@ import CoreList from "./CoreList.tsx";
 
 let keymap: KeymapInstance;
 
+// Mock lists for testing
+const mockLists = [
+  [
+    { id: "list1-item1", display: "List 1 Item 1" },
+    { id: "list1-item2", display: "List 1 Item 2" },
+  ],
+  [
+    { id: "list2-item1", display: "List 2 Item 1" },
+    { id: "list2-item2", display: "List 2 Item 2" },
+  ],
+  [{ id: "list3-item1", display: "List 3 Item 1" }],
+];
+
 describe("CoreList", () => {
   beforeEach(() => {
     // replace the keymap for each test
@@ -15,19 +28,10 @@ describe("CoreList", () => {
   });
 
   describe("mode switching behavior", () => {
-    it("renders initial state correctly", () => {
-      const { lastFrame } = render(
-        <TestHarness keymap={keymap}>
-          <CoreList />
-        </TestHarness>,
-      );
-
-      expect(lastFrame()).toContain("TEST");
-    });
     it("has two modes: search and select", async () => {
       const { stdin } = render(
         <TestHarness keymap={keymap}>
-          <CoreList />
+          <CoreList lists={mockLists} />
         </TestHarness>,
       );
 
@@ -44,21 +48,21 @@ describe("CoreList", () => {
     it("toggles between modes with backslash key", async () => {
       const { stdin } = render(
         <TestHarness keymap={keymap}>
-          <CoreList />
+          <CoreList lists={mockLists} />
         </TestHarness>,
       );
 
       await new Promise((resolve) => setTimeout(resolve, 100));
 
-      // Default mode is search/find
-
       // Toggle to select mode with backslash
       stdin.write("\\");
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Toggle back to search mode with backslash
       stdin.write("\\");
+      await new Promise((resolve) => setTimeout(resolve, 50));
     });
-    it("switches from find mode to select mode when Enter is pressed", async () => {
+    it("switches from search mode to select mode when Enter is pressed", async () => {
       const { stdin } = render(
         <TestHarness keymap={keymap}>
           <CoreList />
@@ -69,59 +73,37 @@ describe("CoreList", () => {
 
       // Press Enter to switch to select mode
       stdin.write("\r");
-
-      // Press ']' which should trigger the nextPage handler in select mode
-      stdin.write("]");
     });
   });
-
   describe("multiple list navigation", () => {
-    it("switches to previous list when '{' is pressed in find mode", async () => {
-      const { stdin } = render(
-        <TestHarness keymap={keymap}>
-          <CoreList />
-        </TestHarness>,
-      );
-
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      // Press '{' to switch to previous list
-      stdin.write("{");
-    });
-
-    it("switches to next list when '}' is pressed in find mode", async () => {
-      const { stdin } = render(
-        <TestHarness keymap={keymap}>
-          <CoreList />
-        </TestHarness>,
-      );
-
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      // Press '}' to switch to next list
-      stdin.write("}");
-    });
-
     it("switches to previous list when '{' is pressed in select mode", async () => {
-      const { stdin } = render(
+      const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
-          <CoreList />
+          <CoreList lists={mockLists} />
         </TestHarness>,
       );
 
       await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // First go to next list
+      stdin.write("}");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(lastFrame()).toContain("List 2 of 3");
 
       // Switch to select mode
       stdin.write("\r");
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Press '{' to switch to previous list
       stdin.write("{");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(lastFrame()).toContain("List 1 of 3");
     });
 
     it("switches to next list when '}' is pressed in select mode", async () => {
-      const { stdin } = render(
+      const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
-          <CoreList />
+          <CoreList lists={mockLists} />
         </TestHarness>,
       );
 
@@ -129,12 +111,14 @@ describe("CoreList", () => {
 
       // Switch to select mode
       stdin.write("\r");
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Press '}' to switch to next list
       stdin.write("}");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(lastFrame()).toContain("List 2 of 3");
     });
   });
-
   describe("filtering behavior", () => {
     it("filters the current list based on search string", async () => {
       const { stdin } = render(
@@ -183,6 +167,16 @@ describe("CoreList", () => {
       // Test pagination with filtered results
       stdin.write("]"); // next page
       stdin.write("["); // previous page
+    });
+  });
+  describe("basic rendering", () => {
+    it("renders initial state correctly", () => {
+      const { lastFrame } = render(
+        <TestHarness keymap={keymap}>
+          <CoreList lists={mockLists} />
+        </TestHarness>,
+      );
+      expect(lastFrame()).toContain("List 1 of 3");
     });
   });
 });

@@ -2,15 +2,18 @@ import React, { useEffect, useContext, useState } from "react";
 import { Text, Box } from "ink";
 import { KeymapConfig, key } from "./Keymapping.mts";
 import { KeysContext } from "./Context.mts";
+import useListSwitching from "./useListSwitching.mts";
 
 export type Modes = "find" | "select";
 
-interface CoreListProps {}
+interface CoreListProps {
+  lists?: Array<Array<any>>;
+}
 
-const CoreList: React.FC<CoreListProps> = ({}) => {
+const CoreList: React.FC<CoreListProps> = ({ lists = [[{ id: 'test', display: 'Test Item' }]] }) => {
   const { keymap } = useContext(KeysContext);
-
   const [mode, setMode] = useState<Modes>("find");
+  const { currentList, currentListIndex, switchList } = useListSwitching(lists);
 
   // shared keymap, persists regardless of mode
   useEffect(() => {
@@ -62,6 +65,30 @@ const CoreList: React.FC<CoreListProps> = ({}) => {
             description: "Next page",
             name: "nextPage",
             handler: () => {},
+          },
+          {
+            sequence: [key("{")],
+            description: "Previous list",
+            name: "prevList",
+            handler: () => {
+              switchList(currentListIndex - 1);
+            },
+          },
+          {
+            sequence: [key("}")],
+            description: "Next list",
+            name: "nextList",
+            handler: () => {
+              switchList(currentListIndex + 1);
+            },
+          },
+          {
+            sequence: [key("\\")],
+            description: "Toggle mode",
+            name: "toggleMode",
+            handler: () => {
+              setMode("select");
+            },
           },
         ];
         break;
@@ -122,6 +149,30 @@ const CoreList: React.FC<CoreListProps> = ({}) => {
               console.log("Executing nextPage handler");
             },
           },
+          {
+            sequence: [key("{")],
+            description: "Previous list",
+            name: "prevList",
+            handler: () => {
+              switchList(currentListIndex - 1);
+            },
+          },
+          {
+            sequence: [key("}")],
+            description: "Next list",
+            name: "nextList",
+            handler: () => {
+              switchList(currentListIndex + 1);
+            },
+          },
+          {
+            sequence: [key("\\")],
+            description: "Toggle mode",
+            name: "toggleMode",
+            handler: () => {
+              setMode("find");
+            },
+          },
         ];
         break;
     }
@@ -137,8 +188,13 @@ const CoreList: React.FC<CoreListProps> = ({}) => {
     <Box flexDirection="column" width="100%" padding={1}>
       <Box>
         <Text color="gray" backgroundColor="black">
-          TEST
+          List {currentListIndex + 1} of {lists.length} - {currentList.length} items
         </Text>
+      </Box>
+      <Box>
+        {currentList.map((item, index) => (
+          <Text key={index}>{item.display || item.id || JSON.stringify(item)}</Text>
+        ))}
       </Box>
     </Box>
   );
