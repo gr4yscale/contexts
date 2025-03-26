@@ -85,7 +85,7 @@ describe("CoreList", () => {
       expect(lastFrame()).toContain("Mode: select");
     });
   });
-  describe("multiple list support", () => {
+  describe("multiple lists", () => {
     it("switches to previous list when '{' is pressed in select mode", async () => {
       const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
@@ -129,10 +129,7 @@ describe("CoreList", () => {
       expect(lastFrame()).toContain("List 2 of 3");
     });
   });
-  describe.skip("pagination", () => {
-    // Tests will be added here in the future
-  });
-  describe("search functionality", () => {
+  describe("search", () => {
     it("clears search string when delete key is pressed", async () => {
       const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
@@ -242,6 +239,97 @@ describe("CoreList", () => {
       expect(lastFrame()).not.toContain('(filtered: "t\\e{s}t")');
     });
   });
+  describe("pagination", () => {
+    it("shows pagination info in select mode", async () => {
+      // Create a list with more than one page of items
+      const manyItems = Array.from({ length: 15 }, (_, i) => ({
+        id: `item${i}`,
+        display: `Item ${i}`,
+      }));
+
+      const { stdin, lastFrame } = render(
+        <TestHarness keymap={keymap}>
+          <CoreList lists={[manyItems]} />
+        </TestHarness>,
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Switch to select mode
+      stdin.write("\r");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Should show pagination info
+      expect(lastFrame()).toContain("Page 1/");
+    });
+
+    it("navigates to next page when ']' is pressed in select mode", async () => {
+      // Create a list with more than one page of items
+      const manyItems = Array.from({ length: 15 }, (_, i) => ({
+        id: `item${i}`,
+        display: `Item ${i}`,
+      }));
+
+      const { stdin, lastFrame } = render(
+        <TestHarness keymap={keymap}>
+          <CoreList lists={[manyItems]} />
+        </TestHarness>,
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Switch to select mode
+      stdin.write("\r");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // First page should show first 10 items
+      expect(lastFrame()).toContain("Item 0");
+      expect(lastFrame()).toContain("Item 9");
+      expect(lastFrame()).not.toContain("Item 10");
+
+      // Go to next page
+      stdin.write("]");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Second page should show remaining items
+      expect(lastFrame()).toContain("Item 10");
+      expect(lastFrame()).not.toContain("Item 0");
+    });
+
+    it("navigates to previous page when '[' is pressed in select mode", async () => {
+      // Create a list with more than one page of items
+      const manyItems = Array.from({ length: 15 }, (_, i) => ({
+        id: `item${i}`,
+        display: `Item ${i}`,
+      }));
+
+      const { stdin, lastFrame } = render(
+        <TestHarness keymap={keymap}>
+          <CoreList lists={[manyItems]} />
+        </TestHarness>,
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Switch to select mode
+      stdin.write("\r");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Go to next page
+      stdin.write("]");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Go back to previous page
+      stdin.write("[");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Should be back on first page
+      expect(lastFrame()).toContain("Item 0");
+      expect(lastFrame()).toContain("Item 9");
+      expect(lastFrame()).not.toContain("Item 10");
+    });
+  });
+  describe("selection", () => {});
   describe("basic rendering", () => {
     it("renders initial state correctly", () => {
       const { lastFrame } = render(

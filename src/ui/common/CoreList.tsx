@@ -4,6 +4,7 @@ import { KeymapConfig, key } from "./Keymapping.mts";
 import { KeysContext } from "./Context.mts";
 import useListSwitching from "./useListSwitching.mts";
 import useSearch from "./useSearch.mts";
+import usePaging from "./usePaging.mts";
 
 export type Modes = "search" | "select";
 
@@ -17,6 +18,7 @@ const CoreList: React.FC<CoreListProps> = ({
   lists = [[{ id: "test", display: "Test Item" }]],
 }) => {
   const { keymap } = useContext(KeysContext);
+  const ITEMS_PER_PAGE = 10;
 
   const [mode, setMode] = useState<Modes>("search");
   const { currentList, currentListIndex, switchList } = useListSwitching(lists);
@@ -29,8 +31,18 @@ const CoreList: React.FC<CoreListProps> = ({
   } = useSearch(currentList);
 
   // The list to display is either filtered (in search mode) or the current list (in select mode)
+  const itemsToPage = searchString ? filteredItems : currentList;
+
+  const { currentPage, totalPages, paginatedItems, nextPage, prevPage } =
+    usePaging(itemsToPage, ITEMS_PER_PAGE);
+
+  // In search mode, show all items; in select mode, show paginated items
   const displayList =
-    mode === "search" && searchString ? filteredItems : currentList;
+    mode === "search"
+      ? searchString
+        ? filteredItems
+        : currentList
+      : paginatedItems;
 
   // shared keymap, persists regardless of mode
   useEffect(() => {
@@ -84,12 +96,14 @@ const CoreList: React.FC<CoreListProps> = ({
             description: "Previous page",
             name: "prevPage",
             handler: () => {},
+            hidden: true,
           },
           {
             sequence: [key("]")],
             description: "Next page",
             name: "nextPage",
             handler: () => {},
+            hidden: true,
           },
           {
             sequence: [key("{")],
@@ -162,17 +176,13 @@ const CoreList: React.FC<CoreListProps> = ({
             sequence: [key("[")],
             description: "Previous page",
             name: "prevPage",
-            handler: () => {
-              console.log("Executing prevPage handler");
-            },
+            handler: prevPage,
           },
           {
             sequence: [key("]")],
             description: "Next page",
             name: "nextPage",
-            handler: () => {
-              console.log("Executing nextPage handler");
-            },
+            handler: nextPage,
           },
           {
             sequence: [key("{")],
@@ -223,8 +233,11 @@ const CoreList: React.FC<CoreListProps> = ({
     <Box flexDirection="column" width="100%" padding={1}>
       <Box>
         <Text color="gray" backgroundColor="black">
-          List {currentListIndex + 1} of {lists.length} - {displayList.length}{" "}
+          List {currentListIndex + 1} of {lists.length} - {itemsToPage.length}{" "}
           items {searchString ? `(filtered: "${searchString}")` : ""}
+          {mode === "select" && totalPages > 1
+            ? ` (Page ${currentPage + 1}/${totalPages})`
+            : ""}
         </Text>
       </Box>
       <Box>
