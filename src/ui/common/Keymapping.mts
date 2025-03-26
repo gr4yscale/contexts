@@ -95,6 +95,14 @@ export const Keymap = (initialConfig: KeymapConfig) => {
     lastCommandExecuted = "";
     listeners = [];
   };
+  
+  const reset = () => {
+    keyBuffer = [];
+    keymapStack = [initialConfig];
+    lastKeyPressed = "";
+    lastCommandExecuted = "";
+    listeners = [];
+  };
 
   const registerListener = (listener: Function) => {
     listeners.push(listener);
@@ -191,6 +199,7 @@ export const Keymap = (initialConfig: KeymapConfig) => {
   return {
     handleKeyEvent,
     resetState,
+    reset,
     getCurrentConfig,
     pushKeymap,
     popKeymap,

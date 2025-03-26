@@ -11,8 +11,6 @@ const KeymapExample: React.FC<KeymapExampleProps> = ({ onKeyPress }) => {
   const [lastKeyPressed, setLastKeyPressed] = useState<string>("");
   const [counter, setCounter] = useState<number>(0);
 
-  // consider getting it directly rather than through useContext
-  // (in case the testing render calls are causing problems)
   const { keymap } = useContext(KeysContext);
 
   // Simple functions to update counter
