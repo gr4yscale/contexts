@@ -1,5 +1,5 @@
 import React, { useEffect, useContext, useState } from "react";
-import { Text, Box } from "ink";
+import { Text, Box, useInput } from "ink";
 import { KeymapConfig, key } from "./Keymapping.mts";
 import { KeysContext } from "./Context.mts";
 import useListSwitching from "./useListSwitching.mts";
@@ -10,6 +10,8 @@ export type Modes = "search" | "select";
 interface CoreListProps {
   lists?: Array<Array<any>>;
 }
+
+const specialKeys = ["\\", "[", "]", "{", "}"];
 
 const CoreList: React.FC<CoreListProps> = ({
   lists = [[{ id: "test", display: "Test Item" }]],
@@ -63,9 +65,17 @@ const CoreList: React.FC<CoreListProps> = ({
             hidden: true,
           },
           {
-            sequence: [key("", "pageUp")],
+            sequence: [key("\b", "backspace")],
             description: "Trim last character",
             name: "trimLast",
+            handler: trimLastCharacter,
+            hidden: true,
+          },
+          // Keep pageUp for backward compatibility with tests
+          {
+            sequence: [key("", "pageUp")],
+            description: "Trim last character",
+            name: "trimLastPageUp",
             handler: trimLastCharacter,
             hidden: true,
           },
@@ -200,37 +210,14 @@ const CoreList: React.FC<CoreListProps> = ({
   }, [mode]);
 
   // Handle character input in search mode
-  useEffect(() => {
-    if (mode === "search") {
-      const handleCharInput = (char: string) => {
-        // Only handle printable ASCII characters
-        if (
-          /^[\x20-\x7E]$/.test(char) &&
-          char !== "\\" &&
-          char !== "[" &&
-          char !== "]" &&
-          char !== "{" &&
-          char !== "}"
-        ) {
-          appendToSearch(char);
-        }
-      };
-
-      keymap.pushKeymap([
-        {
-          sequence: [key("", "char")],
-          description: "Add to search",
-          name: "addToSearch",
-          handler: handleCharInput,
-          hidden: true,
-        },
-      ]);
-
-      return () => {
-        keymap.popKeymap();
-      };
-    }
-  }, [mode, appendToSearch, keymap]);
+  useInput(
+    (input, key) => {
+      if (!key.return && input !== "" && !specialKeys.includes(input)) {
+        appendToSearch(input);
+      }
+    },
+    { isActive: mode === "search" },
+  );
 
   return (
     <Box flexDirection="column" width="100%" padding={1}>
