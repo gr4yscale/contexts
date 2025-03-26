@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect, useContext, useState } from "react";
 import { Text, Box, useInput } from "ink";
 import useSelectionList, { Item } from "./useSelectionList.mts";
 import { KeymapConfig, key } from "./Keymapping.mts";
@@ -33,8 +33,10 @@ const SelectionList: React.FC<SelectionListProps> = ({
   } = useSelectionList<Item>({ initialItems });
 
   // paging
-  const [currentPage, setCurrentPage] = React.useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 20;
+
+  const [testState, setTestState] = useState(false);
 
   const nextPage = () => {
     const items = getItems();
@@ -164,6 +166,16 @@ const SelectionList: React.FC<SelectionListProps> = ({
             handler: trimLastCharacter,
             hidden: true,
           },
+          {
+            sequence: [key("x")],
+            description: "Test",
+            name: "test",
+            handler: () => {
+              console.log("setting this state variable");
+              setTestState(true);
+            },
+            hidden: false,
+          },
         ];
         break;
 
@@ -196,7 +208,7 @@ const SelectionList: React.FC<SelectionListProps> = ({
             hidden: true,
           },
           {
-            sequence: [key("\r", "return")],
+            sequence: [key("\r")],
             description: confirm ? "commit mode" : "select",
             name: "commit/select",
             handler: () => {
@@ -260,7 +272,15 @@ const SelectionList: React.FC<SelectionListProps> = ({
   // Update the search string with freeform text when we are in find mode
   useInput(
     (input, key) => {
-      if (input != "" && !key.return) {
+      // Only handle text input for filtering here
+      // Let the keymap handle special keys through the TestHarness
+      if (
+        mode === "find" &&
+        input !== "" &&
+        !key.return &&
+        !key.escape &&
+        !key.delete
+      ) {
         filterBySearchString(input);
         setCurrentPage(0);
       }
@@ -270,6 +290,22 @@ const SelectionList: React.FC<SelectionListProps> = ({
 
   return (
     <Box flexDirection="column" width="100%" padding={1}>
+      {testState && (
+        <Box>
+          <Text color="gray" backgroundColor="black">
+            TEST
+          </Text>
+        </Box>
+      )}
+      {mode === "select" && (
+        <Box marginTop={1} flexDirection="row-reverse">
+          <Text color="gray" backgroundColor="black">
+            {currentPage + 1}
+            {" / "}
+            {Math.ceil(getItems().length / itemsPerPage)}
+          </Text>
+        </Box>
+      )}
       {(mode === "select"
         ? getCurrentPageItems()
         : getItems().slice(0, itemsPerPage)
@@ -284,15 +320,6 @@ const SelectionList: React.FC<SelectionListProps> = ({
           </Text>
         </Box>
       ))}
-      {mode === "select" && (
-        <Box marginTop={1} flexDirection="row-reverse">
-          <Text color="gray" backgroundColor="black">
-            {currentPage + 1}
-            {" / "}
-            {Math.ceil(getItems().length / itemsPerPage)}
-          </Text>
-        </Box>
-      )}
     </Box>
   );
 };
