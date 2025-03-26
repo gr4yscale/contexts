@@ -129,11 +129,21 @@ describe("CoreList", () => {
       expect(lastFrame()).toContain("List 2 of 3");
     });
   });
-  describe("search", () => {
-    it("filters the current list based on search string", async () => {
-      const { stdin } = render(
+  describe("pagination", () => {
+    // Tests will be added here in the future
+  });
+  describe("search functionality", () => {
+    it("clears search string when delete key is pressed", async () => {
+      const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
-          <CoreList />
+          <CoreList
+            lists={[
+              [
+                { id: "item1", display: "Test Item" },
+                { id: "item2", display: "Another Item" },
+              ],
+            ]}
+          />
         </TestHarness>,
       );
 
@@ -141,45 +151,94 @@ describe("CoreList", () => {
 
       // Type search string
       stdin.write("test");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(lastFrame()).toContain('(filtered: "test")');
+
+      // Press delete key to clear search
+      stdin.write("\u007F"); // Delete key
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Search should be cleared
+      expect(lastFrame()).not.toContain('(filtered: "test")');
+      expect(lastFrame()).toContain("Test Item");
+      expect(lastFrame()).toContain("Another Item");
     });
 
-    it("uses filtered results after pressing return key", async () => {
-      const { stdin } = render(
+    it("trims last character when backspace is pressed", async () => {
+      const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
-          <CoreList />
+          <CoreList
+            lists={[
+              [
+                { id: "item1", display: "Test Item" },
+                { id: "item2", display: "Testing Item" },
+                { id: "item3", display: "Another Item" },
+              ],
+            ]}
+          />
         </TestHarness>,
       );
 
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Type search string
-      stdin.write("test");
+      stdin.write("testing");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(lastFrame()).toContain('(filtered: "testing")');
+      expect(lastFrame()).toContain("Testing Item");
+      expect(lastFrame()).not.toContain("Test Item");
 
-      // Press return to switch to select mode with filtered results
-      stdin.write("\r");
+      // Press pageUp key to trim last character (simulating backspace)
+      stdin.write("\u001B[5~"); // PageUp key
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Search should now be "testin"
+      expect(lastFrame()).toContain('(filtered: "testin")');
+      expect(lastFrame()).toContain("Testing Item");
+      expect(lastFrame()).not.toContain("Test Item");
+
+      // Trim more characters
+      stdin.write("\u001B[5~"); // PageUp key
+      stdin.write("\u001B[5~"); // PageUp key
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Search should now be "test"
+      expect(lastFrame()).toContain('(filtered: "test")');
+      expect(lastFrame()).toContain("Test Item");
+      expect(lastFrame()).toContain("Testing Item");
     });
 
-    it("pagination uses filtered results", async () => {
-      const { stdin } = render(
+    it("ignores special keys in search mode", async () => {
+      const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
-          <CoreList />
+          <CoreList
+            lists={[
+              [
+                { id: "item1", display: "Test Item" },
+                { id: "item2", display: "Another Item" },
+              ],
+            ]}
+          />
         </TestHarness>,
       );
 
       await new Promise((resolve) => setTimeout(resolve, 100));
 
-      // Type search string
-      stdin.write("test");
+      // Type search string with special keys that should be ignored
+      stdin.write("t");
+      stdin.write("\\"); // Backslash should be ignored in search
+      stdin.write("e");
+      stdin.write("{"); // Brace should be ignored in search
+      stdin.write("s");
+      stdin.write("}"); // Brace should be ignored in search
+      stdin.write("t");
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
-      // Press return to switch to select mode
-      stdin.write("\r");
-
-      // Test pagination with filtered results
-      stdin.write("]"); // next page
-      stdin.write("["); // previous page
+      // Search should only contain "test"
+      expect(lastFrame()).toContain('(filtered: "test")');
+      expect(lastFrame()).not.toContain('(filtered: "t\\e{s}t")');
     });
   });
-  describe("pagination", () => {});
   describe("basic rendering", () => {
     it("renders initial state correctly", () => {
       const { lastFrame } = render(
