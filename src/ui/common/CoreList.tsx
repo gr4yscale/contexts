@@ -3,6 +3,7 @@ import { Text, Box } from "ink";
 import { KeymapConfig, key } from "./Keymapping.mts";
 import { KeysContext } from "./Context.mts";
 import useListSwitching from "./useListSwitching.mts";
+import useSearch from "./useSearch.mts";
 
 export type Modes = "search" | "select";
 
@@ -17,6 +18,17 @@ const CoreList: React.FC<CoreListProps> = ({
 
   const [mode, setMode] = useState<Modes>("search");
   const { currentList, currentListIndex, switchList } = useListSwitching(lists);
+  const {
+    searchString,
+    filteredItems,
+    appendToSearch,
+    clearSearch,
+    trimLastCharacter,
+  } = useSearch(currentList);
+
+  // The list to display is either filtered (in search mode) or the current list (in select mode)
+  const displayList =
+    mode === "search" && searchString ? filteredItems : currentList;
 
   // shared keymap, persists regardless of mode
   useEffect(() => {
@@ -47,14 +59,14 @@ const CoreList: React.FC<CoreListProps> = ({
             sequence: [key("", "delete")],
             description: "Clear search string",
             name: "clearSearch",
-            //handler: clearSearchString,
+            handler: clearSearch,
             hidden: true,
           },
           {
             sequence: [key("", "pageUp")],
             description: "Trim last character",
             name: "trimLast",
-            //handler: trimLastCharacter,
+            handler: trimLastCharacter,
             hidden: true,
           },
           {
@@ -187,16 +199,49 @@ const CoreList: React.FC<CoreListProps> = ({
     };
   }, [mode]);
 
+  // Handle character input in search mode
+  useEffect(() => {
+    if (mode === "search") {
+      const handleCharInput = (char: string) => {
+        // Only handle printable ASCII characters
+        if (
+          /^[\x20-\x7E]$/.test(char) &&
+          char !== "\\" &&
+          char !== "[" &&
+          char !== "]" &&
+          char !== "{" &&
+          char !== "}"
+        ) {
+          appendToSearch(char);
+        }
+      };
+
+      keymap.pushKeymap([
+        {
+          sequence: [key("", "char")],
+          description: "Add to search",
+          name: "addToSearch",
+          handler: handleCharInput,
+          hidden: true,
+        },
+      ]);
+
+      return () => {
+        keymap.popKeymap();
+      };
+    }
+  }, [mode, appendToSearch, keymap]);
+
   return (
     <Box flexDirection="column" width="100%" padding={1}>
       <Box>
         <Text color="gray" backgroundColor="black">
-          List {currentListIndex + 1} of {lists.length} - {currentList.length}{" "}
-          items
+          List {currentListIndex + 1} of {lists.length} - {displayList.length}{" "}
+          items {searchString ? `(filtered: "${searchString}")` : ""}
         </Text>
       </Box>
       <Box>
-        {currentList.map((item, index) => (
+        {displayList.map((item, index) => (
           <Text key={index}>
             {item.display || item.id || JSON.stringify(item)}
           </Text>
