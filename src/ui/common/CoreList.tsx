@@ -5,6 +5,7 @@ import { KeysContext } from "./Context.mts";
 import useListSwitching from "./useListSwitching.mts";
 import useSearch from "./useSearch.mts";
 import usePaging from "./usePaging.mts";
+import useHotkeySelection from "./useHotkeySelection.mts";
 
 export type Modes = "search" | "select";
 
@@ -37,6 +38,17 @@ const CoreList: React.FC<CoreListProps> = ({
 
   const { currentPage, totalPages, paginatedItems, nextPage, prevPage } =
     usePaging(mode === "search" ? filteredItems : currentList, ITEMS_PER_PAGE);
+
+  // hotkey selection
+  const { getItemHotkey, handleKeyPress, currentSequence, clearSequence } =
+    useHotkeySelection({
+      items: paginatedItems,
+      onHotkeySelected: (item) => {
+        console.log("Item selected via hotkey:", item.id);
+        // You can add your selection logic here
+      },
+      keys: "asdfghjkl;",
+    });
 
   // keymapping
   const { keymap } = useContext(KeysContext);
@@ -204,6 +216,16 @@ const CoreList: React.FC<CoreListProps> = ({
     { isActive: mode === "search" },
   );
 
+  // handle hotkey input in select mode
+  useInput(
+    (input, key) => {
+      if (!key.return && input !== "" && !specialKeys.includes(input)) {
+        handleKeyPress(input);
+      }
+    },
+    { isActive: mode === "select" },
+  );
+
   return (
     <Box flexDirection="column" width="100%" padding={1}>
       <Box>
@@ -218,10 +240,18 @@ const CoreList: React.FC<CoreListProps> = ({
       <Box>
         {paginatedItems.map((item, index) => (
           <Text key={index}>
+            {mode === "select" && (
+              <Text color="yellow">[{getItemHotkey(item.id)}] </Text>
+            )}
             {item.display || item.id || JSON.stringify(item)}
           </Text>
         ))}
       </Box>
+      {mode === "select" && currentSequence && (
+        <Box marginTop={1}>
+          <Text color="green">Current sequence: {currentSequence}</Text>
+        </Box>
+      )}
       <Box marginTop={1}>
         <Text color="blue" backgroundColor="black">
           Mode: {mode}
