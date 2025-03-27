@@ -473,6 +473,71 @@ describe("CoreList", () => {
       ]);
     });
 
-    it("selection state should be preserved after navigating pages", async () => {});
+    it.only("selection state should be preserved after navigating pages", async () => {
+      // Create a list with more than one page of items
+      const manyItems = Array.from({ length: 20 }, (_, i) => ({
+        id: `item${i}`,
+        display: `Item ${i}`,
+        data: {},
+      }));
+
+      const onSelected = vi.fn();
+      const { stdin, lastFrame } = render(
+        <TestHarness keymap={keymap}>
+          <CoreList
+            lists={[manyItems]}
+            multiple={true}
+            onSelected={onSelected}
+          />
+        </TestHarness>,
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Switch to select mode
+      stdin.write("\r");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Select items on first page
+      stdin.write("a"); // Select Item 0
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      stdin.write("s"); // Select Item 1
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // First page should have selected items
+      const firstPageFrame = lastFrame();
+      expect(firstPageFrame).toContain("Item 0");
+      expect(firstPageFrame).toContain("Item 1");
+      expect(firstPageFrame).toContain("✓"); // Selection indicator
+
+      // Go to next page
+      stdin.write("]");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Select an item on second page
+      stdin.write("a"); // Select Item 10
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Go back to first page
+      stdin.write("[");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // First page should still show selected items
+      const backToFirstPageFrame = lastFrame();
+      expect(backToFirstPageFrame).toContain("Item 0");
+      expect(backToFirstPageFrame).toContain("Item 1");
+      expect(backToFirstPageFrame).toContain("✓"); // Selection indicator
+
+      // Complete selection with Enter
+      stdin.write("\r");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // onSelected should be called with all selected items from both pages
+      expect(onSelected).toHaveBeenCalledWith([
+        expect.objectContaining({ id: "item0" }),
+        expect.objectContaining({ id: "item1" }),
+        expect.objectContaining({ id: "item10" }),
+      ]);
+    });
   });
 });
