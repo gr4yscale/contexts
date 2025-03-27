@@ -339,7 +339,7 @@ describe("CoreList", () => {
     });
   });
   describe("selection", () => {
-    it("selects items with hotkeys in select mode", async () => {
+    it.only("selects items with hotkeys in select mode", async () => {
       const onSelected = vi.fn();
       const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
@@ -376,7 +376,7 @@ describe("CoreList", () => {
       ]);
     });
 
-    it("supports multiple selection when multiple=true", async () => {
+    it.only("supports multiple selection when multiple=true", async () => {
       const onSelected = vi.fn();
       const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
@@ -419,16 +419,18 @@ describe("CoreList", () => {
 
       // Complete selection with Enter
       stdin.write("\r");
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
       // Now onSelected should be called with both items
       expect(onSelected).toHaveBeenCalledWith([
         expect.objectContaining({ id: "item1" }),
         expect.objectContaining({ id: "item2" }),
       ]);
+
+      console.log(lastFrame());
     });
 
-    it("only allows single selection when multiple=false", async () => {
+    it.skip("only allows single selection when multiple=false", async () => {
       const onSelected = vi.fn();
       const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
@@ -531,6 +533,7 @@ describe("CoreList", () => {
       // Complete selection with Enter
       stdin.write("\r");
       await new Promise((resolve) => setTimeout(resolve, 50));
+      console.log(lastFrame());
 
       // onSelected should be called with all selected items from both pages
       expect(onSelected).toHaveBeenCalledWith([

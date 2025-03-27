@@ -27,6 +27,7 @@ export default function useSelectionState<T extends Item>({
   immediate = true,
   onSelected,
 }: UseSelectionStateOptions<T>): UseSelectionStateReturn<T> {
+  console.log("new hook instance");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Toggle selection of an item
@@ -34,7 +35,7 @@ export default function useSelectionState<T extends Item>({
     (itemId: string) => {
       setSelectedIds((prevSelectedIds) => {
         const newSelectedIds = new Set(prevSelectedIds);
-        
+
         if (newSelectedIds.has(itemId)) {
           newSelectedIds.delete(itemId);
         } else {
@@ -44,19 +45,22 @@ export default function useSelectionState<T extends Item>({
           }
           newSelectedIds.add(itemId);
         }
-        
+
         // If immediate and not in multiple selection mode, trigger onSelected
         if (immediate && !multiple && onSelected) {
-          const selectedItems = items.filter(item => 
-            newSelectedIds.has(item.id)
+          const selectedItems = items.filter((item) =>
+            newSelectedIds.has(item.id),
           );
           onSelected(selectedItems);
         }
-        
+
+        console.log(
+          `Toggle selection: ${itemId}, total selected: ${newSelectedIds.size}`,
+        );
         return newSelectedIds;
       });
     },
-    [items, multiple, immediate, onSelected]
+    [items, multiple, immediate, onSelected],
   );
 
   // Check if an item is selected
@@ -64,15 +68,16 @@ export default function useSelectionState<T extends Item>({
     (itemId: string) => {
       return selectedIds.has(itemId);
     },
-    [selectedIds]
+    [selectedIds],
   );
 
   // Complete the selection process (for multiple selection)
   const completeSelection = useCallback(() => {
+    console.log("Complete selection called");
+    console.log("Selected IDs:", Array.from(selectedIds));
+    console.log("Selected IDs size:", selectedIds.size);
     if (onSelected && selectedIds.size > 0) {
-      const selectedItems = items.filter(item => 
-        selectedIds.has(item.id)
-      );
+      const selectedItems = items.filter((item) => selectedIds.has(item.id));
       onSelected(selectedItems);
     }
   }, [items, selectedIds, onSelected]);
@@ -84,7 +89,7 @@ export default function useSelectionState<T extends Item>({
 
   // Get the currently selected items
   const selectedItems = useMemo(() => {
-    return items.filter(item => selectedIds.has(item.id));
+    return items.filter((item) => selectedIds.has(item.id));
   }, [items, selectedIds]);
 
   return {
