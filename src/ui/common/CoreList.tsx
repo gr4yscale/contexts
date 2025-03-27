@@ -263,7 +263,7 @@ const CoreList: React.FC<CoreListProps> = ({
             : ""}
         </Text>
       </Box>
-      <Box>
+      <Box flexDirection="column">
         {paginatedItems.map((item, index) => (
           <Text key={index}>
             {mode === "select" && (

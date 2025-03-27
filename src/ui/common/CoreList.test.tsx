@@ -346,8 +346,8 @@ describe("CoreList", () => {
           <CoreList
             lists={[
               [
-                { id: "item1", display: "Test Item 1", data: {} },
-                { id: "item2", display: "Test Item 2", data: {} },
+                { id: "item1", display: "Item 1", data: {} },
+                { id: "item2", display: "Item 2", data: {} },
               ],
             ]}
             onSelected={onSelected}
@@ -370,7 +370,7 @@ describe("CoreList", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Should highlight the selected item
-      expect(lastFrame()).toContain("Test Item 1");
+      expect(lastFrame()).toContain("Item 1");
       expect(onSelected).toHaveBeenCalledWith([
         expect.objectContaining({ id: "item1" }),
       ]);
