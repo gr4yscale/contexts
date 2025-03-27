@@ -1,3 +1,4 @@
+import { $ } from "zx";
 import React from "react";
 import { Box } from "ink";
 import CoreList from "./common/CoreList.tsx";
@@ -12,7 +13,13 @@ const Testbed: React.FC = () => {
 
   return (
     <Box flexDirection="column" width="100%">
-      <CoreList lists={[testItems]} />
+      <CoreList
+        lists={[testItems]}
+        multiple={true}
+        onSelected={(items) => {
+          $`notify-send "${items}"`;
+        }}
+      />
     </Box>
   );
 };
