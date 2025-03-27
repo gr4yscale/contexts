@@ -55,7 +55,7 @@ const CoreList: React.FC<CoreListProps> = ({
     clearSelection,
     selectedItems,
   } = useSelectionState({
-    items: paginatedItems,
+    items: currentList,
     multiple,
     immediate,
     onSelected,
