@@ -26,6 +26,16 @@ describe("CoreList", () => {
     keymap = Keymap([]);
     vi.clearAllMocks();
   });
+  describe("basic rendering", () => {
+    it("renders initial state correctly", () => {
+      const { lastFrame } = render(
+        <TestHarness keymap={keymap}>
+          <CoreList lists={mockLists} />
+        </TestHarness>,
+      );
+      expect(lastFrame()).toContain("List 1 of 3");
+    });
+  });
   describe("modes", () => {
     it("has two modes: search and select", async () => {
       const { stdin, lastFrame } = render(
@@ -329,15 +339,115 @@ describe("CoreList", () => {
       expect(lastFrame()).not.toContain("Item 10");
     });
   });
-  describe("selection", () => {});
-  describe("basic rendering", () => {
-    it("renders initial state correctly", () => {
-      const { lastFrame } = render(
+  describe.only("selection", () => {
+    it("highlights items in select mode", async () => {
+      const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
-          <CoreList lists={mockLists} />
+          <CoreList
+            lists={[
+              [
+                { id: "item1", display: "Test Item 1", data: {} },
+                { id: "item2", display: "Test Item 2", data: {} },
+              ],
+            ]}
+          />
         </TestHarness>,
       );
-      expect(lastFrame()).toContain("List 1 of 3");
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Switch to select mode
+      stdin.write("\r");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // First item should be highlighted by default
+      expect(lastFrame()).toContain("Test Item 1");
+
+      // Move down to highlight second item
+      stdin.write("j");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Second item should now be highlighted
+      expect(lastFrame()).toContain("Test Item 2");
+    });
+    it("selects items with space key", async () => {
+      const { stdin, lastFrame } = render(
+        <TestHarness keymap={keymap}>
+          <CoreList
+            lists={[
+              [
+                { id: "item1", display: "Test Item 1", data: {} },
+                { id: "item2", display: "Test Item 2", data: {} },
+              ],
+            ]}
+            allowMultipleSelection={true}
+          />
+        </TestHarness>,
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Switch to select mode
+      stdin.write("\r");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Select first item
+      stdin.write(" ");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Should show selection indicator
+      expect(lastFrame()).toContain("✓ Test Item 1");
+      expect(lastFrame()).toContain("(1 selected)");
+
+      // Move to second item and select it too
+      stdin.write("j");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      stdin.write(" ");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Both items should be selected
+      expect(lastFrame()).toContain("✓ Test Item 1");
+      expect(lastFrame()).toContain("✓ Test Item 2");
+      expect(lastFrame()).toContain("(2 selected)");
+    });
+    it("only allows single selection when allowMultipleSelection is false", async () => {
+      const { stdin, lastFrame } = render(
+        <TestHarness keymap={keymap}>
+          <CoreList
+            lists={[
+              [
+                { id: "item1", display: "Test Item 1", data: {} },
+                { id: "item2", display: "Test Item 2", data: {} },
+              ],
+            ]}
+            allowMultipleSelection={false}
+          />
+        </TestHarness>,
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Switch to select mode
+      stdin.write("\r");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Select first item
+      stdin.write(" ");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Should show selection indicator
+      expect(lastFrame()).toContain("✓ Test Item 1");
+
+      // Move to second item and select it
+      stdin.write("j");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      stdin.write(" ");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Only second item should be selected now
+      expect(lastFrame()).not.toContain("✓ Test Item 1");
+      expect(lastFrame()).toContain("✓ Test Item 2");
+      expect(lastFrame()).toContain("(1 selected)");
     });
   });
 });
