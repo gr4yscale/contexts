@@ -132,28 +132,6 @@ const CoreList: React.FC<CoreListProps> = ({
       case "select":
         keymapConfig = [
           {
-            sequence: [key("j")],
-            description: "Move down",
-            name: "moveDown",
-            handler: () => {},
-            //handler: handleHighlightDown,
-          },
-          {
-            sequence: [key("k")],
-            description: "Move up",
-            name: "moveUp",
-            handler: () => {},
-            //handler: handleHighlightUp,
-          },
-          {
-            sequence: [key(" ")],
-            description: "Select items",
-            name: "selectItems",
-            handler: () => {},
-            //handler: toggleSelectionAtHighlightedIndex,
-            hidden: true,
-          },
-          {
             sequence: [key("", "delete")],
             description: "Back to search mode",
             name: "search mode",
