@@ -275,9 +275,7 @@ const CoreList: React.FC<CoreListProps> = ({
             >
               {item.display || item.id || JSON.stringify(item)}
             </Text>
-            {isSelected(item.id) && multiple && (
-              <Text color="cyan"> ✓</Text>
-            )}
+            {isSelected(item.id) && multiple && <Text color="cyan"> ✓</Text>}
           </Text>
         ))}
       </Box>

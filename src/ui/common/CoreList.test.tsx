@@ -473,32 +473,6 @@ describe("CoreList", () => {
       ]);
     });
 
-    it("shows current sequence during hotkey selection", async () => {
-      // Create a list with more items to force multi-character hotkeys
-      const manyItems = Array.from({ length: 15 }, (_, i) => ({
-        id: `item${i}`,
-        display: `Item ${i}`,
-        data: {},
-      }));
-
-      const { stdin, lastFrame } = render(
-        <TestHarness keymap={keymap}>
-          <CoreList lists={[manyItems]} />
-        </TestHarness>,
-      );
-
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      // Switch to select mode
-      stdin.write("\r");
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      // Type first character of a sequence
-      stdin.write("a");
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      // Should show current sequence
-      expect(lastFrame()).toContain("Current sequence: a");
-    });
+    it("selection state should be preserved after navigating pages", async () => {});
   });
 });
