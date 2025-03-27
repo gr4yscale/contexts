@@ -12,16 +12,18 @@ interface CoreListProps {
   lists?: Array<Array<any>>;
 }
 
+const ITEMS_PER_PAGE = 10;
 const specialKeys = ["\\", "[", "]", "{", "}"];
 
 const CoreList: React.FC<CoreListProps> = ({
   lists = [[{ id: "test", display: "Test Item" }]],
 }) => {
-  const { keymap } = useContext(KeysContext);
-  const ITEMS_PER_PAGE = 10;
-
   const [mode, setMode] = useState<Modes>("search");
+
+  // list switching
   const { currentList, currentListIndex, switchList } = useListSwitching(lists);
+
+  // search
   const {
     searchString,
     filteredItems,
@@ -30,21 +32,16 @@ const CoreList: React.FC<CoreListProps> = ({
     trimLastCharacter,
   } = useSearch(currentList);
 
-  // The list to display is either filtered (in search mode) or the current list (in select mode)
-  const itemsToPage = searchString ? filteredItems : currentList;
+  // paging
+  const itemsToPage = mode === "search" ? filteredItems : currentList;
 
   const { currentPage, totalPages, paginatedItems, nextPage, prevPage } =
-    usePaging(itemsToPage, ITEMS_PER_PAGE);
+    usePaging(mode === "search" ? filteredItems : currentList, ITEMS_PER_PAGE);
 
-  // In search mode, show all items; in select mode, show paginated items
-  const displayList =
-    mode === "search"
-      ? searchString
-        ? filteredItems
-        : currentList
-      : paginatedItems;
+  // keymapping
+  const { keymap } = useContext(KeysContext);
 
-  // shared keymap, persists regardless of mode
+  // shared keymap
   useEffect(() => {
     keymap.pushKeymap([]);
 
@@ -219,7 +216,7 @@ const CoreList: React.FC<CoreListProps> = ({
     };
   }, [mode]);
 
-  // Handle character input in search mode
+  // handle character input in search mode
   useInput(
     (input, key) => {
       if (!key.return && input !== "" && !specialKeys.includes(input)) {
@@ -241,7 +238,7 @@ const CoreList: React.FC<CoreListProps> = ({
         </Text>
       </Box>
       <Box>
-        {displayList.map((item, index) => (
+        {paginatedItems.map((item, index) => (
           <Text key={index}>
             {item.display || item.id || JSON.stringify(item)}
           </Text>
