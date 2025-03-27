@@ -7,7 +7,6 @@ import CoreList from "./CoreList.tsx";
 
 let keymap: KeymapInstance;
 
-// Mock lists for testing
 const mockLists = [
   [
     { id: "list1-item1", display: "List 1 Item 1" },
@@ -339,8 +338,9 @@ describe("CoreList", () => {
       expect(lastFrame()).not.toContain("Item 10");
     });
   });
-  describe.only("selection", () => {
-    it("highlights items in select mode", async () => {
+  describe("selection", () => {
+    it("selects items with hotkeys in select mode", async () => {
+      const onSelected = vi.fn();
       const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
           <CoreList
@@ -350,6 +350,7 @@ describe("CoreList", () => {
                 { id: "item2", display: "Test Item 2", data: {} },
               ],
             ]}
+            onSelected={onSelected}
           />
         </TestHarness>,
       );
@@ -360,17 +361,75 @@ describe("CoreList", () => {
       stdin.write("\r");
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      // First item should be highlighted by default
+      // Should show hotkeys
+      expect(lastFrame()).toContain("[a]");
+      expect(lastFrame()).toContain("[s]");
+
+      // Select first item with hotkey
+      stdin.write("a");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Should highlight the selected item
       expect(lastFrame()).toContain("Test Item 1");
+      expect(onSelected).toHaveBeenCalledWith([
+        expect.objectContaining({ id: "item1" }),
+      ]);
+    });
 
-      // Move down to highlight second item
-      stdin.write("j");
+    it("supports multiple selection when multiple=true", async () => {
+      const onSelected = vi.fn();
+      const { stdin, lastFrame } = render(
+        <TestHarness keymap={keymap}>
+          <CoreList
+            lists={[
+              [
+                { id: "item1", display: "Test Item 1", data: {} },
+                { id: "item2", display: "Test Item 2", data: {} },
+              ],
+            ]}
+            multiple={true}
+            onSelected={onSelected}
+          />
+        </TestHarness>,
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Switch to select mode
+      stdin.write("\r");
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      // Second item should now be highlighted
+      // Select first item with hotkey
+      stdin.write("a");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Should show selection indicator
+      expect(lastFrame()).toContain("✓");
+
+      // Select second item with hotkey
+      stdin.write("s");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Should have both items selected
+      expect(lastFrame()).toContain("Test Item 1");
       expect(lastFrame()).toContain("Test Item 2");
+
+      // onSelected should not be called yet in multiple mode until completed
+      expect(onSelected).not.toHaveBeenCalled();
+
+      // Complete selection with Enter
+      stdin.write("\r");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Now onSelected should be called with both items
+      expect(onSelected).toHaveBeenCalledWith([
+        expect.objectContaining({ id: "item1" }),
+        expect.objectContaining({ id: "item2" }),
+      ]);
     });
-    it("selects items with space key", async () => {
+
+    it("only allows single selection when multiple=false", async () => {
+      const onSelected = vi.fn();
       const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
           <CoreList
@@ -380,7 +439,8 @@ describe("CoreList", () => {
                 { id: "item2", display: "Test Item 2", data: {} },
               ],
             ]}
-            allowMultipleSelection={true}
+            multiple={false}
+            onSelected={onSelected}
           />
         </TestHarness>,
       );
@@ -391,63 +451,54 @@ describe("CoreList", () => {
       stdin.write("\r");
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      // Select first item
-      stdin.write(" ");
+      // Select first item with hotkey
+      stdin.write("a");
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      // Should show selection indicator
-      expect(lastFrame()).toContain("✓ Test Item 1");
-      expect(lastFrame()).toContain("(1 selected)");
+      // onSelected should be called immediately in single selection mode
+      expect(onSelected).toHaveBeenCalledWith([
+        expect.objectContaining({ id: "item1" }),
+      ]);
 
-      // Move to second item and select it too
-      stdin.write("j");
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      stdin.write(" ");
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      // Reset mock
+      onSelected.mockReset();
 
-      // Both items should be selected
-      expect(lastFrame()).toContain("✓ Test Item 1");
-      expect(lastFrame()).toContain("✓ Test Item 2");
-      expect(lastFrame()).toContain("(2 selected)");
-    });
-    it("only allows single selection when allowMultipleSelection is false", async () => {
-      const { stdin, lastFrame } = render(
-        <TestHarness keymap={keymap}>
-          <CoreList
-            lists={[
-              [
-                { id: "item1", display: "Test Item 1", data: {} },
-                { id: "item2", display: "Test Item 2", data: {} },
-              ],
-            ]}
-            allowMultipleSelection={false}
-          />
-        </TestHarness>,
-      );
-
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      // Switch to select mode
-      stdin.write("\r");
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      // Select first item
-      stdin.write(" ");
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      // Should show selection indicator
-      expect(lastFrame()).toContain("✓ Test Item 1");
-
-      // Move to second item and select it
-      stdin.write("j");
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      stdin.write(" ");
+      // Select second item with hotkey
+      stdin.write("s");
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Only second item should be selected now
-      expect(lastFrame()).not.toContain("✓ Test Item 1");
-      expect(lastFrame()).toContain("✓ Test Item 2");
-      expect(lastFrame()).toContain("(1 selected)");
+      expect(onSelected).toHaveBeenCalledWith([
+        expect.objectContaining({ id: "item2" }),
+      ]);
+    });
+
+    it("shows current sequence during hotkey selection", async () => {
+      // Create a list with more items to force multi-character hotkeys
+      const manyItems = Array.from({ length: 15 }, (_, i) => ({
+        id: `item${i}`,
+        display: `Item ${i}`,
+        data: {},
+      }));
+
+      const { stdin, lastFrame } = render(
+        <TestHarness keymap={keymap}>
+          <CoreList lists={[manyItems]} />
+        </TestHarness>,
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Switch to select mode
+      stdin.write("\r");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Type first character of a sequence
+      stdin.write("a");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Should show current sequence
+      expect(lastFrame()).toContain("Current sequence: a");
     });
   });
 });
