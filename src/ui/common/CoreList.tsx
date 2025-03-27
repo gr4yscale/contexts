@@ -6,11 +6,15 @@ import useListSwitching from "./useListSwitching.mts";
 import useSearch from "./useSearch.mts";
 import usePaging from "./usePaging.mts";
 import useHotkeySelection from "./useHotkeySelection.mts";
+import useSelectionState from "./useSelectionState.mts";
 
 export type Modes = "search" | "select";
 
 interface CoreListProps {
   lists?: Array<Array<any>>;
+  multiple?: boolean;
+  immediate?: boolean;
+  onSelected?: (selectedItems: any[]) => void;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -18,6 +22,9 @@ const specialKeys = ["\\", "[", "]", "{", "}"];
 
 const CoreList: React.FC<CoreListProps> = ({
   lists = [[{ id: "test", display: "Test Item" }]],
+  multiple = false,
+  immediate = true,
+  onSelected,
 }) => {
   const [mode, setMode] = useState<Modes>("search");
 
@@ -39,13 +46,30 @@ const CoreList: React.FC<CoreListProps> = ({
   const { currentPage, totalPages, paginatedItems, nextPage, prevPage } =
     usePaging(mode === "search" ? filteredItems : currentList, ITEMS_PER_PAGE);
 
+  // selection state
+  const {
+    selectedIds,
+    toggleSelection,
+    isSelected,
+    completeSelection,
+    clearSelection,
+    selectedItems,
+  } = useSelectionState({
+    items: paginatedItems,
+    multiple,
+    immediate,
+    onSelected,
+  });
+
   // hotkey selection
   const { getItemHotkey, handleKeyPress, currentSequence, clearSequence } =
     useHotkeySelection({
       items: paginatedItems,
       onHotkeySelected: (item) => {
-        console.log("Item selected via hotkey:", item.id);
-        // You can add your selection logic here
+        toggleSelection(item.id);
+        if (!multiple) {
+          completeSelection();
+        }
       },
       keys: "asdfghjkl;",
     });
@@ -156,7 +180,9 @@ const CoreList: React.FC<CoreListProps> = ({
             sequence: [key("\r", "return")],
             description: "commit / select",
             name: "commit/select",
-            handler: () => {},
+            handler: () => {
+              completeSelection();
+            },
             hidden: true,
           },
           {
@@ -243,7 +269,15 @@ const CoreList: React.FC<CoreListProps> = ({
             {mode === "select" && (
               <Text color="yellow">[{getItemHotkey(item.id)}] </Text>
             )}
-            {item.display || item.id || JSON.stringify(item)}
+            <Text
+              color={isSelected(item.id) ? "green" : "white"}
+              backgroundColor={isSelected(item.id) ? "blue" : undefined}
+            >
+              {item.display || item.id || JSON.stringify(item)}
+            </Text>
+            {isSelected(item.id) && multiple && (
+              <Text color="cyan"> ✓</Text>
+            )}
           </Text>
         ))}
       </Box>
