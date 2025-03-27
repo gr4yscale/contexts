@@ -12,7 +12,7 @@ const Testbed: React.FC = () => {
 
   return (
     <Box flexDirection="column" width="100%">
-      <CoreList />
+      <CoreList lists={[testItems]} />
     </Box>
   );
 };
