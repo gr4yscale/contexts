@@ -108,17 +108,9 @@ const CoreList: React.FC<CoreListProps> = ({
             hidden: true,
           },
           {
-            sequence: [key("\b", "backspace")],
+            sequence: [key("", "backspace")],
             description: "Trim last character",
             name: "trimLast",
-            handler: trimLastCharacter,
-            hidden: true,
-          },
-          // Keep pageUp for backward compatibility with tests
-          {
-            sequence: [key("", "pageUp")],
-            description: "Trim last character",
-            name: "trimLastPageUp",
             handler: trimLastCharacter,
             hidden: true,
           },
@@ -174,16 +166,13 @@ const CoreList: React.FC<CoreListProps> = ({
             },
             hidden: true,
           },
-          // {
-          //   sequence: [key("x")],
-          //   description: "commit / select",
-          //   name: "commit/select",
-          //   handler: () => {
-          //     // Ensure we complete the selection with the current state
-          //     completeSelection();
-          //   },
-          //   hidden: true,
-          // },
+          {
+            sequence: [key("\r", "return")],
+            description: "commit / select",
+            name: "commit/select",
+            handler: completeSelection,
+            hidden: true,
+          },
           {
             sequence: [key("[")],
             description: "Previous page",

@@ -169,7 +169,7 @@ describe("CoreList", () => {
       expect(lastFrame()).toContain("Test Item");
       expect(lastFrame()).toContain("Another Item");
     });
-    it.skip("trims last character when backspace is pressed", async () => {
+    it("trims last character when backspace is pressed", async () => {
       const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
           <CoreList
@@ -416,7 +416,7 @@ describe("CoreList", () => {
       expect(onSelected).not.toHaveBeenCalled();
 
       // Complete selection with Enter
-      stdin.write("x");
+      stdin.write("\r");
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Now onSelected should be called with both items
@@ -470,7 +470,6 @@ describe("CoreList", () => {
         expect.objectContaining({ id: "item2" }),
       ]);
     });
-
 
     it("selection state should be preserved after navigating between pages", async () => {
       // Create a list with more than one page of items
@@ -528,7 +527,7 @@ describe("CoreList", () => {
       expect(backToFirstPageFrame).toContain("✓"); // Selection indicator
 
       // Complete selection with Enter
-      stdin.write("x");
+      stdin.write("\r");
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // onSelected should be called with all selected items from both pages
