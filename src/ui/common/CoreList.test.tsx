@@ -428,7 +428,7 @@ describe("CoreList", () => {
 
     it("single selection calls onSelected immediately", async () => {
       const onSelected = vi.fn();
-      const { stdin, lastFrame } = render(
+      const { stdin } = render(
         <TestHarness keymap={keymap}>
           <CoreList
             lists={[

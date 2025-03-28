@@ -66,7 +66,7 @@ const CoreList: React.FC<CoreListProps> = ({
         if (multiple) {
           toggleSelection(item.id);
         } else {
-          onSelected([item]);
+          onSelected && onSelected([item]);
         }
       },
       keys: "asdfghjkl;",
