@@ -339,7 +339,7 @@ describe("CoreList", () => {
     });
   });
   describe("selection", () => {
-    it.only("selects items with hotkeys in select mode", async () => {
+    it("selects items with hotkeys in select mode", async () => {
       const onSelected = vi.fn();
       const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
@@ -376,7 +376,7 @@ describe("CoreList", () => {
       ]);
     });
 
-    it.only("supports multiple selection when multiple=true", async () => {
+    it("supports multiple selection when multiple=true", async () => {
       const onSelected = vi.fn();
       const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
@@ -430,7 +430,7 @@ describe("CoreList", () => {
       console.log(lastFrame());
     });
 
-    it.skip("only allows single selection when multiple=false", async () => {
+    it("only allows single selection when multiple=false", async () => {
       const onSelected = vi.fn();
       const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
@@ -475,7 +475,8 @@ describe("CoreList", () => {
       ]);
     });
 
-    it.only("selection state should be preserved after navigating pages", async () => {
+
+    it("selection state should be preserved after navigating pages", async () => {
       // Create a list with more than one page of items
       const manyItems = Array.from({ length: 20 }, (_, i) => ({
         id: `item${i}`,

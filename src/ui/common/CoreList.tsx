@@ -13,7 +13,6 @@ export type Modes = "search" | "select";
 interface CoreListProps {
   lists?: Array<Array<any>>;
   multiple?: boolean;
-  immediate?: boolean;
   onSelected?: (selectedItems: any[]) => void;
 }
 
@@ -23,7 +22,6 @@ const specialKeys = ["\\", "[", "]", "{", "}"];
 const CoreList: React.FC<CoreListProps> = ({
   lists = [[{ id: "test", display: "Test Item" }]],
   multiple = false,
-  immediate = true,
   onSelected,
 }) => {
   const [mode, setMode] = useState<Modes>("search");
@@ -57,7 +55,6 @@ const CoreList: React.FC<CoreListProps> = ({
   } = useSelectionState({
     items: currentList,
     multiple,
-    immediate,
     onSelected,
   });
 
@@ -66,9 +63,10 @@ const CoreList: React.FC<CoreListProps> = ({
     useHotkeySelection({
       items: paginatedItems,
       onHotkeySelected: (item) => {
-        toggleSelection(item.id);
-        if (!multiple) {
-          completeSelection();
+        if (multiple) {
+          toggleSelection(item.id);
+        } else {
+          onSelected([item]);
         }
       },
       keys: "asdfghjkl;",
