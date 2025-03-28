@@ -342,7 +342,7 @@ describe("CoreList", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Should show pagination info
-      expect(lastFrame()).toContain("Page 1/");
+      expect(lastFrame()).toContain("Page: 1/");
     });
     it("navigates to next page when ']' is pressed in select mode", async () => {
       // Create a list with more than one page of items
