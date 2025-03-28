@@ -194,7 +194,7 @@ describe("CoreList", () => {
       expect(lastFrame()).not.toContain("Test Item");
 
       // Press backspace key to trim last character
-      stdin.write("\b"); // Backspace key
+      stdin.write("\b");
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Search should now be "testin"
@@ -202,11 +202,9 @@ describe("CoreList", () => {
       expect(lastFrame()).toContain("Testing Item");
       expect(lastFrame()).not.toContain("Test Item");
 
-      console.log(lastFrame());
-
-      // Trim more characters
-      stdin.write("\b"); // Backspace key
-      stdin.write("\b"); // Backspace key
+      // Trim more characters with backspace key
+      stdin.write("\b");
+      stdin.write("\b");
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Search should now be "test"
@@ -338,7 +336,7 @@ describe("CoreList", () => {
       expect(lastFrame()).not.toContain("Item 10");
     });
   });
-  describe.only("selection", () => {
+  describe("selection", () => {
     it("selects items with hotkeys in select mode", async () => {
       const onSelected = vi.fn();
       const { stdin, lastFrame } = render(
@@ -376,7 +374,7 @@ describe("CoreList", () => {
       ]);
     });
 
-    it("supports multiple selection when multiple=true", async () => {
+    it("supports multiple selection", async () => {
       const onSelected = vi.fn();
       const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
@@ -426,11 +424,9 @@ describe("CoreList", () => {
         expect.objectContaining({ id: "item1" }),
         expect.objectContaining({ id: "item2" }),
       ]);
-
-      console.log(lastFrame());
     });
 
-    it("only allows single selection when multiple=false", async () => {
+    it("single selection calls onSelected immediately", async () => {
       const onSelected = vi.fn();
       const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
@@ -476,7 +472,7 @@ describe("CoreList", () => {
     });
 
 
-    it("selection state should be preserved after navigating pages", async () => {
+    it("selection state should be preserved after navigating between pages", async () => {
       // Create a list with more than one page of items
       const manyItems = Array.from({ length: 20 }, (_, i) => ({
         id: `item${i}`,
