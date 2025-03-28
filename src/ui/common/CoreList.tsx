@@ -10,8 +10,20 @@ import useSelectionState from "./useSelectionState.mts";
 
 export type Modes = "search" | "select";
 
+export type ListItem = {
+  id: string;
+  display: string;
+  [key: string]: any;
+};
+
+export type List = {
+  id: string;
+  display: string;
+  items: Array<ListItem>;
+};
+
 interface CoreListProps {
-  lists?: Array<Array<any>>;
+  lists?: Array<List>;
   multiple?: boolean;
   onSelected?: (selectedItems: any[]) => void;
 }
@@ -20,14 +32,17 @@ const ITEMS_PER_PAGE = 10;
 const specialKeys = ["\\", "[", "]", "{", "}"];
 
 const CoreList: React.FC<CoreListProps> = ({
-  lists = [[{ id: "test", display: "Test Item" }]],
+  lists = [
+    { display: "Test List", items: [{ id: "test", display: "Test Item" }] },
+  ],
   multiple = false,
   onSelected,
 }) => {
   const [mode, setMode] = useState<Modes>("search");
 
   // list switching
-  const { currentList, currentListIndex, switchList } = useListSwitching(lists);
+  const { currentListItems, currentListIndex, switchList } =
+    useListSwitching(lists);
 
   // search
   const {
@@ -36,10 +51,11 @@ const CoreList: React.FC<CoreListProps> = ({
     appendToSearch,
     clearSearch,
     trimLastCharacter,
-  } = useSearch(currentList);
+  } = useSearch(currentListItems);
 
   // paging
-  const itemsToPage = searchString.length > 0 ? filteredItems : currentList;
+  const itemsToPage =
+    searchString.length > 0 ? filteredItems : currentListItems;
 
   const { currentPage, totalPages, paginatedItems, nextPage, prevPage } =
     usePaging(itemsToPage, ITEMS_PER_PAGE);
@@ -53,7 +69,7 @@ const CoreList: React.FC<CoreListProps> = ({
     clearSelection,
     selectedItems,
   } = useSelectionState({
-    items: currentList,
+    items: currentListItems,
     multiple,
     onSelected,
   });

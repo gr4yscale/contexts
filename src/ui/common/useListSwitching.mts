@@ -1,14 +1,7 @@
 import { useState, useCallback } from "react";
+import { ListItem, List } from "./CoreList";
 
-export type Item = {
-  id: string;
-  display: string;
-  data: any;
-  highlighted?: boolean;
-  // action keymap?
-};
-
-const useListSwitching = (lists: Item[][]) => {
+const useListSwitching = (lists: Array<List>) => {
   const [currentListIndex, setCurrentListIndex] = useState(0);
 
   const switchList = useCallback(
@@ -26,7 +19,7 @@ const useListSwitching = (lists: Item[][]) => {
 
   return {
     currentListIndex,
-    currentList: lists[currentListIndex] || [],
+    currentListItems: lists[currentListIndex]?.items || [],
     switchList,
     resetList,
   };
