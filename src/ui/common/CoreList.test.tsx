@@ -8,15 +8,27 @@ import CoreList from "./CoreList.tsx";
 let keymap: KeymapInstance;
 
 const mockLists = [
-  [
-    { id: "list1-item1", display: "List 1 Item 1" },
-    { id: "list1-item2", display: "List 1 Item 2" },
-  ],
-  [
-    { id: "list2-item1", display: "List 2 Item 1" },
-    { id: "list2-item2", display: "List 2 Item 2" },
-  ],
-  [{ id: "list3-item1", display: "List 3 Item 1" }],
+  {
+    id: "list1",
+    display: "List 1",
+    items: [
+      { id: "list1-item1", display: "List 1 Item 1" },
+      { id: "list1-item2", display: "List 1 Item 2" },
+    ],
+  },
+  {
+    id: "list2",
+    display: "List 2",
+    items: [
+      { id: "list2-item1", display: "List 2 Item 1" },
+      { id: "list2-item2", display: "List 2 Item 2" },
+    ],
+  },
+  {
+    id: "list3",
+    display: "List 3",
+    items: [{ id: "list3-item1", display: "List 3 Item 1" }],
+  },
 ];
 
 describe("CoreList", () => {
@@ -98,11 +110,15 @@ describe("CoreList", () => {
         <TestHarness keymap={keymap}>
           <CoreList
             lists={[
-              [
-                { id: "item1", display: "Test Item" },
-                { id: "item2", display: "Another Item" },
-                { id: "item3", display: "Something Else" },
-              ],
+              {
+                id: "list1",
+                display: "List 1",
+                items: [
+                  { id: "item1", display: "Test Item" },
+                  { id: "item2", display: "Another Item" },
+                  { id: "item3", display: "Something Else" },
+                ],
+              },
             ]}
           />
         </TestHarness>,
@@ -183,10 +199,14 @@ describe("CoreList", () => {
         <TestHarness keymap={keymap}>
           <CoreList
             lists={[
-              [
-                { id: "item1", display: "Test Item" },
-                { id: "item2", display: "Another Item" },
-              ],
+              {
+                id: "list1",
+                display: "List 1",
+                items: [
+                  { id: "item1", display: "Test Item" },
+                  { id: "item2", display: "Another Item" },
+                ],
+              },
             ]}
           />
         </TestHarness>,
@@ -213,11 +233,15 @@ describe("CoreList", () => {
         <TestHarness keymap={keymap}>
           <CoreList
             lists={[
-              [
-                { id: "item1", display: "Test Item" },
-                { id: "item2", display: "Testing Item" },
-                { id: "item3", display: "Another Item" },
-              ],
+              {
+                id: "list1",
+                display: "List 1",
+                items: [
+                  { id: "item1", display: "Test Item" },
+                  { id: "item2", display: "Testing Item" },
+                  { id: "item3", display: "Another Item" },
+                ],
+              },
             ]}
           />
         </TestHarness>,
@@ -256,10 +280,14 @@ describe("CoreList", () => {
         <TestHarness keymap={keymap}>
           <CoreList
             lists={[
-              [
-                { id: "item1", display: "Test Item" },
-                { id: "item2", display: "Another Item" },
-              ],
+              {
+                id: "list1",
+                display: "List 1",
+                items: [
+                  { id: "item1", display: "Test Item" },
+                  { id: "item2", display: "Another Item" },
+                ],
+              },
             ]}
           />
         </TestHarness>,
@@ -295,7 +323,15 @@ describe("CoreList", () => {
 
       const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
-          <CoreList lists={[manyItems]} />
+          <CoreList
+            lists={[
+              {
+                id: "list1",
+                display: "List 1",
+                items: manyItems,
+              },
+            ]}
+          />
         </TestHarness>,
       );
 
@@ -308,7 +344,6 @@ describe("CoreList", () => {
       // Should show pagination info
       expect(lastFrame()).toContain("Page 1/");
     });
-
     it("navigates to next page when ']' is pressed in select mode", async () => {
       // Create a list with more than one page of items
       const manyItems = Array.from({ length: 15 }, (_, i) => ({
@@ -318,7 +353,15 @@ describe("CoreList", () => {
 
       const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
-          <CoreList lists={[manyItems]} />
+          <CoreList
+            lists={[
+              {
+                id: "list1",
+                display: "List 1",
+                items: manyItems,
+              },
+            ]}
+          />
         </TestHarness>,
       );
 
@@ -341,17 +384,22 @@ describe("CoreList", () => {
       expect(lastFrame()).toContain("Item 10");
       expect(lastFrame()).not.toContain("Item 0");
     });
-
     it("navigates to previous page when '[' is pressed in select mode", async () => {
-      // Create a list with more than one page of items
-      const manyItems = Array.from({ length: 15 }, (_, i) => ({
-        id: `item${i}`,
-        display: `Item ${i}`,
-      }));
-
       const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
-          <CoreList lists={[manyItems]} />
+          <CoreList
+            lists={[
+              {
+                id: "list1",
+                display: "List 1",
+                // Create a list with more than one page of items
+                items: Array.from({ length: 15 }, (_, i) => ({
+                  id: `item${i}`,
+                  display: `Item ${i}`,
+                })),
+              },
+            ]}
+          />
         </TestHarness>,
       );
 
@@ -382,10 +430,14 @@ describe("CoreList", () => {
         <TestHarness keymap={keymap}>
           <CoreList
             lists={[
-              [
-                { id: "item1", display: "Item 1", data: {} },
-                { id: "item2", display: "Item 2", data: {} },
-              ],
+              {
+                id: "list1",
+                display: "List 1",
+                items: [
+                  { id: "item1", display: "Item 1", data: {} },
+                  { id: "item2", display: "Item 2", data: {} },
+                ],
+              },
             ]}
             onSelected={onSelected}
           />
@@ -419,10 +471,14 @@ describe("CoreList", () => {
         <TestHarness keymap={keymap}>
           <CoreList
             lists={[
-              [
-                { id: "item1", display: "Test Item 1", data: {} },
-                { id: "item2", display: "Test Item 2", data: {} },
-              ],
+              {
+                id: "list1",
+                display: "List 1",
+                items: [
+                  { id: "item1", display: "Test Item 1", data: {} },
+                  { id: "item2", display: "Test Item 2", data: {} },
+                ],
+              },
             ]}
             multiple={true}
             onSelected={onSelected}
@@ -471,10 +527,14 @@ describe("CoreList", () => {
         <TestHarness keymap={keymap}>
           <CoreList
             lists={[
-              [
-                { id: "item1", display: "Test Item 1", data: {} },
-                { id: "item2", display: "Test Item 2", data: {} },
-              ],
+              {
+                id: "list1",
+                display: "List 1",
+                items: [
+                  { id: "item1", display: "Test Item 1", data: {} },
+                  { id: "item2", display: "Test Item 2", data: {} },
+                ],
+              },
             ]}
             multiple={false}
             onSelected={onSelected}
@@ -522,7 +582,13 @@ describe("CoreList", () => {
       const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
           <CoreList
-            lists={[manyItems]}
+            lists={[
+              {
+                id: "list1",
+                display: "List 1",
+                items: manyItems,
+              },
+            ]}
             multiple={true}
             onSelected={onSelected}
           />
