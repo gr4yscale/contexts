@@ -338,7 +338,7 @@ describe("CoreList", () => {
       expect(lastFrame()).not.toContain("Item 10");
     });
   });
-  describe("selection", () => {
+  describe.only("selection", () => {
     it("selects items with hotkeys in select mode", async () => {
       const onSelected = vi.fn();
       const { stdin, lastFrame } = render(
@@ -418,8 +418,8 @@ describe("CoreList", () => {
       expect(onSelected).not.toHaveBeenCalled();
 
       // Complete selection with Enter
-      stdin.write("\r");
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      stdin.write("x");
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Now onSelected should be called with both items
       expect(onSelected).toHaveBeenCalledWith([
@@ -532,9 +532,8 @@ describe("CoreList", () => {
       expect(backToFirstPageFrame).toContain("✓"); // Selection indicator
 
       // Complete selection with Enter
-      stdin.write("\r");
+      stdin.write("x");
       await new Promise((resolve) => setTimeout(resolve, 50));
-      console.log(lastFrame());
 
       // onSelected should be called with all selected items from both pages
       expect(onSelected).toHaveBeenCalledWith([

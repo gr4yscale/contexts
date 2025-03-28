@@ -42,7 +42,7 @@ const CoreList: React.FC<CoreListProps> = ({
   const itemsToPage = mode === "search" ? filteredItems : currentList;
 
   const { currentPage, totalPages, paginatedItems, nextPage, prevPage } =
-    usePaging(mode === "search" ? filteredItems : currentList, ITEMS_PER_PAGE);
+    usePaging(itemsToPage, ITEMS_PER_PAGE);
 
   // selection state
   const {
@@ -174,15 +174,16 @@ const CoreList: React.FC<CoreListProps> = ({
             },
             hidden: true,
           },
-          {
-            sequence: [key("\r", "return")],
-            description: "commit / select",
-            name: "commit/select",
-            handler: () => {
-              completeSelection();
-            },
-            hidden: true,
-          },
+          // {
+          //   sequence: [key("x")],
+          //   description: "commit / select",
+          //   name: "commit/select",
+          //   handler: () => {
+          //     // Ensure we complete the selection with the current state
+          //     completeSelection();
+          //   },
+          //   hidden: true,
+          // },
           {
             sequence: [key("[")],
             description: "Previous page",
@@ -229,6 +230,15 @@ const CoreList: React.FC<CoreListProps> = ({
       keymap.popKeymap();
     };
   }, [mode]);
+
+  useInput(
+    (input, key) => {
+      if (input === "x") {
+        completeSelection();
+      }
+    },
+    { isActive: true },
+  );
 
   // handle character input in search mode
   useInput(
