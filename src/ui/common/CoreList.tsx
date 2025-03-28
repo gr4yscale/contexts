@@ -39,7 +39,7 @@ const CoreList: React.FC<CoreListProps> = ({
   } = useSearch(currentList);
 
   // paging
-  const itemsToPage = mode === "search" ? filteredItems : currentList;
+  const itemsToPage = searchString.length > 0 ? filteredItems : currentList;
 
   const { currentPage, totalPages, paginatedItems, nextPage, prevPage } =
     usePaging(itemsToPage, ITEMS_PER_PAGE);

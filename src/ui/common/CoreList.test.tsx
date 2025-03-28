@@ -78,7 +78,7 @@ describe("CoreList", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
       expect(lastFrame()).toContain("Mode: search");
     });
-    it("switches from search mode to select mode when Enter is pressed", async () => {
+    it("switches search -> select mode when Enter is pressed", async () => {
       const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
           <CoreList />
@@ -92,6 +92,45 @@ describe("CoreList", () => {
       stdin.write("\r");
       await new Promise((resolve) => setTimeout(resolve, 50));
       expect(lastFrame()).toContain("Mode: select");
+    });
+    it("switching search -> select mode should not replace the visible items from a previous search", async () => {
+      const { stdin, lastFrame } = render(
+        <TestHarness keymap={keymap}>
+          <CoreList
+            lists={[
+              [
+                { id: "item1", display: "Test Item" },
+                { id: "item2", display: "Another Item" },
+                { id: "item3", display: "Something Else" },
+              ],
+            ]}
+          />
+        </TestHarness>,
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Type search string to filter items
+      stdin.write("test");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Verify only "Test Item" is visible
+      const searchFrame = lastFrame();
+      expect(searchFrame).toContain('(filtered: "test")');
+      expect(searchFrame).toContain("Test Item");
+      expect(searchFrame).not.toContain("Another Item");
+      expect(searchFrame).not.toContain("Something Else");
+
+      // Switch to select mode
+      stdin.write("\r");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Verify filtered items are still the same in select mode
+      const selectFrame = lastFrame();
+      expect(selectFrame).toContain("Mode: select");
+      expect(selectFrame).toContain("Test Item");
+      expect(selectFrame).not.toContain("Another Item");
+      expect(selectFrame).not.toContain("Something Else");
     });
   });
   describe("multiple lists", () => {
