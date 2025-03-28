@@ -52,38 +52,31 @@ export default function useSelectionState<T extends { id: string }>({
     [selectedIds],
   );
 
-  // Complete the selection process (for multiple selection)
+  // Complete the selection process for multiple selection
   const completeSelection = useCallback(() => {
-    // Capture the current state to avoid race conditions
-    const currentIds = [...selectedIds];
+    // *hack to get the latest selectedIds state*
+    // we use the function form of `setSelectedIds`
+    // this avoids the "state closure issue":
+    // otherwise, this function is capturing the `selectedIds` state
+    // at the time the function is created, not when it's called
 
-    console.log("captureSelection:");
-    console.log(currentIds);
+    // useRef would perhaps be a better choice here...
 
-    if (onSelected && currentIds.length > 0) {
-      console.log("in");
-
-      // Get the selected items at the moment of completion
-      const currentSelectedItems = items.filter((item) =>
-        currentIds.includes(item.id),
-      );
-
-      // Call onSelected with the current selection
-      onSelected(currentSelectedItems);
-
-      // If not in multiple selection mode, clear the selection after completion
-      if (!multiple) {
-        setSelectedIds([]);
+    setSelectedIds((currentIds) => {
+      if (onSelected && currentIds.length > 0) {
+        // the selected items at the time completeSelection was called (see above)
+        const selected = items.filter((item) => currentIds.includes(item.id));
+        onSelected(selected);
+        return currentIds;
       }
-    }
-  }, [selectedIds, items, onSelected, multiple]);
+      return [];
+    });
+  }, [items, onSelected, multiple]);
 
-  // Clear the current selection
   const clearSelection = useCallback(() => {
     setSelectedIds([]);
   }, []);
 
-  // Get the currently selected items
   const selectedItems = useMemo(
     () => items.filter((item) => selectedIds.includes(item.id)),
     [items, selectedIds],

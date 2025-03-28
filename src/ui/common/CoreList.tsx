@@ -220,15 +220,6 @@ const CoreList: React.FC<CoreListProps> = ({
     };
   }, [mode]);
 
-  useInput(
-    (input, key) => {
-      if (input === "x") {
-        completeSelection();
-      }
-    },
-    { isActive: true },
-  );
-
   // handle character input in search mode
   useInput(
     (input, key) => {
