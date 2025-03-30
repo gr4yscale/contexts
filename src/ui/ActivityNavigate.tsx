@@ -65,6 +65,7 @@ const ActivityNavigate: React.FC = () => {
             }
           }}
           multiple={false}
+          initialMode="select"
         />
       )}
     </Box>

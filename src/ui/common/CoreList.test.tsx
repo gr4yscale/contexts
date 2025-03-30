@@ -48,28 +48,6 @@ describe("CoreList", () => {
     });
   });
   describe("modes", () => {
-    it("has two modes: search and select", async () => {
-      const { stdin, lastFrame } = render(
-        <TestHarness keymap={keymap}>
-          <CoreList lists={mockLists} />
-        </TestHarness>,
-      );
-
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      // Default mode should be search
-      expect(lastFrame()).toContain("Mode: search");
-
-      // Switch to select mode
-      stdin.write("\r");
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(lastFrame()).toContain("Mode: select");
-
-      // Switch back to search mode
-      stdin.write("\u007F"); // Delete key
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(lastFrame()).toContain("Mode: search");
-    });
     it("toggles between modes with backslash key", async () => {
       const { stdin, lastFrame } = render(
         <TestHarness keymap={keymap}>
@@ -147,6 +125,39 @@ describe("CoreList", () => {
       expect(selectFrame).toContain("Test Item");
       expect(selectFrame).not.toContain("Another Item");
       expect(selectFrame).not.toContain("Something Else");
+    });
+    it("defaults to search mode when no initialMode is provided", async () => {
+      const { stdin, lastFrame } = render(
+        <TestHarness keymap={keymap}>
+          <CoreList lists={mockLists} />
+        </TestHarness>,
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Default mode should be search
+      expect(lastFrame()).toContain("Mode: search");
+
+      // Switch to select mode
+      stdin.write("\r");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(lastFrame()).toContain("Mode: select");
+
+      // Switch back to search mode
+      stdin.write("\u007F"); // Delete key
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(lastFrame()).toContain("Mode: search");
+    });
+    it("starts in select mode when initialMode is set to select", async () => {
+      const { lastFrame } = render(
+        <TestHarness keymap={keymap}>
+          <CoreList lists={mockLists} initialMode="select" />
+        </TestHarness>,
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(lastFrame()).toContain("Mode: select");
+      expect(lastFrame()).toContain("[a]"); // Hotkeys should be visible in select mode
     });
   });
   describe("multiple lists", () => {

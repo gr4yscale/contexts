@@ -27,6 +27,7 @@ interface CoreListProps {
   lists?: Array<List>;
   multiple?: boolean;
   onSelected?: (selectedItems: any[]) => void;
+  initialMode?: Modes;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -38,8 +39,9 @@ const CoreList: React.FC<CoreListProps> = ({
   ],
   multiple = false,
   onSelected,
+  initialMode = "search",
 }) => {
-  const [mode, setMode] = useState<Modes>("search");
+  const [mode, setMode] = useState<Modes>(initialMode);
 
   // list switching
   const { currentListItems, currentListIndex, switchList } =
