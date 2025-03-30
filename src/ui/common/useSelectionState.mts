@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 
 interface UseSelectionStateOptions<T> {
   items: T[];
@@ -19,12 +19,27 @@ interface UseSelectionStateReturn<T> {
  * Hook to manage selection state for a list of items
  * Supports single or multiple selection modes
  */
-export default function useSelectionState<T extends { id: string }>({
+export default function useSelectionState<
+  T extends { id: string; selected?: boolean },
+>({
   items,
   multiple = false,
   onSelected,
 }: UseSelectionStateOptions<T>): UseSelectionStateReturn<T> {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  // Initialize selection state based on items' selected property
+  useEffect(() => {
+    if (multiple) {
+      const initialSelectedIds = items
+        .filter((item) => item.selected)
+        .map((item) => item.id);
+
+      if (initialSelectedIds.length > 0) {
+        setSelectedIds(initialSelectedIds);
+      }
+    }
+  }, [items, multiple]);
 
   // Toggle selection of an item
   const toggleSelection = useCallback(

@@ -27,6 +27,7 @@ const ContextActivitySelection: React.FC = () => {
           (activity.depth && activity.depth > 0 ? "└─ " : "") +
           activity.name,
         data: activity,
+        selected: activity.selected,
       }));
 
       setLists([

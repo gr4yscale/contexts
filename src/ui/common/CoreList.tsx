@@ -13,6 +13,7 @@ export type Modes = "search" | "select";
 export type ListItem = {
   id: string;
   display: string;
+  selected?: boolean;
   [key: string]: any;
 };
 

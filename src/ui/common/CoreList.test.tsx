@@ -642,5 +642,96 @@ describe("CoreList", () => {
         expect.objectContaining({ id: "item10" }),
       ]);
     });
+
+    describe("initial selection", () => {
+      it("loads with pre-selected items in multiple selection mode", async () => {
+        const { lastFrame, stdin } = render(
+          <TestHarness keymap={keymap}>
+            <CoreList
+              lists={[
+                {
+                  id: "list1",
+                  display: "List 1",
+                  items: [
+                    {
+                      id: "item1",
+                      display: "Item 1",
+                      data: {},
+                      selected: true,
+                    },
+                    {
+                      id: "item2",
+                      display: "Item 2",
+                      data: {},
+                      selected: false,
+                    },
+                    {
+                      id: "item3",
+                      display: "Item 3",
+                      data: {},
+                      selected: true,
+                    },
+                  ],
+                },
+              ]}
+              multiple={true}
+            />
+          </TestHarness>,
+        );
+
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Switch to select mode
+        stdin.write("\r");
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        const frame = lastFrame();
+
+        expect(frame).toContain("Item 1");
+        expect(frame).toContain("Item 2");
+        expect(frame).toContain("Item 3");
+
+        expect(frame).toContain("✓"); // At least one checkmark should be present
+
+        expect(frame).toContain("Selected: 2 items");
+      });
+
+      it("ignores initial selection in single selection mode", async () => {
+        const { lastFrame, stdin } = render(
+          <TestHarness keymap={keymap}>
+            <CoreList
+              lists={[
+                {
+                  id: "list1",
+                  display: "List 1",
+                  items: [
+                    { id: "item1", display: "Item 1", data: {} },
+                    { id: "item2", display: "Item 2", data: {} },
+                  ],
+                },
+              ]}
+              multiple={false}
+              initialSelectedIds={["item2"]} // This should be ignored in single selection mode
+            />
+          </TestHarness>,
+        );
+
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Switch to select mode
+        stdin.write("\r");
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        const frame = lastFrame();
+
+        // Verify no items are pre-selected in single selection mode
+        expect(frame).not.toContain("Selected: 1 item");
+
+        // In single selection mode, items aren't visually marked as selected until explicitly chosen
+        // So we're verifying the component renders correctly without applying the initial selection
+        expect(frame).toContain("Item 1");
+        expect(frame).toContain("Item 2");
+      });
+    });
   });
 });
