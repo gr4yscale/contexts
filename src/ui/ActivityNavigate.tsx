@@ -3,43 +3,39 @@ import { Box, Text } from "ink";
 
 import { Activity } from "../types.mts";
 
-import ActionList from "./common/ActionList.tsx";
-
 import { key, KeymapConfig } from "./common/Keymapping.mts";
 import { KeysContext } from "./common/Context.mts";
-import { Item } from "./common/useActionList.mts";
 import { getCurrentContextActivities } from "../models/context.mts";
-
 import { executeAction } from "../actions.mts";
-import QuickSelectList from "./common/QuickSelectList.tsx";
-
-type ActivityItem = { id: string; display: string; data: Activity };
-type ActivityNavigateStates = "initial" | "find";
+import CoreList, { List, ListItem } from "./common/CoreList.tsx";
 
 const ActivityNavigate: React.FC = () => {
   const [mode, setMode] = useState<ActivityNavigateStates>("find");
-  const [items, setItems] = useState<Array<ActivityItem>>([]);
+  const [lists, setLists] = useState<Array<List>>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchActivities = async () => {
     try {
       const activities = await getCurrentContextActivities();
       const sortedActivities = [...activities].sort((a, b) => {
-        if (!a.lastAccessed) return 1;
-        if (!b.lastAccessed) return -1;
-        return (
-          new Date(b.lastAccessed).getTime() -
-          new Date(a.lastAccessed).getTime()
-        );
+        const dateA = a.lastAccessed ? new Date(a.lastAccessed).getTime() : 0;
+        const dateB = b.lastAccessed ? new Date(b.lastAccessed).getTime() : 0;
+        return dateB - dateA;
       });
 
-      const newItems = sortedActivities.map((activity) => ({
+      const newItems: ListItem[] = sortedActivities.map((activity) => ({
         id: activity.activityId,
         display: `${activity.name}`,
-        //display: `${activity.lastAccessed}  ${activity.name}`,
         data: activity,
       }));
-      setItems(newItems);
+
+      setLists([
+        {
+          id: "activities",
+          display: "Activities",
+          items: newItems,
+        },
+      ]);
     } catch (error) {
       console.error("Error fetching activities:", error);
     } finally {
@@ -83,20 +79,27 @@ const ActivityNavigate: React.FC = () => {
       {loading ? (
         <Text>Loading activities...</Text>
       ) : (
-        mode === "find" && (
-          <QuickSelectList
-            initialItems={items}
-            onSelected={(item) => {
-              const activity = item.data;
-              executeAction("activateActivity", activity.activityId);
-            }}
-          />
-        )
+        <CoreList
+          lists={lists}
+          onSelected={(selectedItems: ListItem[]) => {
+            if (selectedItems.length > 0) {
+              const selectedItem = selectedItems[0];
+              const activity = selectedItem.data as Activity;
+              if (activity && activity.activityId) {
+                executeAction("activateActivity", activity.activityId);
+              } else {
+                console.error(
+                  "Selected item data is not a valid Activity:",
+                  selectedItem,
+                );
+              }
+            }
+          }}
+          multiple={false}
+        />
       )}
     </Box>
   );
 };
 
 export default ActivityNavigate;
-
-//<ActionList initialItems={items} actionKeymap={itemActionKeymap} />

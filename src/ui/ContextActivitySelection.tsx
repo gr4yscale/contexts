@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Box } from "ink";
+import { Box, Text } from "ink";
 import { Activity } from "../types.mts";
-import SelectionList from "./common/SelectionList.tsx";
+import CoreList, { List, ListItem } from "./common/CoreList.tsx";
 
-import { contextActivityTree, ActivityTreeItem } from "../models/activity.mts";
+import { contextActivityTree } from "../models/activity.mts";
 import {
   createContext,
   getCurrentContext,
@@ -11,36 +11,35 @@ import {
 } from "../models/context.mts";
 import { executeAction } from "../actions.mts";
 
-type ContextActivityItem = {
-  id: string;
-  display: string;
-  data: Activity;
-} & ActivityTreeItem; // TOFIX type union
-
-type ContextActivityStates = "initial" | "find";
-
 const ContextActivitySelection: React.FC = () => {
-  const [mode, setMode] = useState<ContextActivityStates>("initial");
-  const [items, setItems] = useState<Array<ContextActivityItem>>([]);
+  const [lists, setLists] = useState<Array<List>>([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchActivities = async () => {
+    setLoading(true);
     try {
       const tree = await contextActivityTree();
 
-      const newItems = tree.map((activity) => ({
+      const newItems: ListItem[] = tree.map((activity) => ({
         id: activity.activityId,
-        activity,
-        selected: activity.selected,
         display:
           "  ".repeat(activity.depth || 0) +
-          (activity.depth || 0 > 0 ? "└─ " : "") +
+          (activity.depth && activity.depth > 0 ? "└─ " : "") +
           activity.name,
+        data: activity,
       }));
 
-      setItems(newItems);
-      setMode("find");
+      setLists([
+        {
+          id: "contextActivities",
+          display: "Select Activities for Context",
+          items: newItems,
+        },
+      ]);
     } catch (error) {
       console.error("Error fetching activities:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -50,11 +49,16 @@ const ContextActivitySelection: React.FC = () => {
 
   return (
     <Box borderStyle="single" borderColor="gray">
-      {mode === "find" && (
-        <SelectionList
-          initialItems={items}
-          onSelected={async (items) => {
-            const activities = items.map((item) => item.activity);
+      {loading ? (
+        <Text>Loading activities...</Text>
+      ) : (
+        <CoreList
+          lists={lists}
+          multiple={true}
+          onSelected={async (selectedItems: ListItem[]) => {
+            const activities = selectedItems.map(
+              (item) => item.data as Activity,
+            );
             const activityIds = activities.map(
               (activity) => activity.activityId,
             );
