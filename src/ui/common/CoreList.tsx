@@ -88,7 +88,8 @@ const CoreList: React.FC<CoreListProps> = ({
           onSelected && onSelected([item]);
         }
       },
-      keys: "asdfghjkl;",
+      //keys: "asdfghjkl;",
+      keys: "jfkhdgl;sa",
     });
 
   // keymapping
