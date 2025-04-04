@@ -56,6 +56,7 @@ const ContextActivitySelection: React.FC = () => {
         <CoreList
           lists={lists}
           multiple={true}
+          initialMode="select"
           onSelected={async (selectedItems: ListItem[]) => {
             const activities = selectedItems.map(
               (item) => item.data as Activity,
