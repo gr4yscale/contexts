@@ -263,8 +263,6 @@ const CoreList: React.FC<CoreListProps> = ({
     <Box
       flexDirection="column"
       width="100%"
-      borderStyle="single"
-      borderColor="gray"
       paddingLeft={2}
       paddingRight={2}
       paddingTop={1}
@@ -277,8 +275,8 @@ const CoreList: React.FC<CoreListProps> = ({
               <Text color="yellow">[{getItemHotkey(item.id)}] </Text>
             )}
             <Text
-              color={isSelected(item.id) ? "green" : "white"}
-              backgroundColor={isSelected(item.id) ? "blue" : undefined}
+              color={isSelected(item.id) ? "black" : "white"}
+              backgroundColor={isSelected(item.id) ? "cyan" : undefined}
             >
               {item.display || item.id || JSON.stringify(item)}
             </Text>
@@ -287,40 +285,36 @@ const CoreList: React.FC<CoreListProps> = ({
         ))}
       </Box>
       <Box marginTop={1}>
-        <Box flexDirection="column" width="100%">
-          <Box>
+        <Text color="blue">
+          {`List ${currentListIndex + 1} of ${lists.length}`}
+        </Text>
+        <Text> | </Text>
+        <Text color="blue">List: {lists[currentListIndex]?.display}</Text>
+        <Text> | </Text>
+        <Text color="blue">Mode: {mode}</Text>
+        {totalPages > 1 && (
+          <>
+            <Text> | </Text>
             <Text color="blue">
-              {`List ${currentListIndex + 1} of ${lists.length}`}
+              Page: {currentPage + 1}/{totalPages}
             </Text>
+          </>
+        )}
+        {selectedIds.length > 0 && (
+          <>
             <Text> | </Text>
-            <Text color="blue">List: {lists[currentListIndex]?.display}</Text>
+            <Text color="blue">
+              Selected: {selectedIds.length} item
+              {selectedIds.length !== 1 ? "s" : ""}
+            </Text>
+          </>
+        )}
+        {searchString && (
+          <>
             <Text> | </Text>
-            <Text color="blue">Mode: {mode}</Text>
-            {totalPages > 1 && (
-              <>
-                <Text> | </Text>
-                <Text color="blue">
-                  Page: {currentPage + 1}/{totalPages}
-                </Text>
-              </>
-            )}
-            {selectedIds.length > 0 && (
-              <>
-                <Text> | </Text>
-                <Text color="blue">
-                  Selected: {selectedIds.length} item
-                  {selectedIds.length !== 1 ? "s" : ""}
-                </Text>
-              </>
-            )}
-            {searchString && (
-              <>
-                <Text> | </Text>
-                <Text color="blue">{`(filtered: "${searchString}")`}</Text>
-              </>
-            )}
-          </Box>
-        </Box>
+            <Text color="blue">{`(filtered: "${searchString}")`}</Text>
+          </>
+        )}
       </Box>
     </Box>
   );
