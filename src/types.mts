@@ -33,6 +33,7 @@ export type Activity = {
   lastAccessed: Date;
   active: boolean;
   parentActivityId?: string;
+  temp?: boolean;
 };
 
 export type Tag = string;

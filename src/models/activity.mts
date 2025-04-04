@@ -18,6 +18,7 @@ export type ActivityCreate = {
   lastAccessed?: Date;
   active?: boolean;
   parentActivityId?: string;
+  temp?: boolean;
 };
 
 export async function createActivity(
@@ -45,13 +46,16 @@ export async function createActivity(
       }
     }
 
+    // Use provided temp value or default to false
+    const temp = activity.temp ?? false;
+
     await client.query(
       `
               INSERT INTO activities (
                   activityId, orgId, orgText, name, created, lastAccessed,
-                  active, parent_id
+                  active, parent_id, temp
               ) VALUES 
-              ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, $5, $6);
+              ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, $5, $6, $7);
           `,
       [
         activityId,
@@ -60,6 +64,7 @@ export async function createActivity(
         name,
         active,
         parentActivityId || null,
+        temp,
       ],
     );
 
@@ -129,6 +134,7 @@ export async function getActivityById(
       lastAccessed: new Date(row.lastaccessed),
       active: row.active,
       parentActivityId: row.parent_id,
+      temp: row.temp,
     };
   } catch (error) {
     console.error("Error getting activity:", error);
@@ -169,7 +175,7 @@ export async function updateActivity(
     const fields: string[] = [];
     const values: any[] = [];
 
-    const { orgId, orgText, name, lastAccessed, active, activityId } = activity;
+    const { orgId, orgText, name, lastAccessed, active, activityId, temp } = activity;
 
     const fieldMappings: [string, any][] = [
       ["orgId", orgId],
@@ -177,6 +183,7 @@ export async function updateActivity(
       ["name", name],
       ["lastAccessed", lastAccessed?.toISOString()],
       ["active", active],
+      ["temp", temp],
     ];
 
     let paramIndex = 1;
