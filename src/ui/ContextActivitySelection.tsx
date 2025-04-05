@@ -3,7 +3,10 @@ import { Box, Text } from "ink";
 import { Activity } from "../types.mts";
 import CoreList, { List, ListItem } from "./common/CoreList.tsx";
 
-import { contextActivityTree } from "../models/activity.mts";
+import {
+  filteredActivityTree,
+  ActivityTreeFilter,
+} from "../models/activity.mts";
 import {
   createContext,
   getCurrentContext,
@@ -18,9 +21,9 @@ const ContextActivitySelection: React.FC = () => {
   const fetchActivities = async () => {
     setLoading(true);
     try {
-      const tree = await contextActivityTree();
+      const activities = await filteredActivityTree(ActivityTreeFilter.ALL);
 
-      const newItems: ListItem[] = tree.map((activity) => ({
+      const newItems: ListItem[] = activities.map((activity) => ({
         id: activity.activityId,
         display:
           "  ".repeat(activity.depth || 0) +
@@ -54,7 +57,7 @@ const ContextActivitySelection: React.FC = () => {
         <Text>Loading activities...</Text>
       ) : (
         <CoreList
-          lists={lists}
+          items={lists[0].items}
           multiple={true}
           initialMode="select"
           onSelected={async (selectedItems: ListItem[]) => {

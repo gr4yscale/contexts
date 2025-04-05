@@ -2,14 +2,17 @@ import { $ } from "zx";
 import React, { useEffect, useState } from "react";
 import { Box } from "ink";
 import CoreList, { List } from "./common/CoreList.tsx";
-import { contextActivityTree } from "../models/activity.mts";
+import {
+  filteredActivityTree,
+  ActivityTreeFilter,
+} from "../models/activity.mts";
 
 const Testbed: React.FC = () => {
   const [lists, setLists] = useState<Array<List>>([]);
 
   const fetchActivities = async () => {
     try {
-      const tree = await contextActivityTree();
+      const activities = await filteredActivityTree(ActivityTreeFilter.ALL);
 
       const items = tree.map((activity) => ({
         id: activity.activityId,

@@ -3,6 +3,10 @@ import { Box, Text } from "ink";
 
 import { Activity } from "../types.mts";
 import { getCurrentContextActivities } from "../models/context.mts";
+import {
+  filteredActivityTree,
+  ActivityTreeFilter,
+} from "../models/activity.mts";
 import { executeAction } from "../actions.mts";
 
 import { KeymapConfig, key } from "./common/Keymapping.mts";
@@ -26,6 +30,7 @@ const ActivityNavigate: React.FC = () => {
   const fetchActivities = async () => {
     try {
       const activities = await getCurrentContextActivities();
+      const activities = await filteredActivityTree(ActivityTreeFilter.CONTEXT);
       const sortedActivities = [...activities].sort((a, b) => {
         const dateA = a.lastAccessed ? new Date(a.lastAccessed).getTime() : 0;
         const dateB = b.lastAccessed ? new Date(b.lastAccessed).getTime() : 0;
