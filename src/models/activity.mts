@@ -12,6 +12,7 @@ export enum ActivityTreeFilter {
   ALL = "all",
   RECENT = "recent",
   TEMP = "temp",
+  CONTEXT = "context",
 }
 
 // Define ActivityCreate type as a partial of Activity with required fields
@@ -84,35 +85,47 @@ export async function createActivity(
 /**
  * Fetches the activity tree for the last created context
  * Sets the selected field based on whether the activity is in the context
- * @param filter - The filter to apply to the activities (all, recent, temp)
+ * @param filter - The filter to apply to the activities (all, recent, temp, context)
  * @returns Array of activities with depth and selection information
  */
-export async function contextActivityTree(
+export async function filteredActivityTree(
   filter: ActivityTreeFilter = ActivityTreeFilter.ALL,
 ): Promise<ActivityTreeItem[]> {
   try {
-    const allActivities = await activityTree(filter);
+    // Get activities filtered by the specified filter (except for CONTEXT which needs special handling)
+    const filteredActivities = await activityTree(
+      filter ? filter : ActivityTreeFilter.ALL,
+    );
 
-    const currentContext = await getCurrentContext();
+    if (filter === ActivityTreeFilter.CONTEXT) {
+      const currentContext = await getCurrentContext();
 
-    if (!currentContext) {
-      // If no context exists, return all activities as unselected
-      return allActivities.map((activity) => ({
-        ...activity,
-        selected: false,
-      }));
+      if (!currentContext) {
+        // If no context exists, return all activities as unselected
+        return filteredActivities.map((activity) => ({
+          ...activity,
+          selected: false,
+        }));
+      }
+
+      // Get the set of activity IDs in the context for faster lookup
+      const contextActivityIds = new Set(currentContext.activityIds);
+
+      return filteredActivities
+        .filter((activity) => contextActivityIds.has(activity.activityId))
+        .map((activity) => ({
+          ...activity,
+          selected: true,
+        }));
     }
 
-    // Get the set of activity IDs in the context for faster lookup
-    const contextActivityIds = new Set(currentContext.activityIds);
-
-    // Map the activities, setting selected based on whether they're in the context
-    return allActivities.map((activity) => ({
+    // For non-CONTEXT filters, just return the filtered activities with selected=false
+    return filteredActivities.map((activity) => ({
       ...activity,
-      selected: contextActivityIds.has(activity.activityId),
+      selected: false,
     }));
   } catch (error) {
-    console.error("Error getting context activity tree:", error);
+    console.error("Error getting filtered activity tree:", error);
     throw error;
   }
 }
