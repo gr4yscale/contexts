@@ -8,6 +8,12 @@ export type ActivityTreeItem = Activity & {
   selected: boolean;
 };
 
+export enum ActivityTreeFilter {
+  ALL = "all",
+  RECENT = "recent",
+  TEMP = "temp",
+}
+
 // Define ActivityCreate type as a partial of Activity with required fields
 export type ActivityCreate = {
   activityId?: string;
@@ -78,14 +84,15 @@ export async function createActivity(
 /**
  * Fetches the activity tree for the last created context
  * Sets the selected field based on whether the activity is in the context
+ * @param filter - The filter to apply to the activities (all, recent, temp)
  * @returns Array of activities with depth and selection information
  */
-export async function contextActivityTree(): Promise<ActivityTreeItem[]> {
+export async function contextActivityTree(
+  filter: ActivityTreeFilter = ActivityTreeFilter.ALL,
+): Promise<ActivityTreeItem[]> {
   try {
-    // Get all activities in the tree
-    const allActivities = await activityTree();
+    const allActivities = await activityTree(filter);
 
-    // Get the current context
     const currentContext = await getCurrentContext();
 
     if (!currentContext) {
@@ -175,7 +182,8 @@ export async function updateActivity(
     const fields: string[] = [];
     const values: any[] = [];
 
-    const { orgId, orgText, name, lastAccessed, active, activityId, temp } = activity;
+    const { orgId, orgText, name, lastAccessed, active, activityId, temp } =
+      activity;
 
     const fieldMappings: [string, any][] = [
       ["orgId", orgId],
@@ -408,19 +416,33 @@ export async function createChildActivity(
 
 /**
  * Recursively fetches activities and their children up to a maximum depth of 3
+ * @param filter - The filter to apply to the activities (all, recent, temp)
  * @returns Array of activities with depth information
  */
-export async function activityTree(): Promise<ActivityTreeItem[]> {
+export async function activityTree(
+  filter: ActivityTreeFilter = ActivityTreeFilter.ALL,
+): Promise<ActivityTreeItem[]> {
   try {
     const client = await getConnection();
 
+    // Build the filter condition for the base case
+    let filterCondition = "";
+    if (filter === ActivityTreeFilter.RECENT) {
+      // Activities from the last 7 days
+      filterCondition =
+        "AND lastaccessed > (CURRENT_TIMESTAMP - INTERVAL '7 days')";
+    } else if (filter === ActivityTreeFilter.TEMP) {
+      // Only temporary activities
+      filterCondition = "AND temp = true";
+    }
+
     // This recursive CTE query:
-    // 1. Starts with root activities (parent_id IS NULL)
+    // 1. Starts with root activities (parent_id IS NULL) that match the filter
     // 2. Recursively joins to find children up to depth 3
     // 3. Orders results so parents come before children
     const result = await client.query(`
       WITH RECURSIVE activity_tree AS (
-        -- Base case: select root activities (no parent)
+        -- Base case: select root activities (no parent) with filter applied
         SELECT 
           activityid, 
           orgid, 
@@ -430,10 +452,11 @@ export async function activityTree(): Promise<ActivityTreeItem[]> {
           lastaccessed, 
           active, 
           parent_id,
+          temp,
           0 AS depth,
           ARRAY[activityid] AS path
         FROM activities
-        WHERE parent_id IS NULL
+        WHERE parent_id IS NULL ${filterCondition}
         
         UNION ALL
         
@@ -447,11 +470,13 @@ export async function activityTree(): Promise<ActivityTreeItem[]> {
           a.lastaccessed, 
           a.active, 
           a.parent_id,
+          a.temp,
           at.depth + 1 AS depth,
           at.path || a.activityid AS path
         FROM activities a
         JOIN activity_tree at ON a.parent_id = at.activityid
         WHERE at.depth < 3  -- Limit recursion to depth 3
+        ${filter === ActivityTreeFilter.TEMP ? "AND a.temp = true" : ""}
       )
       
       SELECT 
@@ -463,6 +488,7 @@ export async function activityTree(): Promise<ActivityTreeItem[]> {
         lastaccessed, 
         active, 
         parent_id,
+        temp,
         depth
       FROM activity_tree
       ORDER BY 
@@ -484,6 +510,7 @@ export async function activityTree(): Promise<ActivityTreeItem[]> {
       lastAccessed: new Date(row.lastaccessed),
       active: row.active,
       parentActivityId: row.parent_id,
+      temp: row.temp,
       depth: row.depth,
       selected: false,
     }));
