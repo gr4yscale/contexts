@@ -8,12 +8,6 @@ export type ActivityTreeItem = Activity & {
   selected: boolean;
 };
 
-export enum ActivityTreeFilter {
-  ALL = "all",
-  RECENT = "recent",
-  TEMP = "temp"
-}
-
 // Define ActivityCreate type as a partial of Activity with required fields
 export type ActivityCreate = {
   activityId?: string;
@@ -84,12 +78,9 @@ export async function createActivity(
 /**
  * Fetches the activity tree for the last created context
  * Sets the selected field based on whether the activity is in the context
- * @param filter - The filter to apply to the activities (all, recent, temp)
  * @returns Array of activities with depth and selection information
  */
-export async function contextActivityTree(
-  filter: ActivityTreeFilter = ActivityTreeFilter.ALL
-): Promise<ActivityTreeItem[]> {
+export async function contextActivityTree(): Promise<ActivityTreeItem[]> {
   try {
     // Get all activities in the tree
     const allActivities = await activityTree();
@@ -97,28 +88,9 @@ export async function contextActivityTree(
     // Get the current context
     const currentContext = await getCurrentContext();
 
-    // Apply filter to activities
-    let filteredActivities = allActivities;
-    
-    if (filter === ActivityTreeFilter.RECENT) {
-      // Get activities from the last 7 days
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      
-      filteredActivities = allActivities.filter(activity => 
-        activity.lastAccessed >= sevenDaysAgo
-      );
-    } else if (filter === ActivityTreeFilter.TEMP) {
-      // Get only temporary activities
-      filteredActivities = allActivities.filter(activity => 
-        activity.temp === true
-      );
-    }
-    // ActivityTreeFilter.ALL returns all activities (default)
-
     if (!currentContext) {
-      // If no context exists, return filtered activities as unselected
-      return filteredActivities.map((activity) => ({
+      // If no context exists, return all activities as unselected
+      return allActivities.map((activity) => ({
         ...activity,
         selected: false,
       }));
@@ -127,8 +99,8 @@ export async function contextActivityTree(
     // Get the set of activity IDs in the context for faster lookup
     const contextActivityIds = new Set(currentContext.activityIds);
 
-    // Map the filtered activities, setting selected based on whether they're in the context
-    return filteredActivities.map((activity) => ({
+    // Map the activities, setting selected based on whether they're in the context
+    return allActivities.map((activity) => ({
       ...activity,
       selected: contextActivityIds.has(activity.activityId),
     }));
@@ -162,7 +134,6 @@ export async function getActivityById(
       lastAccessed: new Date(row.lastaccessed),
       active: row.active,
       parentActivityId: row.parent_id,
-      temp: row.temp,
       temp: row.temp,
     };
   } catch (error) {
