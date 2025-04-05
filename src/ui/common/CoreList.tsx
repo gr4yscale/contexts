@@ -2,7 +2,6 @@ import React, { useEffect, useContext, useState } from "react";
 import { Text, Box, useInput } from "ink";
 import { KeymapConfig, key } from "./Keymapping.mts";
 import { KeysContext } from "./Context.mts";
-import useListSwitching from "./useListSwitching.mts";
 import useSearch from "./useSearch.mts";
 import usePaging from "./usePaging.mts";
 import useHotkeySelection from "./useHotkeySelection.mts";
@@ -24,7 +23,7 @@ export type List = {
 };
 
 interface CoreListProps {
-  lists?: Array<List>;
+  items: ListItem[];
   multiple?: boolean;
   onSelected?: (selectedItems: any[]) => void;
   initialMode?: Modes;
@@ -34,18 +33,12 @@ const ITEMS_PER_PAGE = 10;
 const specialKeys = ["\\", "[", "]", "{", "}"];
 
 const CoreList: React.FC<CoreListProps> = ({
-  lists = [
-    { display: "Test List", items: [{ id: "test", display: "Test Item" }] },
-  ],
+  items = [],
   multiple = false,
   onSelected,
   initialMode = "search",
 }) => {
   const [mode, setMode] = useState<Modes>(initialMode);
-
-  // list switching
-  const { currentListItems, currentListIndex, switchList } =
-    useListSwitching(lists);
 
   // search
   const {
@@ -54,11 +47,10 @@ const CoreList: React.FC<CoreListProps> = ({
     appendToSearch,
     clearSearch,
     trimLastCharacter,
-  } = useSearch(currentListItems);
+  } = useSearch(items);
 
   // paging
-  const itemsToPage =
-    searchString.length > 0 ? filteredItems : currentListItems;
+  const itemsToPage = searchString.length > 0 ? filteredItems : items;
 
   const { currentPage, totalPages, paginatedItems, nextPage, prevPage } =
     usePaging(itemsToPage, ITEMS_PER_PAGE);
@@ -72,7 +64,7 @@ const CoreList: React.FC<CoreListProps> = ({
     clearSelection,
     selectedItems,
   } = useSelectionState({
-    items: currentListItems,
+    items,
     multiple,
     onSelected,
   });
@@ -148,22 +140,6 @@ const CoreList: React.FC<CoreListProps> = ({
             hidden: true,
           },
           {
-            sequence: [key("{")],
-            description: "Previous list",
-            name: "prevList",
-            handler: () => {
-              switchList(currentListIndex - 1);
-            },
-          },
-          {
-            sequence: [key("}")],
-            description: "Next list",
-            name: "nextList",
-            handler: () => {
-              switchList(currentListIndex + 1);
-            },
-          },
-          {
             sequence: [key("\\")],
             description: "Toggle mode",
             name: "toggleMode",
@@ -203,22 +179,6 @@ const CoreList: React.FC<CoreListProps> = ({
             description: "Next page",
             name: "nextPage",
             handler: nextPage,
-          },
-          {
-            sequence: [key("{")],
-            description: "Previous list",
-            name: "prevList",
-            handler: () => {
-              switchList(currentListIndex - 1);
-            },
-          },
-          {
-            sequence: [key("}")],
-            description: "Next list",
-            name: "nextList",
-            handler: () => {
-              switchList(currentListIndex + 1);
-            },
           },
           {
             sequence: [key("\\")],
@@ -285,12 +245,6 @@ const CoreList: React.FC<CoreListProps> = ({
         ))}
       </Box>
       <Box marginTop={1}>
-        <Text color="blue">
-          {`List ${currentListIndex + 1} of ${lists.length}`}
-        </Text>
-        <Text> | </Text>
-        <Text color="blue">List: {lists[currentListIndex]?.display}</Text>
-        <Text> | </Text>
         <Text color="blue">Mode: {mode}</Text>
         {totalPages > 1 && (
           <>

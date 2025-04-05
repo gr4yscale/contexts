@@ -160,50 +160,6 @@ describe("CoreList", () => {
       expect(lastFrame()).toContain("[a]"); // Hotkeys should be visible in select mode
     });
   });
-  describe("multiple lists", () => {
-    it("switches to previous list when '{' is pressed in select mode", async () => {
-      const { stdin, lastFrame } = render(
-        <TestHarness keymap={keymap}>
-          <CoreList lists={mockLists} />
-        </TestHarness>,
-      );
-
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      // First go to next list
-      stdin.write("}");
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(lastFrame()).toContain("List 2 of 3");
-
-      // Switch to select mode
-      stdin.write("\r");
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      // Press '{' to switch to previous list
-      stdin.write("{");
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(lastFrame()).toContain("List 1 of 3");
-    });
-
-    it("switches to next list when '}' is pressed in select mode", async () => {
-      const { stdin, lastFrame } = render(
-        <TestHarness keymap={keymap}>
-          <CoreList lists={mockLists} />
-        </TestHarness>,
-      );
-
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      // Switch to select mode
-      stdin.write("\r");
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      // Press '}' to switch to next list
-      stdin.write("}");
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(lastFrame()).toContain("List 2 of 3");
-    });
-  });
   describe("search", () => {
     it("clears search string when delete key is pressed", async () => {
       const { stdin, lastFrame } = render(
