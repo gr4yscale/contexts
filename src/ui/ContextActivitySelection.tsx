@@ -15,13 +15,16 @@ import {
 import { executeAction } from "../actions.mts";
 
 const ContextActivitySelection: React.FC = () => {
-  const [lists, setLists] = useState<Array<List>>([]);
+  const [lists, setLists] = useState<Array<List>>([
+    { id: "initial", display: "initial", items: [] },
+  ]);
   const [loading, setLoading] = useState(true);
 
   const fetchActivities = async () => {
     setLoading(true);
     try {
       const activities = await filteredActivityTree(ActivityTreeFilter.ALL);
+      console.log(activities);
 
       const newItems: ListItem[] = activities.map((activity) => ({
         id: activity.activityId,

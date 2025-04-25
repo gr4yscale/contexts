@@ -2,7 +2,6 @@ import React, { useEffect, useState, useContext } from "react";
 import { Box, Text } from "ink";
 
 import { Activity } from "../types.mts";
-import { getCurrentContextActivities } from "../models/context.mts";
 import {
   filteredActivityTree,
   ActivityTreeFilter,
@@ -29,8 +28,9 @@ const ActivityNavigate: React.FC = () => {
 
   const fetchActivities = async () => {
     try {
-      const activities = await getCurrentContextActivities();
+      // here we will use a different fetcher; use a generic?
       const activities = await filteredActivityTree(ActivityTreeFilter.CONTEXT);
+
       const sortedActivities = [...activities].sort((a, b) => {
         const dateA = a.lastAccessed ? new Date(a.lastAccessed).getTime() : 0;
         const dateB = b.lastAccessed ? new Date(b.lastAccessed).getTime() : 0;

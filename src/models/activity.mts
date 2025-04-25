@@ -97,9 +97,12 @@ export async function filteredActivityTree(
       filter ? filter : ActivityTreeFilter.ALL,
     );
 
-    if (filter === ActivityTreeFilter.CONTEXT) {
-      const currentContext = await getCurrentContext();
+    const currentContext = await getCurrentContext();
 
+    // Get the set of activity IDs in the context for faster lookup
+    const contextActivityIds = new Set(currentContext.activityIds);
+
+    if (filter === ActivityTreeFilter.CONTEXT) {
       if (!currentContext) {
         // If no context exists, return all activities as unselected
         return filteredActivities.map((activity) => ({
@@ -107,9 +110,6 @@ export async function filteredActivityTree(
           selected: false,
         }));
       }
-
-      // Get the set of activity IDs in the context for faster lookup
-      const contextActivityIds = new Set(currentContext.activityIds);
 
       return filteredActivities
         .filter((activity) => contextActivityIds.has(activity.activityId))
@@ -122,7 +122,7 @@ export async function filteredActivityTree(
     // For non-CONTEXT filters, just return the filtered activities with selected=false
     return filteredActivities.map((activity) => ({
       ...activity,
-      selected: false,
+      selected: contextActivityIds.has(activity.activityId),
     }));
   } catch (error) {
     console.error("Error getting filtered activity tree:", error);
