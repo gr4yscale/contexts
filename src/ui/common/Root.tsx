@@ -19,6 +19,7 @@ import CurrentActivityAssignToParent from "../CurrentActivityAssignToParent.tsx"
 import CurrentActivityCreateChild from "../CurrentActivityCreateChild.tsx";
 import CurrentActivityRename from "../CurrentActivityRename.tsx";
 import CurrentActivityDelete from "../CurrentActivityDelete.tsx";
+import ActivitiesPrune from "../ActivitiesPrune.tsx";
 import Testbed from "../Testbed.tsx";
 
 // consider adding props here that would set initial state of ActivityRoot
@@ -41,6 +42,7 @@ const routes = [
   },
   { path: "/currentActivityRename", component: CurrentActivityRename },
   { path: "/currentActivityDelete", component: CurrentActivityDelete },
+  { path: "/activitiesPrune", component: ActivitiesPrune },
   { path: "/testbed", component: Testbed },
 ];
 
@@ -96,6 +98,9 @@ const Root: React.FC = () => {
           break;
         case "currentActivityDelete":
           setRoutePath("/currentActivityDelete");
+          break;
+        case "activitiesPrune":
+          setRoutePath("/activitiesPrune");
           break;
         case "testbed":
           setRoutePath("/testbed");

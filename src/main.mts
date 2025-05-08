@@ -11,6 +11,7 @@ import "./actions/base.mts";
 import "./actions/navigation.mts";
 import "./actions/currentActivity.mts";
 import "./actions/resource.mts";
+import "./actions/activity-bulk.mts";
 
 import { executeAction } from "./actions.mts";
 

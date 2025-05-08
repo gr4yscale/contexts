@@ -1,0 +1,84 @@
+import React, { useEffect, useState } from "react";
+import { Box, Text } from "ink";
+import { Activity } from "../types.mts";
+import CoreList, { ListItem } from "./common/CoreList.tsx";
+
+import {
+  filteredActivityTree,
+  ActivityTreeFilter,
+} from "../models/activity.mts";
+import { executeAction } from "../actions.mts";
+import {
+  getActivitiesWithX11Counts,
+  pruneActivities,
+} from "../actions/activity-bulk.mts";
+
+const ActivitiesPrune: React.FC = () => {
+  const [items, setItems] = useState<ListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchActivities = async () => {
+    setLoading(true);
+    try {
+      // Get all activities
+      const activities = await filteredActivityTree(ActivityTreeFilter.ALL);
+
+      // Enhance with X11 client counts and sort
+      const activitiesWithCounts = await getActivitiesWithX11Counts(activities);
+
+      const newItems: ListItem[] = activitiesWithCounts.map((activity) => ({
+        id: activity.activityId,
+        display:
+          "  ".repeat(activity.depth || 0) +
+          (activity.depth && activity.depth > 0 ? "└─ " : "") +
+          activity.name +
+          (activity.x11ClientCount !== undefined
+            ? ` (${activity.x11ClientCount} clients)`
+            : ""),
+        data: activity,
+      }));
+
+      setItems(newItems);
+    } catch (error) {
+      console.error("Error fetching activities:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchActivities();
+  }, []);
+
+  return (
+    <Box borderStyle="single" borderColor="gray">
+      {loading ? (
+        <Text>Loading activities...</Text>
+      ) : (
+        <Box flexDirection="column">
+          <Text bold>Select Activities to Prune</Text>
+          <Text>Activities are sorted by X11 client count</Text>
+          <CoreList
+            items={items}
+            multiple={true}
+            initialMode="select"
+            onSelected={async (selectedItems: ListItem[]) => {
+              const activities = selectedItems.map(
+                (item) => item.data as Activity,
+              );
+
+              try {
+                await pruneActivities(activities);
+                await executeAction("activityNavigate");
+              } catch (error) {
+                console.error("Error pruning activities:", error);
+              }
+            }}
+          />
+        </Box>
+      )}
+    </Box>
+  );
+};
+
+export default ActivitiesPrune;
