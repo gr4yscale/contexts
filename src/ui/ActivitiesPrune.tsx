@@ -33,7 +33,7 @@ const ActivitiesPrune: React.FC = () => {
           (activity.depth && activity.depth > 0 ? "└─ " : "") +
           activity.name +
           (activity.x11ClientCount !== undefined
-            ? ` (${activity.x11ClientCount} clients)`
+            ? ` (${activity.x11ClientCount})`
             : ""),
         data: activity,
       }));
@@ -56,8 +56,7 @@ const ActivitiesPrune: React.FC = () => {
         <Text>Loading activities...</Text>
       ) : (
         <Box flexDirection="column">
-          <Text bold>Select Activities to Prune</Text>
-          <Text>Activities are sorted by X11 client count</Text>
+          <Text bold>Prune Workspaces for Activities</Text>
           <CoreList
             items={items}
             multiple={true}
