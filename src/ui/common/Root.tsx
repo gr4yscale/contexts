@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Box, useInput, useStdout } from "ink";
 import { KeysContext } from "./Context.mts";
+import * as logger from "../../logger.mts";
 
 import { Keymap } from "./Keymapping.mts";
 
@@ -58,11 +59,12 @@ const Root: React.FC = () => {
     const result = keymap.handleKeyEvent(input, key);
     if (result) {
       if (result.handler) {
+        logger.debug(`Handling key event: ${input}`);
         result.handler();
       }
     } else {
       // unhandled key event
-      // console.log (info level)
+      logger.debug(`Unhandled key event: ${input}`);
     }
   });
 

@@ -5,6 +5,7 @@ import { $, fs } from "zx";
 import { createElement } from "react";
 import { render } from "ink";
 
+import * as logger from "./logger.mts";
 import { initializeDB } from "./db.mts";
 
 import "./actions/base.mts";
@@ -19,6 +20,12 @@ import Root from "./ui/common/Root.tsx";
 
 $.verbose = false; // suppress stdout from zx subprocess calls
 
+// Initialize logger
+logger.configureLogger({
+  level: logger.LogLevel.DEBUG,
+});
+logger.info("Application starting");
+
 fs.removeSync("/tmp/contexts.sock");
 
 const server = createServer((socket: Socket) => {
@@ -31,21 +38,22 @@ const server = createServer((socket: Socket) => {
     } catch (e) {
       const msg = `Error executing action ${data}!`;
       $`notify-send "${msg}"`;
-      console.log(msg);
-      console.log(e);
+      logger.error(msg, e);
+      logger.error(e);
     }
   });
 });
 
 server.listen("/tmp/contexts.sock", () => {
-  //console.error("Server is listening");
+  logger.info("Server is listening on /tmp/contexts.sock");
 });
 
 try {
   await initializeDB();
+  logger.info("Database initialized successfully");
 } catch (e) {
   $`notify-send "Database initialization error occurred."`;
-  console.error("Database initialization error:", e);
+  logger.error("Database initialization error:", e);
 }
 
 // write to an alternate screen, to preserve previous terminal contents

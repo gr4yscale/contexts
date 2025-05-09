@@ -1,4 +1,6 @@
 import pg from "pg";
+import * as logger from "./logger.mts";
+
 const { Pool } = pg;
 type PoolClient = pg.PoolClient;
 
@@ -28,8 +30,10 @@ let client: PoolClient | null = null;
 export async function initializeDB() {
   if (!client) {
     try {
+      logger.info("Initializing database connection");
       // Get a client from the pool
       client = await pool.connect();
+      logger.info("Database connection established");
 
       // Create migrations table first
       await client.query(`
@@ -39,8 +43,9 @@ export async function initializeDB() {
               applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           );
       `);
+      logger.info("Migrations table verified");
     } catch (error) {
-      console.error("Error initializing database:", error);
+      logger.error("Error initializing database:", error);
       throw error;
     }
   }
@@ -56,13 +61,15 @@ export async function getConnection(): Promise<PoolClient> {
 
 export async function closeDB(): Promise<void> {
   try {
+    logger.info("Closing database connections");
     if (client) {
       await client.release();
       client = null;
     }
     await pool.end();
+    logger.info("Database connections closed");
   } catch (error) {
-    console.error("Error closing database connection:", error);
+    logger.error("Error closing database connection:", error);
     throw error;
   }
 }
