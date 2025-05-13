@@ -37,14 +37,20 @@ export async function viewWorkspaceForActivity(activity: Activity) {
   let workspaces = await getWorkspacesForActivity(activity.activityId);
   let workspace: WorkspaceDTO | null;
   if (!workspaces || workspaces.length === 0) {
-    // TOFIX: return a Promise without null here; throw an error if it failed
-    workspace = await createWorkspaceForActivity(
-      activity.activityId,
-      activity.name,
-    );
-    if (workspace) {
-      await $`dwmc viewex ${workspace.id}`;
-      return true;
+    try {
+      // TOFIX: return a Promise without null here; throw an error if it failed
+      workspace = await createWorkspaceForActivity(
+        activity.activityId,
+        activity.name,
+      );
+      
+      if (workspace) {
+        await $`dwmc viewex ${workspace.id}`;
+        return true;
+      }
+    } catch (error) {
+      logger.error(`viewWorkspaceForActivity: Error creating workspace:`, error);
+      return false;
     }
   } else {
     //TOFIX needs cleanup from multiple workspaces approach

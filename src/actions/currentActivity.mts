@@ -53,6 +53,19 @@ export const currentActivityCreateSiblingActivityAction: CurrentActivityAction =
     },
   };
 
+export const currentActivityCreateRootActivityAction: CurrentActivityAction = {
+  id: "currentActivityCreateRootActivity",
+  name: "Create root Activity",
+  type: ActionType.CURRENT_ACTIVITY,
+  handler: async (activity: Activity) => {
+    const siblingActivityId = await createActivity({
+      name: `Sibling of ${activity.name}`,
+      parentActivityId: `root`,
+    });
+    console.log(`Created sibling activity with ID: ${siblingActivityId}`);
+  },
+};
+
 export const currentActivityDestroyAction: CurrentActivityAction = {
   id: "currentActivityDestroy",
   name: "Delete Activity",
@@ -66,4 +79,5 @@ registerAction(currentActivityRenameAction);
 registerAction(currentActivityAssignToParentAction);
 registerAction(currentActivityCreateChildActivityAction);
 registerAction(currentActivityCreateSiblingActivityAction);
+registerAction(currentActivityCreateRootActivityAction);
 registerAction(currentActivityDestroyAction);

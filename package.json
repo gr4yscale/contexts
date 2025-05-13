@@ -20,6 +20,8 @@
         "test:ui:corelist": "vitest run src/ui/common/CoreList.test.tsx",
         "migrate:up": "tsx src/scripts/migrate.mts up",
         "migrate:down": "tsx src/scripts/migrate.mts down",
+        "create:activity-tree": "tsx src/scripts/createActivityTree.mts",
+        "assign:workspaces": "tsx src/scripts/assignWorkspacesToActivities.mts",
         "build": "esbuild src/main.mts --bundle --platform=node --format=esm --packages=external --outfile=build.mjs"
     },
     "keywords": [],
@@ -33,7 +35,7 @@
         "esbuild": "0.19.8",
         "ink-testing-library": "^4.0.0",
         "jsdom": "^23.0.1",
-        "prettier": "3.1.0",
+        "prettier": "^3.5.3",
         "react-devtools-core": "^5.0.0",
         "tsx": "^4.4.0",
         "vitest": "^1.2.1",

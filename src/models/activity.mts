@@ -99,32 +99,41 @@ export async function filteredActivityTree(
     );
 
     const currentContext = await getCurrentContext();
+    // Handle null context case
+    if (!currentContext) {
+      console.log(`[DEBUG] No current context found`);
+      if (filter === ActivityTreeFilter.CONTEXT) {
+        return [];
+      }
+      
+      // For non-CONTEXT filters with no context, return all activities as unselected
+      return filteredActivities.map((activity) => ({
+        ...activity,
+        selected: false,
+      }));
+    }
 
     // Get the set of activity IDs in the context for faster lookup
     const contextActivityIds = new Set(currentContext.activityIds);
 
     if (filter === ActivityTreeFilter.CONTEXT) {
-      if (!currentContext) {
-        // If no context exists, return all activities as unselected
-        return filteredActivities.map((activity) => ({
-          ...activity,
-          selected: false,
-        }));
-      }
-
-      return filteredActivities
-        .filter((activity) => contextActivityIds.has(activity.activityId))
-        .map((activity) => ({
-          ...activity,
-          selected: true,
-        }));
+      const contextFilteredActivities = filteredActivities
+        .filter((activity) => contextActivityIds.has(activity.activityId));
+      
+      
+      return contextFilteredActivities.map((activity) => ({
+        ...activity,
+        selected: true,
+      }));
     }
 
     // For non-CONTEXT filters, just return the filtered activities with selected=false
-    return filteredActivities.map((activity) => ({
+    const result = filteredActivities.map((activity) => ({
       ...activity,
       selected: contextActivityIds.has(activity.activityId),
     }));
+    
+    return result;
   } catch (error) {
     console.error("Error getting filtered activity tree:", error);
     throw error;
@@ -516,7 +525,7 @@ export async function activityTree(
       return [];
     }
 
-    return result.rows.map((row: any) => ({
+    const mappedResults = result.rows.map((row: any) => ({
       activityId: row.activityid,
       orgId: row.orgid,
       orgText: row.orgtext,
@@ -529,6 +538,8 @@ export async function activityTree(
       depth: row.depth,
       selected: false,
     }));
+    
+    return mappedResults;
   } catch (error) {
     console.error("Error getting activity tree:", error);
     throw error;
