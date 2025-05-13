@@ -26,6 +26,7 @@ export type ActivityCreate = {
   active?: boolean;
   parentActivityId?: string;
   temp?: boolean;
+  workspaceId?: string;
 };
 
 export async function createActivity(
@@ -195,7 +196,7 @@ export async function updateActivity(
     const fields: string[] = [];
     const values: any[] = [];
 
-    const { orgId, orgText, name, lastAccessed, active, activityId, temp } =
+    const { orgId, orgText, name, lastAccessed, active, activityId, temp, workspaceId } =
       activity;
 
     const fieldMappings: [string, any][] = [
@@ -205,6 +206,7 @@ export async function updateActivity(
       ["lastAccessed", lastAccessed?.toISOString()],
       ["active", active],
       ["temp", temp],
+      ["workspace_id", workspaceId],
     ];
 
     let paramIndex = 1;

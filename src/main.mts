@@ -24,7 +24,6 @@ $.verbose = false; // suppress stdout from zx subprocess calls
 logger.configureLogger({
   level: logger.LogLevel.DEBUG,
 });
-logger.info("Application starting");
 
 fs.removeSync("/tmp/contexts.sock");
 
@@ -59,6 +58,7 @@ try {
 // write to an alternate screen, to preserve previous terminal contents
 process.stdout.write("\x1b[?1049h");
 
+// ui render loop
 const instance = render(createElement(Root, null));
 
 // restore previous terminal contents
