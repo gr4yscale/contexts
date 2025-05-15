@@ -29,7 +29,6 @@ export interface Resource {
   name: string;
   url: string; // The primary URL or identifier for the resource
   type: ResourceType;
-  description?: string;
   created: Date;
   lastAccessed: Date;
 }

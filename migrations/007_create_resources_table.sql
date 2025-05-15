@@ -5,7 +5,6 @@ CREATE TABLE resources (
     name VARCHAR(255) NOT NULL,
     url TEXT NOT NULL,
     type VARCHAR(50) NOT NULL, -- Corresponds to ResourceType enum values
-    description TEXT,
     created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     last_accessed TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
@@ -27,6 +26,5 @@ COMMENT ON COLUMN resources.id IS 'Unique identifier for the resource.';
 COMMENT ON COLUMN resources.name IS 'User-defined name for the resource.';
 COMMENT ON COLUMN resources.url IS 'The primary Uniform Resource Locator or identifier for the resource.';
 COMMENT ON COLUMN resources.type IS 'Type of the resource (e.g., web_link, org_note, llm_convo). Corresponds to ResourceType enum in code.';
-COMMENT ON COLUMN resources.description IS 'Optional description for the resource.';
 COMMENT ON COLUMN resources.created IS 'Timestamp of when the resource was created.';
 COMMENT ON COLUMN resources.last_accessed IS 'Timestamp of when the resource was last accessed or used.';

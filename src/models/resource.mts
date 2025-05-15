@@ -10,7 +10,6 @@ export type ResourceCreate = {
   name: string;
   url: string;
   type: ResourceType;
-  description?: string;
 };
 
 /**
@@ -22,16 +21,16 @@ export async function createResource(
   resourceData: ResourceCreate,
 ): Promise<ResourceId> {
   const client = await getConnection();
-  const { name, url, type, description } = resourceData;
+  const { name, url, type } = resourceData;
 
   try {
     const result = await client.query(
       `
-      INSERT INTO resources (name, url, type, description, created, last_accessed)
-      VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      INSERT INTO resources (name, url, type, created, last_accessed)
+      VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       RETURNING id;
       `,
-      [name, url, type, description ?? null],
+      [name, url, type],
     );
     logger.debug(`Resource created with ID: ${result.rows[0].id}`);
     return result.rows[0].id as ResourceId;
@@ -63,7 +62,6 @@ export async function getResourceById(
       name: row.name,
       url: row.url,
       type: row.type as ResourceType,
-      description: row.description,
       created: new Date(row.created),
       lastAccessed: new Date(row.last_accessed),
     };
@@ -86,7 +84,6 @@ export async function getAllResources(): Promise<Resource[]> {
       name: row.name,
       url: row.url,
       type: row.type as ResourceType,
-      description: row.description,
       created: new Date(row.created),
       lastAccessed: new Date(row.last_accessed),
     }));
@@ -115,7 +112,6 @@ export async function updateResource(
     "name",
     "url",
     "type",
-    "description",
     "lastAccessed",
   ];
 
@@ -158,7 +154,6 @@ export async function updateResource(
       name: row.name,
       url: row.url,
       type: row.type as ResourceType,
-      description: row.description,
       created: new Date(row.created),
       lastAccessed: new Date(row.last_accessed),
     };
@@ -209,7 +204,6 @@ export async function getResourcesByType(
       name: row.name,
       url: row.url,
       type: row.type as ResourceType,
-      description: row.description,
       created: new Date(row.created),
       lastAccessed: new Date(row.last_accessed),
     }));
