@@ -29,7 +29,7 @@ interface CoreListProps {
   initialMode?: Modes;
 }
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 20;
 const specialKeys = ["\\", "[", "]", "{", "}"];
 
 const CoreList: React.FC<CoreListProps> = ({

@@ -24,7 +24,7 @@ const ContextActivitySelection: React.FC = () => {
     setLoading(true);
     try {
       const activities = await filteredActivityTree(ActivityTreeFilter.ALL);
-      console.log(activities);
+      //console.log(activities);
 
       const newItems: ListItem[] = activities.map((activity) => ({
         id: activity.activityId,

@@ -5,8 +5,10 @@ import { Activity } from "../types.mts";
 import {
   filteredActivityTree,
   ActivityTreeFilter,
+  formatActivityWithHierarchy,
 } from "../models/activity.mts";
 import { executeAction } from "../actions.mts";
+import * as logger from "../logger.mts";
 
 import { KeymapConfig, key } from "./common/Keymapping.mts";
 import { KeysContext } from "./common/Context.mts";
@@ -37,11 +39,25 @@ const ActivityNavigate: React.FC = () => {
         return dateB - dateA;
       });
 
-      const newItems: ListItem[] = sortedActivities.map((activity) => ({
-        id: activity.activityId,
-        display: `${activity.name}`,
-        data: activity,
-      }));
+      // Debug parent-child relationships
+      logger.debug("Activity hierarchy:");
+      sortedActivities.forEach(activity => {
+        logger.debug(`Activity: ${activity.name}, ParentID: ${activity.parentActivityId || 'none'}`);
+      });
+      
+      // Format activities with hierarchy paths
+      const formattedActivities = await Promise.all(
+        sortedActivities.map(async (activity) => {
+          const hierarchyPath = await formatActivityWithHierarchy(activity, sortedActivities);
+          return {
+            id: activity.activityId,
+            display: hierarchyPath,
+            data: activity,
+          };
+        })
+      );
+
+      const newItems: ListItem[] = formattedActivities;
 
       setLists([
         {

@@ -2,6 +2,7 @@ import { Activity } from "../types.mts";
 import { getConnection } from "../db.mts";
 import { nanoid } from "nanoid";
 import { getCurrentContext } from "./context.mts";
+import * as logger from "../logger.mts";
 
 export type ActivityTreeItem = Activity & {
   depth?: number;
@@ -101,11 +102,11 @@ export async function filteredActivityTree(
     const currentContext = await getCurrentContext();
     // Handle null context case
     if (!currentContext) {
-      console.log(`[DEBUG] No current context found`);
+      logger.debug(`No current context found`);
       if (filter === ActivityTreeFilter.CONTEXT) {
         return [];
       }
-      
+
       // For non-CONTEXT filters with no context, return all activities as unselected
       return filteredActivities.map((activity) => ({
         ...activity,
@@ -117,10 +118,10 @@ export async function filteredActivityTree(
     const contextActivityIds = new Set(currentContext.activityIds);
 
     if (filter === ActivityTreeFilter.CONTEXT) {
-      const contextFilteredActivities = filteredActivities
-        .filter((activity) => contextActivityIds.has(activity.activityId));
-      
-      
+      const contextFilteredActivities = filteredActivities.filter((activity) =>
+        contextActivityIds.has(activity.activityId),
+      );
+
       return contextFilteredActivities.map((activity) => ({
         ...activity,
         selected: true,
@@ -132,7 +133,7 @@ export async function filteredActivityTree(
       ...activity,
       selected: contextActivityIds.has(activity.activityId),
     }));
-    
+
     return result;
   } catch (error) {
     console.error("Error getting filtered activity tree:", error);
@@ -205,8 +206,16 @@ export async function updateActivity(
     const fields: string[] = [];
     const values: any[] = [];
 
-    const { orgId, orgText, name, lastAccessed, active, activityId, temp, workspaceId } =
-      activity;
+    const {
+      orgId,
+      orgText,
+      name,
+      lastAccessed,
+      active,
+      activityId,
+      temp,
+      workspaceId,
+    } = activity;
 
     const fieldMappings: [string, any][] = [
       ["orgId", orgId],
@@ -443,6 +452,63 @@ export async function createChildActivity(
  * @param filter - The filter to apply to the activities (all, recent, temp)
  * @returns Array of activities with depth information
  */
+/**
+ * Formats an activity name with its hierarchy path
+ * @param activity - The activity to format
+ * @param activities - All activities in the tree
+ * @returns Formatted activity name with hierarchy (e.g. "parent > child > grandchild")
+ */
+export async function formatActivityWithHierarchy(
+  activity: ActivityTreeItem,
+  activities: ActivityTreeItem[],
+): Promise<string> {
+  // If it's a root activity (no parent), just return the name
+  if (!activity.parentActivityId) {
+    return activity.name;
+  }
+
+  // Build the hierarchy path
+  const path: string[] = [activity.name];
+  let currentId = activity.parentActivityId;
+  let isDirectParentRoot = false;
+
+  // Traverse up the hierarchy to build the path
+  while (currentId) {
+    // First try to find the parent in the provided activities array
+    let parent = activities.find((a) => a.activityId === currentId);
+
+    // If not found in the array, fetch it directly from the database
+    if (!parent) {
+      const fetchedParent = await getActivityById(currentId);
+      if (fetchedParent) {
+        parent = {
+          ...fetchedParent,
+          selected: false,
+          depth: 0, // Default depth
+        };
+      } else {
+        logger.debug(
+          `Parent not found for ID: ${currentId}, activity: ${activity.name}`,
+        );
+        break;
+      }
+    }
+
+    // If this is a root parent (no parent of its own), mark it
+    if (!parent.parentActivityId) {
+      isDirectParentRoot = true;
+    } else {
+      // Only add non-root parents to the path
+      path.unshift(parent.name);
+    }
+
+    currentId = parent.parentActivityId;
+  }
+
+  // Join the path with "→"
+  return path.join(" → ");
+}
+
 export async function activityTree(
   filter: ActivityTreeFilter = ActivityTreeFilter.ALL,
 ): Promise<ActivityTreeItem[]> {
@@ -538,7 +604,7 @@ export async function activityTree(
       depth: row.depth,
       selected: false,
     }));
-    
+
     return mappedResults;
   } catch (error) {
     console.error("Error getting activity tree:", error);
