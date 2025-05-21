@@ -2,9 +2,7 @@ import React, { useState } from "react";
 import { Box, Text } from "ink";
 import { useCurrentActivity } from "./common/useCurrentActivity.mts";
 
-import QuickSelectList from "./common/QuickSelectList.tsx";
-
-//           ^^ use with activities list
+import CoreList from "./common/CoreList.tsx";
 
 import {
   runFirefoxAction,
@@ -21,6 +19,7 @@ import {
 } from "../actions/currentActivity.mts";
 
 import { Action, executeAction, ActionType } from "../actions.mts";
+
 interface Props {
   keys?: string;
 }
@@ -46,9 +45,14 @@ const ActionExecute: React.FC<Props> = ({ keys = "asdfghjkl;" }) => {
         <Text>Loading...</Text>
       ) : (
         <>
-          <QuickSelectList
-            keys={keys}
-            onSelected={(action: Action) => {
+          <CoreList
+            items={actions.map((action) => ({
+              id: action.id,
+              display: action.name,
+              ...action,
+            }))}
+            onSelected={(selectedItems) => {
+              const action = selectedItems[0];
               if (
                 action.type === ActionType.CURRENT_ACTIVITY &&
                 currentActivity
@@ -58,11 +62,7 @@ const ActionExecute: React.FC<Props> = ({ keys = "asdfghjkl;" }) => {
                 executeAction(action.id);
               }
             }}
-            initialItems={actions.map((action) => ({
-              id: action.id,
-              display: action.name,
-              ...action,
-            }))}
+            initialMode="select"
           />
         </>
       )}
