@@ -86,9 +86,7 @@ export const activateActivity = async (id: ActivityId) => {
     await updateActivity({ activityId: id, lastAccessed: new Date() });
 
     const previousActivity = await getCurrentActivity();
-    if (previousActivity && activity) {
-      await updateActivityHistory(id, previousActivity.activityId);
-    }
+    await updateActivityHistory(id, previousActivity ? previousActivity.activityId : "");
 
     $`notify-send -a activity -t 500 "${activity.name}"`;
   } else {
