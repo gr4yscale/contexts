@@ -1,3 +1,4 @@
+import { nanoid } from "nanoid";
 import { ActionType, Action, registerAction } from "../actions.mts";
 import { Activity } from "../types.mts";
 import { createActivity } from "../models/activity.mts";
@@ -55,14 +56,14 @@ export const currentActivityCreateSiblingActivityAction: CurrentActivityAction =
 
 export const currentActivityCreateRootActivityAction: CurrentActivityAction = {
   id: "currentActivityCreateRootActivity",
-  name: "Create root Activity",
+  name: "Create Root-level Activity",
   type: ActionType.CURRENT_ACTIVITY,
-  handler: async (activity: Activity) => {
-    const siblingActivityId = await createActivity({
-      name: `Sibling of ${activity.name}`,
-      parentActivityId: `root`,
+  handler: async () => {
+    const activityId = await createActivity({
+      name: `${nanoid()}`,
+      parentActivityId: `zydKL5p5RuJM50pQLHMM7`,
     });
-    console.log(`Created sibling activity with ID: ${siblingActivityId}`);
+    console.log(`Created activity with ID: ${activityId}`);
   },
 };
 
