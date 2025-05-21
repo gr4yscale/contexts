@@ -22,6 +22,7 @@ import CurrentActivityRename from "../CurrentActivityRename.tsx";
 import CurrentActivityDelete from "../CurrentActivityDelete.tsx";
 import ActivitiesPrune from "../ActivitiesPrune.tsx";
 import Testbed from "../Testbed.tsx";
+import ResourceNavigate from "../ResourceNavigate.tsx";
 
 // consider adding props here that would set initial state of ActivityRoot
 // so that we can keep everything together (not making more components)
@@ -31,6 +32,7 @@ const routes = [
   { path: "/", component: ActivityNavigate },
   { path: "/activityCreate", component: ActivityCreate },
   { path: "/activityNavigate", component: ActivityNavigate },
+  { path: "/resourceNavigate", component: ResourceNavigate },
   { path: "/contextActivitySelect", component: ContextActivitySelection },
   { path: "/actionExecute", component: ActionExecute },
   {
@@ -78,6 +80,9 @@ const Root: React.FC = () => {
           break;
         case "activityNavigate":
           setRoutePath("/activityNavigate");
+          break;
+        case "resourceNavigate":
+          setRoutePath("/resourceNavigate");
           break;
         case "activateActivity":
           setRoutePath("/dummy"); // hack to force a re-render

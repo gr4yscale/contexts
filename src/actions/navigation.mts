@@ -227,6 +227,15 @@ export const navigateActivateActivityAction: NavigationAction = {
   },
 };
 
+export const navigateResourceNavigate: NavigationAction = {
+  id: "resourceNavigate",
+  name: "Resource Navigation",
+  type: ActionType.NAVIGATION,
+  handler: async () => {
+    await showTUI();
+  },
+};
+
 registerAction(navigateGlobalLeader);
 registerAction(navigateTestbed);
 registerAction(navigateActivityNavigate);
@@ -236,3 +245,4 @@ registerAction(navigateSwapActivityAction);
 registerAction(navigateSendWindowToAnotherActivityAction);
 registerAction(navigateActivitySwitchOldAction);
 registerAction(navigateActivateActivityAction);
+registerAction(navigateResourceNavigate);

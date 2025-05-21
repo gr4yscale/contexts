@@ -1,0 +1,152 @@
+import React, { useEffect, useState, useContext } from "react";
+import { Box, Text } from "ink";
+
+import { Resource, ResourceType } from "../types.mts";
+import { getResourcesByType } from "../models/resource.mts";
+import { executeAction } from "../actions.mts";
+import * as logger from "../logger.mts";
+
+import { KeymapConfig, key } from "./common/Keymapping.mts";
+import { KeysContext } from "./common/Context.mts";
+
+import CoreList, { List, ListItem } from "./common/CoreList.tsx";
+import useListSwitching from "./common/useListSwitching.mts";
+
+export type Modes = "lists" | "items";
+
+const ResourceNavigate: React.FC = () => {
+  const [mode, setMode] = useState<Modes>("items");
+
+  const [lists, setLists] = useState<Array<List>>([]);
+
+  const { currentListItems, currentListIndex, switchList } =
+    useListSwitching(lists);
+
+  const [loading, setLoading] = useState(true);
+
+  const fetchResources = async () => {
+    try {
+      const resources = await getResourcesByType(ResourceType.WEB);
+
+      const sortedResources = [...resources].sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
+
+      logger.debug("Fetched web resources:", sortedResources);
+
+      const formattedResources = sortedResources.map((resource) => ({
+        id: resource.id,
+        display: resource.name,
+        data: resource,
+      }));
+
+      setLists([
+        {
+          id: "resources",
+          display: "Web Resources",
+          items: formattedResources,
+        },
+      ]);
+    } catch (error) {
+      console.error("Error fetching web resources:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchResources();
+  }, []);
+
+  // keymapping
+  const { keymap } = useContext(KeysContext);
+
+  // shared keymap
+  useEffect(() => {
+    keymap.pushKeymap([
+      {
+        sequence: [key("`")],
+        description: "Toggle List/Items",
+        name: "toggle-list-or-items",
+        handler: () => {
+          if (mode === "lists") {
+            setMode("items");
+          } else {
+            setMode("lists");
+          }
+        },
+        hidden: true,
+      },
+      {
+        sequence: [key("{")],
+        description: "Previous list",
+        name: "prevList",
+        handler: () => {
+          switchList(currentListIndex - 1);
+        },
+      },
+      {
+        sequence: [key("}")],
+        description: "Next list",
+        name: "nextList",
+        handler: () => {
+          switchList(currentListIndex + 1);
+        },
+      },
+    ]);
+
+    return () => {
+      keymap.popKeymap();
+    };
+  }, []);
+
+  return (
+    <Box borderStyle="single" borderColor="gray">
+      {loading ? (
+        <Text>Loading web resources...</Text>
+      ) : mode === "items" ? (
+        <CoreList
+          items={currentListItems}
+          onSelected={(selectedItems: ListItem[]) => {
+            if (selectedItems.length > 0) {
+              const selectedItem = selectedItems[0];
+              const resource = selectedItem.data as Resource;
+              if (resource && resource.id) {
+                executeAction("activateResource", resource.id);
+              } else {
+                console.error(
+                  "Selected item data is not a valid Resource:",
+                  selectedItem
+                );
+              }
+            }
+          }}
+          multiple={false}
+          initialMode="select"
+        />
+      ) : (
+        <CoreList
+          items={lists}
+          onSelected={(selectedItems: ListItem[]) => {
+            if (selectedItems.length > 0) {
+              const selectedItem = selectedItems[0];
+              const resource = selectedItem.data as Resource;
+              if (resource && resource.id) {
+                executeAction("activateResource", resource.id);
+              } else {
+                console.error(
+                  "Selected item data is not a valid Resource:",
+                  selectedItem
+                );
+              }
+            }
+          }}
+          multiple={false}
+          initialMode="select"
+        />
+      )}
+    </Box>
+  );
+};
+
+export default ResourceNavigate;
