@@ -12,6 +12,7 @@ import {
   getPreviousActivity,
   updateActivityHistory,
   updateActivity,
+  formatActivityWithHierarchy,
 } from "../models/activity.mts";
 
 import { viewWorkspaceForActivity } from "../workspaces.mts";
@@ -112,11 +113,21 @@ export const sendWindowToAnotherActivity = async () => {
   const sorted = activities.sort(
     (l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime(),
   );
+  //TOFIX: hack; selection state needs to be removed from `formatActivitityWithHierarchy`
+  const unselected = sorted.map((a) => ({...a, selected: false}));
+
+  // Format activities with hierarchy paths (TOFIX: cache)
+  const formattedActivities = await Promise.all(
+     unselected.map(async (activity) => {
+       const hierarchyPath = await formatActivityWithHierarchy(activity, unselected);
+       return {...activity, name: hierarchyPath}
+    })
+  );
 
   const menuItem = (activity: Activity) => ({
-    display: `${activity.name}`,
+    display: activity.name,
     handler: async (selectedIndex?: number) => {
-      if (selectedIndex !== undefined) {
+      if (selectedIndex !== undefined) { 
         const workspaces = await getWorkspacesForActivity(activity.activityId);
         if (workspaces && workspaces[0]) {
           await $`dwmc tagex ${workspaces[0].id.toString()}`;
@@ -129,7 +140,7 @@ export const sendWindowToAnotherActivity = async () => {
 
   await buildMenu({
     display: `Send window to activity:`,
-    builder: () => sorted.map(menuItem),
+    builder: () => formattedActivities.map(menuItem),
   });
 };
 
