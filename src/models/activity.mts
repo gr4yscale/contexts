@@ -363,6 +363,14 @@ export async function getCurrentActivity(): Promise<Activity | null> {
     }
 
     const currentActivityId = result.rows[0].current_activity_id;
+
+    if (!currentActivityId) {
+      logger.debug(
+        "Current activity ID from history is null or undefined. No current activity.",
+      );
+      return null;
+    }
+
     return getActivityById(currentActivityId);
   } catch (error) {
     console.error("Error retrieving current activity:", error);
