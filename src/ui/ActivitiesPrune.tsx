@@ -29,8 +29,6 @@ const ActivitiesPrune: React.FC = () => {
       const newItems: ListItem[] = activitiesWithCounts.map((activity) => ({
         id: activity.activityId,
         display:
-          "  ".repeat(activity.depth || 0) +
-          (activity.depth && activity.depth > 0 ? "└─ " : "") +
           activity.name +
           (activity.x11ClientCount !== undefined
             ? ` (${activity.x11ClientCount})`
