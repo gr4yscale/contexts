@@ -39,12 +39,6 @@ const ActivityNavigate: React.FC = () => {
         return dateB - dateA;
       });
 
-      // Debug parent-child relationships
-      logger.debug("Activity hierarchy:");
-      sortedActivities.forEach(activity => {
-        logger.debug(`Activity: ${activity.name}, ParentID: ${activity.parentActivityId || 'none'}`);
-      });
-      
       // Format activities with hierarchy paths
       const formattedActivities = await Promise.all(
         sortedActivities.map(async (activity) => {

@@ -79,7 +79,7 @@ export async function createActivity(
 
     return activityId;
   } catch (error) {
-    console.error("Error creating activity:", error);
+    logger.error("Error creating activity:", error);
     throw error;
   }
 }
@@ -136,7 +136,7 @@ export async function filteredActivityTree(
 
     return result;
   } catch (error) {
-    console.error("Error getting filtered activity tree:", error);
+    logger.error("Error getting filtered activity tree:", error);
     throw error;
   }
 }
@@ -168,7 +168,7 @@ export async function getActivityById(
       temp: row.temp,
     };
   } catch (error) {
-    console.error("Error getting activity:", error);
+    logger.error("Error getting activity:", error);
     throw error;
   }
 }
@@ -193,7 +193,7 @@ export async function getAllActivities(): Promise<Activity[]> {
       parentActivityId: row.parent_id,
     }));
   } catch (error) {
-    console.error("Error getting all activities:", error);
+    logger.error("Error getting all activities:", error);
     throw error;
   }
 }
@@ -250,7 +250,7 @@ export async function updateActivity(
 
     await client.query(query, values);
   } catch (error) {
-    console.error("Error updating activity:", error);
+    logger.error("Error updating activity:", error);
     throw error;
   }
 }
@@ -279,7 +279,7 @@ export async function deleteActivity(
       activityId,
     ]);
   } catch (error) {
-    console.error("Error deleting activity:", error);
+    logger.error("Error deleting activity:", error);
     throw error;
   }
 }
@@ -306,7 +306,7 @@ export async function getActiveActivities(): Promise<Activity[]> {
       parentActivityId: row.parent_id,
     }));
   } catch (error) {
-    console.error("Error getting active activities:", error);
+    logger.error("Error getting active activities:", error);
     throw error;
   }
 }
@@ -345,7 +345,7 @@ export async function updateActivityHistory(
       [currentActivityId],
     );
   } catch (error) {
-    console.error("Error updating activity history:", error);
+    logger.error("Error updating activity history:", error);
     throw error;
   }
 }
@@ -375,7 +375,7 @@ export async function getCurrentActivity(): Promise<Activity | null> {
 
     return getActivityById(currentActivityId);
   } catch (error) {
-    console.error("Error retrieving current activity:", error);
+    logger.error("Error retrieving current activity:", error);
     throw error;
   }
 }
@@ -400,7 +400,7 @@ export async function getPreviousActivity(): Promise<Activity | null> {
     const previousActivityId = result.rows[0].previous_activity_id;
     return getActivityById(previousActivityId);
   } catch (error) {
-    console.error("Error retrieving previous activity:", error);
+    logger.error("Error retrieving previous activity:", error);
     throw error;
   }
 }
@@ -435,7 +435,7 @@ export async function getChildActivities(
       parentActivityId: row.parent_id,
     }));
   } catch (error) {
-    console.error("Error getting child activities:", error);
+    logger.error("Error getting child activities:", error);
     throw error;
   }
 }
@@ -617,7 +617,7 @@ export async function activityTree(
 
     return mappedResults;
   } catch (error) {
-    console.error("Error getting activity tree:", error);
+    logger.error("Error getting activity tree:", error);
     throw error;
   }
 }
