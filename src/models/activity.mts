@@ -218,10 +218,10 @@ export async function updateActivity(
     } = activity;
 
     const fieldMappings: [string, any][] = [
-      ["orgId", orgId],
-      ["orgText", orgText],
+      ["orgid", orgId],
+      ["orgtext", orgText],
       ["name", name],
-      ["lastAccessed", lastAccessed?.toISOString()],
+      ["lastaccessed", lastAccessed?.toISOString()],
       ["active", active],
       ["temp", temp],
       ["workspace_id", workspaceId],
@@ -244,7 +244,7 @@ export async function updateActivity(
 
     const query = `UPDATE activities SET ${fields.join(
       ", ",
-    )} WHERE activityId = $${paramIndex};`;
+    )} WHERE activityid = $${paramIndex};`;
 
     await client.query(query, values);
   } catch (error) {
