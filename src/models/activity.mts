@@ -213,11 +213,13 @@ export async function updateActivity(
       lastAccessed,
       active,
       activityId,
+      parentActivityId,
       temp,
       workspaceId,
     } = activity;
 
     const fieldMappings: [string, any][] = [
+      ["parent_id", parentActivityId],
       ["orgid", orgId],
       ["orgtext", orgText],
       ["name", name],
