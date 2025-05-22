@@ -10,19 +10,24 @@ import {
   deleteWorkspaceById,
 } from "../models/workspace.mts";
 
+interface ActivityBulkAction extends Action {
+  type: ActionType.ACTIVITY_BULK;
+  handler: () => Promise<void> | void;
+}
+
 /**
  * Bulk delete activities
  */
-registerAction({
+export const activitiesPrune: ActivityBulkAction = {
   id: "activitiesPrune",
   name: "Prune Activities",
-  type: ActionType.BASE,
+  type: ActionType.ACTIVITY_BULK,
   handler: async () => {
     await $`dwmc viewex 0`; // TOFIX: shared showTUI func
     // The actual pruning will be handled by callbacks in the UI
     // This action just triggers the UI to show
   },
-});
+};
 
 /**
  * Execute the pruning of selected activities
@@ -127,3 +132,5 @@ export async function getActivitiesWithX11Counts(
     (a, b) => (b.x11ClientCount || 0) - (a.x11ClientCount || 0),
   );
 }
+
+registerAction(activitiesPrune);

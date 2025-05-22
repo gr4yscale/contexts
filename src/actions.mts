@@ -5,6 +5,7 @@ export enum ActionType {
   CURRENT_ACTIVITY = "currentActivity",
   RESOURCE = "resource",
   NAVIGATION = "navigation",
+  ACTIVITY_BULK = "activityBulk",
 }
 
 export interface Action {

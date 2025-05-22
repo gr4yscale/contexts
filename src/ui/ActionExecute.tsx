@@ -18,6 +18,8 @@ import {
   currentActivityDestroyAction,
 } from "../actions/currentActivity.mts";
 
+import { activitiesPrune } from "../actions/activity-bulk.mts";
+
 import { Action, executeAction, ActionType } from "../actions.mts";
 
 interface Props {
@@ -28,6 +30,7 @@ const ActionExecute: React.FC<Props> = ({ keys = "asdfghjkl;" }) => {
   const { currentActivity, loading } = useCurrentActivity();
 
   const [actions, setActions] = useState<Action[]>([
+    activitiesPrune,
     runFirefoxAction,
     runEmacsAction,
     runRangerAction,
