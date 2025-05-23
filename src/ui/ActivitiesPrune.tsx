@@ -7,6 +7,7 @@ import {
   filteredActivityTree,
   ActivityTreeFilter,
 } from "../models/activity.mts";
+import { getAllWorkspaces } from "../models/workspace.mts";
 import { executeAction } from "../actions.mts";
 import {
   getActivitiesWithX11Counts,
@@ -23,10 +24,21 @@ const ActivitiesPrune: React.FC = () => {
       // Get all activities
       const activities = await filteredActivityTree(ActivityTreeFilter.ALL);
 
-      // Enhance with X11 client counts and sort
+      // Enhance with X11 client counts
       const activitiesWithCounts = await getActivitiesWithX11Counts(activities);
 
-      const newItems: ListItem[] = activitiesWithCounts.map((activity) => ({
+      // Get all workspaces and create a set of their activityIds
+      const workspaces = await getAllWorkspaces();
+      const workspaceActivityIds = new Set(
+        workspaces.map((ws) => ws.activityId),
+      );
+
+      // Filter activities to include only those with an associated workspace
+      const activitiesWithWorkspaces = activitiesWithCounts.filter((activity) =>
+        workspaceActivityIds.has(activity.activityId),
+      );
+
+      const newItems: ListItem[] = activitiesWithWorkspaces.map((activity) => ({
         id: activity.activityId,
         display:
           activity.name +
