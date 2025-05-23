@@ -1,0 +1,5 @@
+-- up
+ALTER TABLE activities ADD COLUMN IF NOT EXISTS temp BOOLEAN DEFAULT FALSE;
+
+-- down
+ALTER TABLE activities DROP COLUMN IF EXISTS temp;

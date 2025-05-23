@@ -3,6 +3,7 @@ import { Box, Text } from "ink";
 import { useCurrentActivity } from "./common/useCurrentActivity.mts";
 import TextInput from "./TextInput.tsx";
 import { updateActivity } from "../models/activity.mts";
+import { executeAction } from "../actions.mts";
 
 const CurrentActivityRename: React.FC = () => {
   const { currentActivity, loading } = useCurrentActivity();
@@ -25,6 +26,7 @@ const CurrentActivityRename: React.FC = () => {
                   name: name
                 });
               }
+              executeAction("activityNavigate");
             }}
           />
         </Box>

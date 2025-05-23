@@ -268,39 +268,39 @@ export async function removeActivityFromLatestContext(
  * @param contextId The ID of the context
  * @returns Array of Activity objects
  */
-export async function getContextActivities(
-  contextId: string,
-): Promise<Activity[]> {
-  try {
-    const client = await getConnection();
+// export async function getContextActivities(
+//   contextId: string,
+// ): Promise<Activity[]> {
+//   try {
+//     const client = await getConnection();
 
-    const result = await client.query(
-      `SELECT a.activityid, a.name, a.created, a.lastaccessed, a.active, a.parent_id, a.orgid, a.orgtext
-       FROM activities a
-       JOIN context_activities ca ON a.activityid = ca.activity_id
-       WHERE ca.context_id = $1;`,
-      [contextId],
-    );
+//     const result = await client.query(
+//       `SELECT a.activityid, a.name, a.created, a.lastaccessed, a.active, a.parent_id, a.orgid, a.orgtext
+//        FROM activities a
+//        JOIN context_activities ca ON a.activityid = ca.activity_id
+//        WHERE ca.context_id = $1;`,
+//       [contextId],
+//     );
 
-    if (result.rows.length === 0) {
-      return [];
-    }
+//     if (result.rows.length === 0) {
+//       return [];
+//     }
 
-    return result.rows.map((row) => ({
-      activityId: row.activityid,
-      orgId: row.orgid || "",
-      orgText: row.orgtext || "",
-      name: row.name,
-      created: new Date(row.created),
-      lastAccessed: new Date(row.lastaccessed),
-      active: row.active,
-      parentActivityId: row.parent_id,
-    }));
-  } catch (error) {
-    console.error("Error getting context activities:", error);
-    throw error;
-  }
-}
+//     return result.rows.map((row) => ({
+//       activityId: row.activityid,
+//       orgId: row.orgid || "",
+//       orgText: row.orgtext || "",
+//       name: row.name,
+//       created: new Date(row.created),
+//       lastAccessed: new Date(row.lastaccessed),
+//       active: row.active,
+//       parentActivityId: row.parent_id,
+//     }));
+//   } catch (error) {
+//     console.error("Error getting context activities:", error);
+//     throw error;
+//   }
+// }
 
 /**
  * Gets the most recently created context
@@ -345,17 +345,17 @@ export async function getCurrentContext(): Promise<Context | null> {
  * Gets all activities for the current (most recently created) context
  * @returns Array of Activity objects or empty array if no current context exists
  */
-export async function getCurrentContextActivities(): Promise<Activity[]> {
-  try {
-    const currentContext = await getCurrentContext();
+// export async function getCurrentContextActivities(): Promise<Activity[]> {
+//   try {
+//     const currentContext = await getCurrentContext();
 
-    if (!currentContext) {
-      return [];
-    }
+//     if (!currentContext) {
+//       return [];
+//     }
 
-    return await getContextActivities(currentContext.contextId);
-  } catch (error) {
-    console.error("Error getting current context activities:", error);
-    throw error;
-  }
-}
+//     return await getContextActivities(currentContext.contextId);
+//   } catch (error) {
+//     console.error("Error getting current context activities:", error);
+//     throw error;
+//   }
+// }

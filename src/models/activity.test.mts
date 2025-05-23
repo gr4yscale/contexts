@@ -14,8 +14,13 @@ import {
   getPreviousActivity,
   getChildActivities,
   ActivityCreate,
+  filteredActivityTree,
+  ActivityTreeFilter,
 } from "./activity.mts";
 import { Activity } from "../types.mts";
+
+import { filteredActivityTree, ActivityTreeFilter } from "./activity.mts";
+import { createContext, updateContext } from "./context.mts";
 
 const isIntegrationTest = process.env.RUN_INTEGRATION_TESTS === "true";
 
@@ -598,5 +603,186 @@ testSuite("Activity Model Integration Tests", () => {
     expect(level1?.depth).toBe(1);
     expect(level2?.depth).toBe(2);
     expect(level3?.depth).toBe(3);
+  });
+
+  describe("filteredActivityTree", () => {
+    it("should return all activities with ALL filter", async () => {
+      // Create several activities
+      const activity1 = await createActivity({
+        name: "Regular Activity 1",
+        active: true,
+      });
+
+      const activity2 = await createActivity({
+        name: "Regular Activity 2",
+        active: true,
+      });
+
+      const activity3 = await createActivity({
+        name: "Temp Activity",
+        active: true,
+        temp: true,
+      });
+
+      // Get filtered activities with ALL filter
+      const allActivities = await filteredActivityTree(ActivityTreeFilter.ALL);
+
+      // Should include all activities
+      const activityIds = allActivities.map((a) => a.activityId);
+      expect(activityIds).toContain(activity1);
+      expect(activityIds).toContain(activity2);
+      expect(activityIds).toContain(activity3);
+
+      // All should have selected = false
+      expect(allActivities.every((a) => a.selected === false)).toBe(true);
+    });
+
+    it("should return only temp activities with TEMP filter", async () => {
+      // Create regular and temp activities
+      const regularActivity = await createActivity({
+        name: "Regular Activity",
+        active: true,
+        temp: false,
+      });
+
+      const tempActivity1 = await createActivity({
+        name: "Temp Activity 1",
+        active: true,
+        temp: true,
+      });
+
+      const tempActivity2 = await createActivity({
+        name: "Temp Activity 2",
+        active: true,
+        temp: true,
+      });
+
+      // Get filtered activities with TEMP filter
+      const tempActivities = await filteredActivityTree(
+        ActivityTreeFilter.TEMP,
+      );
+
+      // Should only include temp activities
+      const activityIds = tempActivities.map((a) => a.activityId);
+      expect(activityIds).not.toContain(regularActivity);
+      expect(activityIds).toContain(tempActivity1);
+      expect(activityIds).toContain(tempActivity2);
+
+      // All should have selected = false
+      expect(tempActivities.every((a) => a.selected === false)).toBe(true);
+    });
+
+    it("should return recent activities with RECENT filter", async () => {
+      // Create an activity and update its lastAccessed to be older
+      const oldActivity = await createActivity({
+        name: "Old Activity",
+        active: true,
+      });
+
+      // Manually update the lastAccessed date to be older than 7 days
+      const client = await getConnection();
+      await client.query(
+        "UPDATE activities SET lastAccessed = CURRENT_TIMESTAMP - INTERVAL '8 days' WHERE activityId = $1",
+        [oldActivity],
+      );
+
+      // Create a new activity (which will have current timestamp)
+      const recentActivity = await createActivity({
+        name: "Recent Activity",
+        active: true,
+      });
+
+      // Get filtered activities with RECENT filter
+      const recentActivities = await filteredActivityTree(
+        ActivityTreeFilter.RECENT,
+      );
+
+      // Should only include recent activities
+      const activityIds = recentActivities.map((a) => a.activityId);
+      expect(activityIds).not.toContain(oldActivity);
+      expect(activityIds).toContain(recentActivity);
+    });
+
+    it("should mark activities in context as selected with CONTEXT filter", async () => {
+      // Create activities
+      const activity1 = await createActivity({
+        name: "Activity 1",
+        active: true,
+      });
+
+      const activity2 = await createActivity({
+        name: "Activity 2",
+        active: true,
+      });
+
+      const activity3 = await createActivity({
+        name: "Activity 3",
+        active: true,
+      });
+
+      // Create a context with activity1 and activity3
+      const contextId = await createContext({
+        name: "Test Context",
+        activityIds: [activity1, activity3],
+      });
+
+      // Get filtered activities with CONTEXT filter
+      const contextActivities = await filteredActivityTree(
+        ActivityTreeFilter.CONTEXT,
+      );
+
+      // All activities should be included
+      const activityIds = contextActivities.map((a) => a.activityId);
+      expect(activityIds).toContain(activity1);
+      expect(activityIds).toContain(activity2);
+      expect(activityIds).toContain(activity3);
+
+      // Check selected state
+      const activity1InResult = contextActivities.find(
+        (a) => a.activityId === activity1,
+      );
+      const activity2InResult = contextActivities.find(
+        (a) => a.activityId === activity2,
+      );
+      const activity3InResult = contextActivities.find(
+        (a) => a.activityId === activity3,
+      );
+
+      expect(activity1InResult?.selected).toBe(true);
+      expect(activity2InResult?.selected).toBe(false);
+      expect(activity3InResult?.selected).toBe(true);
+    });
+
+    it("should handle empty context with CONTEXT filter", async () => {
+      // Create activities
+      const activity1 = await createActivity({
+        name: "Activity 1",
+        active: true,
+      });
+
+      const activity2 = await createActivity({
+        name: "Activity 2",
+        active: true,
+      });
+
+      // Create a context with no activities
+      const contextId = await createContext({
+        name: "Empty Context",
+        activityIds: [],
+      });
+
+      // Get filtered activities with CONTEXT filter
+      const contextActivities = await filteredActivityTree(
+        ActivityTreeFilter.CONTEXT,
+      );
+
+      // All activities should be included but none selected
+      const activityIds = contextActivities.map((a) => a.activityId);
+      expect(activityIds).toContain(activity1);
+      expect(activityIds).toContain(activity2);
+
+      // All should have selected = false
+      expect(contextActivities.every((a) => a.selected === false)).toBe(true);
+    });
   });
 });

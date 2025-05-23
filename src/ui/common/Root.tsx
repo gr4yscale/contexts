@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Box, useInput, useStdout } from "ink";
 import { KeysContext } from "./Context.mts";
+import * as logger from "../../logger.mts";
 
 import { Keymap } from "./Keymapping.mts";
 
@@ -19,6 +20,9 @@ import CurrentActivityAssignToParent from "../CurrentActivityAssignToParent.tsx"
 import CurrentActivityCreateChild from "../CurrentActivityCreateChild.tsx";
 import CurrentActivityRename from "../CurrentActivityRename.tsx";
 import CurrentActivityDelete from "../CurrentActivityDelete.tsx";
+import ActivitiesPrune from "../ActivitiesPrune.tsx";
+import Testbed from "../Testbed.tsx";
+import ResourceNavigate from "../ResourceNavigate.tsx";
 
 // consider adding props here that would set initial state of ActivityRoot
 // so that we can keep everything together (not making more components)
@@ -28,6 +32,7 @@ const routes = [
   { path: "/", component: ActivityNavigate },
   { path: "/activityCreate", component: ActivityCreate },
   { path: "/activityNavigate", component: ActivityNavigate },
+  { path: "/resourceNavigate", component: ResourceNavigate },
   { path: "/contextActivitySelect", component: ContextActivitySelection },
   { path: "/actionExecute", component: ActionExecute },
   {
@@ -40,6 +45,8 @@ const routes = [
   },
   { path: "/currentActivityRename", component: CurrentActivityRename },
   { path: "/currentActivityDelete", component: CurrentActivityDelete },
+  { path: "/activitiesPrune", component: ActivitiesPrune },
+  { path: "/testbed", component: Testbed },
 ];
 
 // define root keymap
@@ -54,11 +61,12 @@ const Root: React.FC = () => {
     const result = keymap.handleKeyEvent(input, key);
     if (result) {
       if (result.handler) {
+        logger.debug(`Handling key event: ${input}`);
         result.handler();
       }
     } else {
       // unhandled key event
-      // console.log (info level)
+      logger.debug(`Unhandled key event: ${input}`);
     }
   });
 
@@ -72,6 +80,9 @@ const Root: React.FC = () => {
           break;
         case "activityNavigate":
           setRoutePath("/activityNavigate");
+          break;
+        case "resourceNavigate":
+          setRoutePath("/resourceNavigate");
           break;
         case "activateActivity":
           setRoutePath("/dummy"); // hack to force a re-render
@@ -94,6 +105,12 @@ const Root: React.FC = () => {
           break;
         case "currentActivityDelete":
           setRoutePath("/currentActivityDelete");
+          break;
+        case "activitiesPrune":
+          setRoutePath("/activitiesPrune");
+          break;
+        case "testbed":
+          setRoutePath("/testbed");
           break;
       }
     };

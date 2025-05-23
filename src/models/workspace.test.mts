@@ -220,4 +220,47 @@ testSuite("Workspace Model Integration Tests", () => {
     // Verify all workspaces were created
     expect(workspaces).toHaveLength(3);
   });
+
+  it("should allow reusing workspace IDs after deletion", async () => {
+    // Create a workspace
+    const workspace1 = await createWorkspaceForActivity(
+      testActivityId1,
+      "Workspace 1",
+    );
+    
+    // Delete the workspace
+    await deleteWorkspaceById(workspace1.id);
+    
+    // Create a new workspace - should reuse the ID
+    const workspace2 = await createWorkspaceForActivity(
+      testActivityId2,
+      "Workspace 2",
+    );
+    
+    // Verify the ID was reused
+    expect(workspace2.id).toBe(workspace1.id);
+    
+    // Verify the new workspace has the correct properties
+    expect(workspace2.activityId).toBe(testActivityId2);
+    expect(workspace2.name).toBe("Workspace 2");
+  });
+
+  it("should throw an error when maximum workspaces (29) is reached", async () => {
+    // Create 29 workspaces (maximum allowed)
+    for (let i = 1; i <= 29; i++) {
+      await createWorkspaceForActivity(
+        testActivityId1,
+        `Workspace ${i}`
+      );
+    }
+    
+    // Verify we have 29 workspaces
+    const workspaces = await getAllWorkspaces();
+    expect(workspaces).toHaveLength(29);
+    
+    // Try to create one more workspace - should throw an error
+    await expect(
+      createWorkspaceForActivity(testActivityId1, "One Too Many")
+    ).rejects.toThrow("Maximum number of workspaces (29) reached");
+  });
 });

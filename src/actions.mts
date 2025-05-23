@@ -1,8 +1,11 @@
+import * as logger from "./logger.mts";
+
 export enum ActionType {
   BASE = "base",
   CURRENT_ACTIVITY = "currentActivity",
   RESOURCE = "resource",
   NAVIGATION = "navigation",
+  ACTIVITY_BULK = "activityBulk",
 }
 
 export interface Action {
@@ -36,12 +39,20 @@ export function getAction(id: string): Action | undefined {
 }
 
 export async function executeAction(id: string, ...args: any[]): Promise<void> {
+  logger.debug(`Executing action: ${id}`, args);
   const action = getAction(id);
   if (!action) {
+    logger.error(`Action with ID "${id}" not found`);
     throw new Error(`Action with ID "${id}" not found`);
   }
 
-  await action.handler(...args);
+  try {
+    await action.handler(...args);
+    logger.debug(`Action completed: ${id}`);
+  } catch (error) {
+    logger.error(`Error executing action ${id}:`, error);
+    throw error;
+  }
 
   for (const listener of listeners) {
     listener(id);

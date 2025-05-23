@@ -34,13 +34,12 @@ export async function getAllWorkspaces(): Promise<WorkspaceDTO[]> {
 
 /**
  * Creates a new workspace for the given activity with a unique ID.
- * Uses a recursive SQL query to find the first available ID from the workspace_id_seq
- * sequence that doesn't conflict with existing workspace IDs. Will attempt up to 32
- * different sequence values before failing.
+ * Tries to find any available ID in the range 1-32 that isn't currently used.
+ * If all IDs are in use, it will throw an error.
  *
  * @param activityId - The ID of the activity to create a workspace for
  * @returns Promise<WorkspaceDTO> - The newly created workspace
- * @throws {Error} When no available IDs are found or when maximum workspaces (32) is reached
+ * @throws {Error} When all workspace IDs are in use or when insertion fails
  */
 export async function createWorkspaceForActivity(
   activityId: string,
@@ -48,37 +47,34 @@ export async function createWorkspaceForActivity(
 ): Promise<WorkspaceDTO> {
   const client = await getConnection();
   try {
+    // First check if all IDs are in use
+    const countResult = await client.query(
+      `SELECT COUNT(*) as count FROM workspaces`
+    );
+    
+    if (countResult.rows[0].count >= 29) {
+      throw new Error("Maximum number of workspaces (29) reached. Delete some workspaces before creating new ones.");
+    }
+    
+    // This query:
+    // 1. Generates a series of numbers from 1 to 29 (all possible workspace IDs)
+    // 2. Finds which IDs are not currently in use
+    // 3. Inserts the new workspace with the first available ID
     const result = await client.query(
       `
-      WITH RECURSIVE workspace_insert AS (
-        SELECT 
-          nextval('workspace_id_seq') as next_id,
-          1 as attempt
-        UNION ALL
-        SELECT 
-          nextval('workspace_id_seq'),
-          attempt + 1
-        FROM workspace_insert
-        WHERE attempt < 32
-        AND EXISTS (
-          SELECT 1 FROM workspaces w 
-          WHERE w.id = workspace_insert.next_id
-        )
+      WITH available_ids AS (
+        SELECT generate_series(1, 29) AS id
+        EXCEPT
+        SELECT id FROM workspaces
+        ORDER BY id
+        LIMIT 1
       )
       INSERT INTO workspaces (id, activityId, name)
       SELECT 
-        next_id,
+        id,
         $1,
         $2
-      FROM (
-        SELECT next_id
-        FROM workspace_insert
-        WHERE NOT EXISTS (
-          SELECT 1 FROM workspaces w 
-          WHERE w.id = workspace_insert.next_id
-        )
-        LIMIT 1
-      ) available_id
+      FROM available_ids
       RETURNING id, activityId, name;
     `,
       [activityId, name],
@@ -92,11 +88,9 @@ export async function createWorkspaceForActivity(
         name: row.name,
       };
     }
-    throw new Error("Failed to create workspace - no available IDs found");
-  } catch (error: any) {
-    if (error.message?.includes("workspace_id_seq")) {
-      throw new Error("Maximum number of workspaces reached");
-    }
+    throw new Error("Failed to create workspace");
+  } catch (error) {
+    console.error("Error creating workspace:", error);
     throw error;
   }
 }

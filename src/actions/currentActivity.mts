@@ -1,3 +1,5 @@
+import { nanoid } from "nanoid";
+import * as logger from "../logger.mts";
 import { ActionType, Action, registerAction } from "../actions.mts";
 import { Activity } from "../types.mts";
 import { createActivity } from "../models/activity.mts";
@@ -13,7 +15,7 @@ export const currentActivityRenameAction: CurrentActivityAction = {
   name: "Rename Activity",
   type: ActionType.CURRENT_ACTIVITY,
   handler: async (activity: Activity) => {
-    console.log(`Renaming activity ${activity.activityId}...`);
+    logger.info(`Renaming activity ${activity.activityId}...`);
   },
 };
 
@@ -22,7 +24,7 @@ export const currentActivityAssignToParentAction: CurrentActivityAction = {
   name: "Assign Activity to Parent",
   type: ActionType.CURRENT_ACTIVITY,
   handler: async (activity: Activity) => {
-    console.log(`Assigning activity ${activity.activityId} to parent...`);
+    logger.info(`Assigning activity ${activity.activityId} to parent...`);
   },
 };
 
@@ -35,7 +37,7 @@ export const currentActivityCreateChildActivityAction: CurrentActivityAction = {
       name: `Child of ${activity.name}`,
       parentActivityId: activity.activityId,
     });
-    console.log(`Created child activity with ID: ${childActivityId}`);
+    logger.info(`Created child activity with ID: ${childActivityId}`);
   },
 };
 
@@ -49,16 +51,29 @@ export const currentActivityCreateSiblingActivityAction: CurrentActivityAction =
         name: `Sibling of ${activity.name}`,
         parentActivityId: activity.parentActivityId,
       });
-      console.log(`Created sibling activity with ID: ${siblingActivityId}`);
+      logger.info(`Created sibling activity with ID: ${siblingActivityId}`);
     },
   };
+
+export const currentActivityCreateRootActivityAction: CurrentActivityAction = {
+  id: "currentActivityCreateRootActivity",
+  name: "Create Root-level Activity",
+  type: ActionType.CURRENT_ACTIVITY,
+  handler: async () => {
+    const activityId = await createActivity({
+      name: `${nanoid()}`,
+      parentActivityId: `zydKL5p5RuJM50pQLHMM7`,
+    });
+    logger.info(`Created activity with ID: ${activityId}`);
+  },
+};
 
 export const currentActivityDestroyAction: CurrentActivityAction = {
   id: "currentActivityDestroy",
   name: "Delete Activity",
   type: ActionType.CURRENT_ACTIVITY,
   handler: async (activity: Activity) => {
-    console.log(`Deleting activity ${activity.activityId}...`);
+    logger.info(`Deleting activity ${activity.activityId}...`);
   },
 };
 
@@ -66,4 +81,5 @@ registerAction(currentActivityRenameAction);
 registerAction(currentActivityAssignToParentAction);
 registerAction(currentActivityCreateChildActivityAction);
 registerAction(currentActivityCreateSiblingActivityAction);
+registerAction(currentActivityCreateRootActivityAction);
 registerAction(currentActivityDestroyAction);

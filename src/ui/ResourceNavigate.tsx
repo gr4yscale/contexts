@@ -1,12 +1,8 @@
 import React, { useEffect, useState, useContext } from "react";
 import { Box, Text } from "ink";
 
-import { Activity } from "../types.mts";
-import {
-  filteredActivityTree,
-  ActivityTreeFilter,
-  formatActivityWithHierarchy,
-} from "../models/activity.mts";
+import { Resource, ResourceType } from "../types.mts";
+import { getResourcesByType } from "../models/resource.mts";
 import { executeAction } from "../actions.mts";
 import * as logger from "../logger.mts";
 
@@ -18,7 +14,7 @@ import useListSwitching from "./common/useListSwitching.mts";
 
 export type Modes = "lists" | "items";
 
-const ActivityNavigate: React.FC = () => {
+const ResourceNavigate: React.FC = () => {
   const [mode, setMode] = useState<Modes>("items");
 
   const [lists, setLists] = useState<Array<List>>([]);
@@ -28,47 +24,38 @@ const ActivityNavigate: React.FC = () => {
 
   const [loading, setLoading] = useState(true);
 
-  const fetchActivities = async () => {
+  const fetchResources = async () => {
     try {
-      // here we will use a different fetcher; use a generic?
-      const activities = await filteredActivityTree(ActivityTreeFilter.CONTEXT);
+      const resources = await getResourcesByType(ResourceType.WEB);
 
-      const sortedActivities = [...activities].sort((a, b) => {
-        const dateA = a.lastAccessed ? new Date(a.lastAccessed).getTime() : 0;
-        const dateB = b.lastAccessed ? new Date(b.lastAccessed).getTime() : 0;
-        return dateB - dateA;
-      });
-
-      // Format activities with hierarchy paths
-      const formattedActivities = await Promise.all(
-        sortedActivities.map(async (activity) => {
-          const hierarchyPath = await formatActivityWithHierarchy(activity, sortedActivities);
-          return {
-            id: activity.activityId,
-            display: hierarchyPath,
-            data: activity,
-          };
-        })
+      const sortedResources = [...resources].sort((a, b) =>
+        a.name.localeCompare(b.name)
       );
 
-      const newItems: ListItem[] = formattedActivities;
+      logger.debug("Fetched web resources:", sortedResources);
+
+      const formattedResources = sortedResources.map((resource) => ({
+        id: resource.id,
+        display: resource.name,
+        data: resource,
+      }));
 
       setLists([
         {
-          id: "activities",
-          display: "Activities",
-          items: newItems,
+          id: "resources",
+          display: "Web Resources",
+          items: formattedResources,
         },
       ]);
     } catch (error) {
-      console.error("Error fetching activities:", error);
+      console.error("Error fetching web resources:", error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchActivities();
+    fetchResources();
   }, []);
 
   // keymapping
@@ -116,20 +103,20 @@ const ActivityNavigate: React.FC = () => {
   return (
     <Box borderStyle="single" borderColor="gray">
       {loading ? (
-        <Text>Loading activities...</Text>
+        <Text>Loading web resources...</Text>
       ) : mode === "items" ? (
         <CoreList
           items={currentListItems}
           onSelected={(selectedItems: ListItem[]) => {
             if (selectedItems.length > 0) {
               const selectedItem = selectedItems[0];
-              const activity = selectedItem.data as Activity;
-              if (activity && activity.activityId) {
-                executeAction("activateActivity", activity.activityId);
+              const resource = selectedItem.data as Resource;
+              if (resource && resource.id) {
+                executeAction("activateResource", resource.id);
               } else {
                 console.error(
-                  "Selected item data is not a valid Activity:",
-                  selectedItem,
+                  "Selected item data is not a valid Resource:",
+                  selectedItem
                 );
               }
             }
@@ -143,13 +130,13 @@ const ActivityNavigate: React.FC = () => {
           onSelected={(selectedItems: ListItem[]) => {
             if (selectedItems.length > 0) {
               const selectedItem = selectedItems[0];
-              const activity = selectedItem.data as Activity;
-              if (activity && activity.activityId) {
-                executeAction("activateActivity", activity.activityId);
+              const resource = selectedItem.data as Resource;
+              if (resource && resource.id) {
+                executeAction("activateResource", resource.id);
               } else {
                 console.error(
-                  "Selected item data is not a valid Activity:",
-                  selectedItem,
+                  "Selected item data is not a valid Resource:",
+                  selectedItem
                 );
               }
             }
@@ -162,4 +149,4 @@ const ActivityNavigate: React.FC = () => {
   );
 };
 
-export default ActivityNavigate;
+export default ResourceNavigate;

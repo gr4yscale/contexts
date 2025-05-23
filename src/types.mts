@@ -6,6 +6,32 @@ export type ActivityId = string;
 export type OrgId = string;
 /** Unique identifier for a Context */
 export type ContextId = string;
+/** Unique identifier for a Resource */
+export type ResourceId = number;
+
+/**
+ * Enum for different types of Resources.
+ */
+export enum ResourceType {
+  WEB_LINK = "web_link",
+  WEB_LINK_LIST = "web_link_list",
+  LLM_CONVO = "llm_convo", // For gptel/emacs conversations
+  ORG_NOTE = "org_note",
+  EMACS_SESSION = "emacs_session",
+}
+
+/**
+ * A Resource represents an entity that can be acted upon.
+ * Examples include web links, documents, contacts, etc.
+ */
+export interface Resource {
+  id: ResourceId;
+  name: string;
+  url: string; // The primary URL or identifier for the resource
+  type: ResourceType;
+  created: Date;
+  lastAccessed: Date;
+}
 
 /**
  * A Context is a collection of related Activities.
@@ -33,6 +59,7 @@ export type Activity = {
   lastAccessed: Date;
   active: boolean;
   parentActivityId?: string;
+  temp?: boolean;
 };
 
 export type Tag = string;
