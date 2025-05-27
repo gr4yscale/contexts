@@ -17,12 +17,6 @@ import {
 
 import { viewWorkspaceForActivity } from "../workspaces.mts";
 
-import {
-  buildActivityList,
-  formatActivitiesListExtended,
-  enabledActivityListTypes,
-} from "../activityList.mts";
-
 import { buildMenu } from "../menus.mts";
 
 // actions that navigate to workspaces (dwm tag) of activities
@@ -39,42 +33,6 @@ export const showTUI = async () => {
   await $`dwmc viewex 0`;
 };
 
-/** build lists of activities for each of the ListTypes
- *  append them to a combined list, sort by recent access
- *  format lists of activities to include tags, for matching in rofi
- *  build menu with handler for item selection
- */
-export const switchActivity = async () => {
-  //TOFIX
-  const activities = await getAllActivities();
-  const lists = buildActivityList(enabledActivityListTypes, activities);
-  const sorted = lists.sort(
-    (l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime(),
-  );
-  const formatted = await formatActivitiesListExtended(sorted);
-  const prompt = `${Object.values(enabledActivityListTypes).join(", ")}`;
-  await buildMenu({
-    display: prompt,
-    builder: () =>
-      formatted.map((line: string) => {
-        return {
-          display: line,
-          handler: async (selectionIndex?: number) => {
-            if (selectionIndex === undefined) {
-              //console.log(`no selectionIndex for ${line}`);
-              return;
-            }
-            const activity = sorted[selectionIndex];
-            if (activity) {
-              await activateActivity(activity.activityId);
-            }
-            // run activity init actions here?
-          },
-        };
-      }),
-  });
-};
-
 export const activateActivity = async (id: ActivityId) => {
   let activity: Activity | null;
   activity = await getActivityById(id);
@@ -86,7 +44,10 @@ export const activateActivity = async (id: ActivityId) => {
     await updateActivity({ activityId: id, lastAccessed: new Date() });
 
     const previousActivity = await getCurrentActivity();
-    await updateActivityHistory(id, previousActivity ? previousActivity.activityId : "");
+    await updateActivityHistory(
+      id,
+      previousActivity ? previousActivity.activityId : "",
+    );
 
     $`notify-send -a activity -t 500 "${activity.name}"`;
   } else {
@@ -112,20 +73,23 @@ export const sendWindowToAnotherActivity = async () => {
     (l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime(),
   );
   //TOFIX: hack; selection state needs to be removed from `formatActivitityWithHierarchy`
-  const unselected = sorted.map((a) => ({...a, selected: false}));
+  const unselected = sorted.map((a) => ({ ...a, selected: false }));
 
   // Format activities with hierarchy paths (TOFIX: cache)
   const formattedActivities = await Promise.all(
-     unselected.map(async (activity) => {
-       const hierarchyPath = await formatActivityWithHierarchy(activity, unselected);
-       return {...activity, name: hierarchyPath}
-    })
+    unselected.map(async (activity) => {
+      const hierarchyPath = await formatActivityWithHierarchy(
+        activity,
+        unselected,
+      );
+      return { ...activity, name: hierarchyPath };
+    }),
   );
 
   const menuItem = (activity: Activity) => ({
     display: activity.name,
     handler: async (selectedIndex?: number) => {
-      if (selectedIndex !== undefined) { 
+      if (selectedIndex !== undefined) {
         const workspaces = await getWorkspacesForActivity(activity.activityId);
         if (workspaces && workspaces[0]) {
           await $`dwmc tagex ${workspaces[0].id.toString()}`;
@@ -205,15 +169,6 @@ export const navigateSendWindowToAnotherActivityAction: NavigationAction = {
   },
 };
 
-export const navigateActivitySwitchOldAction: NavigationAction = {
-  id: "switchActivity",
-  name: "Switch Activity",
-  type: ActionType.NAVIGATION,
-  handler: async () => {
-    await switchActivity();
-  },
-};
-
 export const navigateActivateActivityAction: NavigationAction = {
   id: "activateActivity",
   name: "Activate Activity",
@@ -250,7 +205,6 @@ registerAction(navigateContextActivitySelect);
 registerAction(navigateActionExecute);
 registerAction(navigateSwapActivityAction);
 registerAction(navigateSendWindowToAnotherActivityAction);
-registerAction(navigateActivitySwitchOldAction);
 registerAction(navigateActivateActivityAction);
 registerAction(navigateResourceNavigate);
 registerAction(navigateExaSearch);
