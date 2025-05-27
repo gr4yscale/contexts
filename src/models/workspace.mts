@@ -41,7 +41,7 @@ export async function getAllWorkspaces(): Promise<WorkspaceDTO[]> {
  * @returns Promise<WorkspaceDTO> - The newly created workspace
  * @throws {Error} When all workspace IDs are in use or when insertion fails
  */
-export async function createWorkspaceForActivity(
+export async function createWorkspaceForNode(
   activityId: string,
   name: string,
 ): Promise<WorkspaceDTO> {
@@ -135,7 +135,7 @@ export async function updateWorkspace(
   }
 }
 
-export async function assignWorkspaceToActivity(
+export async function assignWorkspaceToNode(
   workspaceId: number,
   activityId: string,
 ): Promise<void> {
@@ -149,7 +149,7 @@ export async function assignWorkspaceToActivity(
   }
 }
 
-export async function getWorkspacesForActivity(
+export async function getWorkspacesForNode(
   activityId: string,
 ): Promise<WorkspaceDTO[]> {
   const client = await getConnection();

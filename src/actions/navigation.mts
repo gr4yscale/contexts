@@ -1,21 +1,21 @@
 import { $ } from "zx";
 
 import { ActionType, Action, registerAction } from "../actions.mts";
-import { Activity, ActivityId } from "../types.mts";
+import { Node, NodeId } from "../types.mts";
 
-import { getWorkspacesForActivity } from "../models/workspace.mts";
+import { getWorkspacesForNode } from "../models/workspace.mts";
 
 import {
-  getActivityById,
+  getNodeById,
   getAllActivities,
-  getCurrentActivity,
-  getPreviousActivity,
-  updateActivityHistory,
-  updateActivity,
-  formatActivityWithHierarchy,
+  getCurrentNode,
+  getPreviousNode,
+  updateNodeHistory,
+  updateNode,
+  formatNodeWithHierarchy,
 } from "../models/activity.mts";
 
-import { viewWorkspaceForActivity } from "../workspaces.mts";
+import { viewWorkspaceForNode } from "../workspaces.mts";
 
 import { buildMenu } from "../menus.mts";
 
@@ -33,20 +33,20 @@ export const showTUI = async () => {
   await $`dwmc viewex 0`;
 };
 
-export const activateActivity = async (id: ActivityId) => {
-  let activity: Activity | null;
-  activity = await getActivityById(id);
+export const activateNode = async (id: NodeId) => {
+  let activity: Node | null;
+  activity = await getNodeById(id);
   if (!activity) return false;
 
-  const viewed = await viewWorkspaceForActivity(activity);
+  const viewed = await viewWorkspaceForNode(activity);
 
   if (viewed) {
-    await updateActivity({ activityId: id, lastAccessed: new Date() });
+    await updateNode({ activityId: id, lastAccessed: new Date() });
 
-    const previousActivity = await getCurrentActivity();
-    await updateActivityHistory(
+    const previousNode = await getCurrentNode();
+    await updateNodeHistory(
       id,
-      previousActivity ? previousActivity.activityId : "",
+      previousNode ? previousNode.activityId : "",
     );
 
     $`notify-send -a activity -t 500 "${activity.name}"`;
@@ -57,17 +57,17 @@ export const activateActivity = async (id: ActivityId) => {
   return viewed;
 };
 
-export const swapActivity = async () => {
-  const previousActivity = await getPreviousActivity();
-  if (previousActivity) {
-    await activateActivity(previousActivity.activityId);
+export const swapNode = async () => {
+  const previousNode = await getPreviousNode();
+  if (previousNode) {
+    await activateNode(previousNode.activityId);
   }
 };
 
 // we need the client/window that we want to send to be focused,
 // so this commmand needs to be handled via socket, not TUI
 
-export const sendWindowToAnotherActivity = async () => {
+export const sendWindowToAnotherNode = async () => {
   const activities = await getAllActivities();
   const sorted = activities.sort(
     (l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime(),
@@ -78,7 +78,7 @@ export const sendWindowToAnotherActivity = async () => {
   // Format activities with hierarchy paths (TOFIX: cache)
   const formattedActivities = await Promise.all(
     unselected.map(async (activity) => {
-      const hierarchyPath = await formatActivityWithHierarchy(
+      const hierarchyPath = await formatNodeWithHierarchy(
         activity,
         unselected,
       );
@@ -86,11 +86,11 @@ export const sendWindowToAnotherActivity = async () => {
     }),
   );
 
-  const menuItem = (activity: Activity) => ({
+  const menuItem = (activity: Node) => ({
     display: activity.name,
     handler: async (selectedIndex?: number) => {
       if (selectedIndex !== undefined) {
-        const workspaces = await getWorkspacesForActivity(activity.activityId);
+        const workspaces = await getWorkspacesForNode(activity.activityId);
         if (workspaces && workspaces[0]) {
           await $`dwmc tagex ${workspaces[0].id.toString()}`;
         } else {
@@ -124,18 +124,18 @@ export const navigateTestbed: NavigationAction = {
   },
 };
 
-export const navigateActivityNavigate: NavigationAction = {
+export const navigateNodeNavigate: NavigationAction = {
   id: "activityNavigate",
-  name: "Activity Navigation",
+  name: "Node Navigation",
   type: ActionType.NAVIGATION,
   handler: async () => {
     await showTUI();
   },
 };
 
-export const navigateContextActivitySelect: NavigationAction = {
-  id: "contextActivitySelect",
-  name: "Activity Selection",
+export const navigateContextNodeSelect: NavigationAction = {
+  id: "contextNodeSelect",
+  name: "Node Selection",
   type: ActionType.NAVIGATION,
   handler: async () => {
     await showTUI();
@@ -151,31 +151,31 @@ export const navigateActionExecute: NavigationAction = {
   },
 };
 
-export const navigateSwapActivityAction: NavigationAction = {
+export const navigateSwapNodeAction: NavigationAction = {
   id: "activitySwap",
-  name: "Activity Swap",
+  name: "Node Swap",
   type: ActionType.NAVIGATION,
   handler: async () => {
-    await swapActivity();
+    await swapNode();
   },
 };
 
-export const navigateSendWindowToAnotherActivityAction: NavigationAction = {
-  id: "sendWindowToAnotherActivity",
-  name: "Send Window To Another Activity",
+export const navigateSendWindowToAnotherNodeAction: NavigationAction = {
+  id: "sendWindowToAnotherNode",
+  name: "Send Window To Another Node",
   type: ActionType.NAVIGATION,
   handler: async () => {
-    await sendWindowToAnotherActivity();
+    await sendWindowToAnotherNode();
   },
 };
 
-export const navigateActivateActivityAction: NavigationAction = {
-  id: "activateActivity",
-  name: "Activate Activity",
+export const navigateActivateNodeAction: NavigationAction = {
+  id: "activateNode",
+  name: "Activate Node",
   type: ActionType.NAVIGATION,
   handler: async (activityId?: string) => {
     if (activityId) {
-      await activateActivity(activityId);
+      await activateNode(activityId);
     }
   },
 };
@@ -200,11 +200,11 @@ export const navigateExaSearch: NavigationAction = {
 
 registerAction(navigateGlobalLeader);
 registerAction(navigateTestbed);
-registerAction(navigateActivityNavigate);
-registerAction(navigateContextActivitySelect);
+registerAction(navigateNodeNavigate);
+registerAction(navigateContextNodeSelect);
 registerAction(navigateActionExecute);
-registerAction(navigateSwapActivityAction);
-registerAction(navigateSendWindowToAnotherActivityAction);
-registerAction(navigateActivateActivityAction);
+registerAction(navigateSwapNodeAction);
+registerAction(navigateSendWindowToAnotherNodeAction);
+registerAction(navigateActivateNodeAction);
 registerAction(navigateResourceNavigate);
 registerAction(navigateExaSearch);

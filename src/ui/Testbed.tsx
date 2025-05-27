@@ -3,8 +3,8 @@ import React, { useEffect, useState } from "react";
 import { Box } from "ink";
 import CoreList, { List } from "./common/CoreList.tsx";
 import {
-  filteredActivityTree,
-  ActivityTreeFilter,
+  filteredNodeTree,
+  NodeTreeFilter,
 } from "../models/activity.mts";
 
 const Testbed: React.FC = () => {
@@ -12,7 +12,7 @@ const Testbed: React.FC = () => {
 
   const fetchActivities = async () => {
     try {
-      const activities = await filteredActivityTree(ActivityTreeFilter.ALL);
+      const activities = await filteredNodeTree(NodeTreeFilter.ALL);
 
       const items = tree.map((activity) => ({
         id: activity.activityId,

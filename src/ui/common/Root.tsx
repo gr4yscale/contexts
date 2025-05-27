@@ -12,14 +12,14 @@ import {
 
 import WhichKey from "../WhichKey.tsx";
 
-import ActivityCreate from "../ActivityCreate.tsx";
-import ActivityNavigate from "../ActivityNavigate.tsx";
-import ContextActivitySelection from "../ContextActivitySelection.tsx";
+import NodeCreate from "../NodeCreate.tsx";
+import NodeNavigate from "../NodeNavigate.tsx";
+import ContextNodeSelection from "../ContextNodeSelection.tsx";
 import ActionExecute from "../ActionExecute.tsx";
-import CurrentActivityAssignToParent from "../CurrentActivityAssignToParent.tsx";
-import CurrentActivityCreateChild from "../CurrentActivityCreateChild.tsx";
-import CurrentActivityRename from "../CurrentActivityRename.tsx";
-import CurrentActivityDelete from "../CurrentActivityDelete.tsx";
+import CurrentNodeAssignToParent from "../CurrentNodeAssignToParent.tsx";
+import CurrentNodeCreateChild from "../CurrentNodeCreateChild.tsx";
+import CurrentNodeRename from "../CurrentNodeRename.tsx";
+import CurrentNodeDelete from "../CurrentNodeDelete.tsx";
 import ActivitiesPrune from "../ActivitiesPrune.tsx";
 import Testbed from "../Testbed.tsx";
 import ResourceNavigate from "../ResourceNavigate.tsx";
@@ -30,22 +30,22 @@ import ExaSearch from "../ExaSearch.tsx"; // New import
 
 const routes = [
   { path: "/dummy", component: Box },
-  { path: "/", component: ActivityNavigate },
-  { path: "/activityCreate", component: ActivityCreate },
-  { path: "/activityNavigate", component: ActivityNavigate },
+  { path: "/", component: NodeNavigate },
+  { path: "/activityCreate", component: NodeCreate },
+  { path: "/activityNavigate", component: NodeNavigate },
   { path: "/resourceNavigate", component: ResourceNavigate },
-  { path: "/contextActivitySelect", component: ContextActivitySelection },
+  { path: "/contextNodeSelect", component: ContextNodeSelection },
   { path: "/actionExecute", component: ActionExecute },
   {
-    path: "/currentActivityAssignToParent",
-    component: CurrentActivityAssignToParent,
+    path: "/currentNodeAssignToParent",
+    component: CurrentNodeAssignToParent,
   },
   {
-    path: "/currentActivityCreateChild",
-    component: CurrentActivityCreateChild,
+    path: "/currentNodeCreateChild",
+    component: CurrentNodeCreateChild,
   },
-  { path: "/currentActivityRename", component: CurrentActivityRename },
-  { path: "/currentActivityDelete", component: CurrentActivityDelete },
+  { path: "/currentNodeRename", component: CurrentNodeRename },
+  { path: "/currentNodeDelete", component: CurrentNodeDelete },
   { path: "/activitiesPrune", component: ActivitiesPrune },
   { path: "/testbed", component: Testbed },
   { path: "/exaSearch", component: ExaSearch }, // New route
@@ -86,27 +86,27 @@ const Root: React.FC = () => {
         case "resourceNavigate":
           setRoutePath("/resourceNavigate");
           break;
-        case "activateActivity":
+        case "activateNode":
           setRoutePath("/dummy"); // hack to force a re-render
           setRoutePath("/activityNavigate");
           break;
-        case "contextActivitySelect":
-          setRoutePath("/contextActivitySelect");
+        case "contextNodeSelect":
+          setRoutePath("/contextNodeSelect");
           break;
         case "actionExecute":
           setRoutePath("/actionExecute");
           break;
-        case "currentActivityAssignToParent":
-          setRoutePath("/currentActivityAssignToParent");
+        case "currentNodeAssignToParent":
+          setRoutePath("/currentNodeAssignToParent");
           break;
-        case "currentActivityCreateChild":
-          setRoutePath("/currentActivityCreateChild");
+        case "currentNodeCreateChild":
+          setRoutePath("/currentNodeCreateChild");
           break;
-        case "currentActivityRename":
-          setRoutePath("/currentActivityRename");
+        case "currentNodeRename":
+          setRoutePath("/currentNodeRename");
           break;
-        case "currentActivityDelete":
-          setRoutePath("/currentActivityDelete");
+        case "currentNodeDelete":
+          setRoutePath("/currentNodeDelete");
           break;
         case "activitiesPrune":
           setRoutePath("/activitiesPrune");

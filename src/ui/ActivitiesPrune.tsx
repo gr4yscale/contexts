@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Box, Text } from "ink";
-import { Activity } from "../types.mts";
+import { Node } from "../types.mts";
 import CoreList, { ListItem } from "./common/CoreList.tsx";
 
 import {
-  filteredActivityTree,
-  ActivityTreeFilter,
+  filteredNodeTree,
+  NodeTreeFilter,
 } from "../models/activity.mts";
 import { getAllWorkspaces } from "../models/workspace.mts";
 import { executeAction } from "../actions.mts";
@@ -22,20 +22,20 @@ const ActivitiesPrune: React.FC = () => {
     setLoading(true);
     try {
       // Get all activities
-      const activities = await filteredActivityTree(ActivityTreeFilter.ALL);
+      const activities = await filteredNodeTree(NodeTreeFilter.ALL);
 
       // Enhance with X11 client counts
       const activitiesWithCounts = await getActivitiesWithX11Counts(activities);
 
       // Get all workspaces and create a set of their activityIds
       const workspaces = await getAllWorkspaces();
-      const workspaceActivityIds = new Set(
+      const workspaceNodeIds = new Set(
         workspaces.map((ws) => ws.activityId),
       );
 
       // Filter activities to include only those with an associated workspace
       const activitiesWithWorkspaces = activitiesWithCounts.filter((activity) =>
-        workspaceActivityIds.has(activity.activityId),
+        workspaceNodeIds.has(activity.activityId),
       );
 
       const newItems: ListItem[] = activitiesWithWorkspaces.map((activity) => ({
@@ -73,7 +73,7 @@ const ActivitiesPrune: React.FC = () => {
             initialMode="select"
             onSelected={async (selectedItems: ListItem[]) => {
               const activities = selectedItems.map(
-                (item) => item.data as Activity,
+                (item) => item.data as Node,
               );
 
               try {

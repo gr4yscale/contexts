@@ -4,8 +4,8 @@ import { Activity } from "../types.mts";
 import CoreList, { List, ListItem } from "./common/CoreList.tsx";
 
 import {
-  filteredActivityTree,
-  ActivityTreeFilter,
+  filteredNodeTree,
+  NodeTreeFilter,
 } from "../models/activity.mts";
 import {
   createContext,
@@ -14,7 +14,7 @@ import {
 } from "../models/context.mts";
 import { executeAction } from "../actions.mts";
 
-const ContextActivitySelection: React.FC = () => {
+const ContextNodeSelection: React.FC = () => {
   const [lists, setLists] = useState<Array<List>>([
     { id: "initial", display: "initial", items: [] },
   ]);
@@ -23,7 +23,7 @@ const ContextActivitySelection: React.FC = () => {
   const fetchActivities = async () => {
     setLoading(true);
     try {
-      const activities = await filteredActivityTree(ActivityTreeFilter.ALL);
+      const activities = await filteredNodeTree(NodeTreeFilter.ALL);
       //console.log(activities);
 
       const newItems: ListItem[] = activities.map((activity) => ({
@@ -65,7 +65,7 @@ const ContextActivitySelection: React.FC = () => {
           initialMode="select"
           onSelected={async (selectedItems: ListItem[]) => {
             const activities = selectedItems.map(
-              (item) => item.data as Activity,
+              (item) => item.data as Node,
             );
             const activityIds = activities.map(
               (activity) => activity.activityId,
@@ -96,4 +96,4 @@ const ContextActivitySelection: React.FC = () => {
   );
 };
 
-export default ContextActivitySelection;
+export default ContextNodeSelection;

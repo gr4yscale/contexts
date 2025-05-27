@@ -1,23 +1,23 @@
-import { Activity } from "../types.mts";
+import { Node } from "../types.mts";
 import { getConnection } from "../db.mts";
 import { nanoid } from "nanoid";
 import { getCurrentContext } from "./context.mts";
 import * as logger from "../logger.mts";
 
-export type ActivityTreeItem = Activity & {
+export type NodeTreeItem = Node & {
   depth?: number;
   selected: boolean;
 };
 
-export enum ActivityTreeFilter {
+export enum NodeTreeFilter {
   ALL = "all",
   RECENT = "recent",
   TEMP = "temp",
   CONTEXT = "context",
 }
 
-// Define ActivityCreate type as a partial of Activity with required fields
-export type ActivityCreate = {
+// Define NodeCreate type as a partial of Node with required fields
+export type NodeCreate = {
   activityId?: string;
   name: string;
   orgId?: string;
@@ -25,32 +25,32 @@ export type ActivityCreate = {
   created?: Date;
   lastAccessed?: Date;
   active?: boolean;
-  parentActivityId?: string;
+  parentNodeId?: string;
   temp?: boolean;
   workspaceId?: string;
 };
 
-export async function createActivity(
-  activity: ActivityCreate,
+export async function createNode(
+  activity: NodeCreate,
 ): Promise<string> {
   const client = await getConnection();
-  const { orgId, orgText, name, parentActivityId } = activity;
+  const { orgId, orgText, name, parentNodeId } = activity;
 
   // Use provided values or defaults
   const active = activity.active ?? true;
   const activityId = activity.activityId || nanoid();
 
   try {
-    // If parentActivityId is provided, check if it exists
-    if (parentActivityId) {
+    // If parentNodeId is provided, check if it exists
+    if (parentNodeId) {
       const parentExists = await client.query(
         "SELECT 1 FROM activities WHERE activityId = $1",
-        [parentActivityId],
+        [parentNodeId],
       );
 
       if (parentExists.rows.length === 0) {
         throw new Error(
-          `Parent activity with ID ${parentActivityId} does not exist`,
+          `Parent activity with ID ${parentNodeId} does not exist`,
         );
       }
     }
@@ -72,7 +72,7 @@ export async function createActivity(
         orgText ?? "",
         name,
         active,
-        parentActivityId || null,
+        parentNodeId || null,
         temp,
       ],
     );
@@ -90,20 +90,20 @@ export async function createActivity(
  * @param filter - The filter to apply to the activities (all, recent, temp, context)
  * @returns Array of activities with depth and selection information
  */
-export async function filteredActivityTree(
-  filter: ActivityTreeFilter = ActivityTreeFilter.ALL,
-): Promise<ActivityTreeItem[]> {
+export async function filteredNodeTree(
+  filter: NodeTreeFilter = NodeTreeFilter.ALL,
+): Promise<NodeTreeItem[]> {
   try {
     // Get activities filtered by the specified filter (except for CONTEXT which needs special handling)
     const filteredActivities = await activityTree(
-      filter ? filter : ActivityTreeFilter.ALL,
+      filter ? filter : NodeTreeFilter.ALL,
     );
 
     const currentContext = await getCurrentContext();
     // Handle null context case
     if (!currentContext) {
       logger.debug(`No current context found`);
-      if (filter === ActivityTreeFilter.CONTEXT) {
+      if (filter === NodeTreeFilter.CONTEXT) {
         return [];
       }
 
@@ -115,11 +115,11 @@ export async function filteredActivityTree(
     }
 
     // Get the set of activity IDs in the context for faster lookup
-    const contextActivityIds = new Set(currentContext.activityIds);
+    const contextNodeIds = new Set(currentContext.activityIds);
 
-    if (filter === ActivityTreeFilter.CONTEXT) {
+    if (filter === NodeTreeFilter.CONTEXT) {
       const contextFilteredActivities = filteredActivities.filter((activity) =>
-        contextActivityIds.has(activity.activityId),
+        contextNodeIds.has(activity.activityId),
       );
 
       return contextFilteredActivities.map((activity) => ({
@@ -131,7 +131,7 @@ export async function filteredActivityTree(
     // For non-CONTEXT filters, just return the filtered activities with selected=false
     const result = filteredActivities.map((activity) => ({
       ...activity,
-      selected: contextActivityIds.has(activity.activityId),
+      selected: contextNodeIds.has(activity.activityId),
     }));
 
     return result;
@@ -141,9 +141,9 @@ export async function filteredActivityTree(
   }
 }
 
-export async function getActivityById(
+export async function getNodeById(
   activityId: string,
-): Promise<Activity | null> {
+): Promise<Node | null> {
   try {
     const client = await getConnection();
     const result = await client.query(
@@ -164,7 +164,7 @@ export async function getActivityById(
       created: new Date(row.created),
       lastAccessed: new Date(row.lastaccessed),
       active: row.active,
-      parentActivityId: row.parent_id,
+      parentNodeId: row.parent_id,
       temp: row.temp,
     };
   } catch (error) {
@@ -173,7 +173,7 @@ export async function getActivityById(
   }
 }
 
-export async function getAllActivities(): Promise<Activity[]> {
+export async function getAllActivities(): Promise<Node[]> {
   try {
     const client = await getConnection();
     const result = await client.query("SELECT * FROM activities;");
@@ -190,7 +190,7 @@ export async function getAllActivities(): Promise<Activity[]> {
       created: new Date(row.created),
       lastAccessed: new Date(row.lastaccessed),
       active: row.active,
-      parentActivityId: row.parent_id,
+      parentNodeId: row.parent_id,
     }));
   } catch (error) {
     logger.error("Error getting all activities:", error);
@@ -198,8 +198,8 @@ export async function getAllActivities(): Promise<Activity[]> {
   }
 }
 
-export async function updateActivity(
-  activity: Partial<Activity>,
+export async function updateNode(
+  activity: Partial<Node>,
 ): Promise<void> {
   try {
     const client = await getConnection();
@@ -213,13 +213,13 @@ export async function updateActivity(
       lastAccessed,
       active,
       activityId,
-      parentActivityId,
+      parentNodeId,
       temp,
       workspaceId,
     } = activity;
 
     const fieldMappings: [string, any][] = [
-      ["parent_id", parentActivityId],
+      ["parent_id", parentNodeId],
       ["orgid", orgId],
       ["orgtext", orgText],
       ["name", name],
@@ -255,7 +255,7 @@ export async function updateActivity(
   }
 }
 
-export async function deleteActivity(
+export async function deleteNode(
   activityId: string,
   cascade: boolean = false,
 ): Promise<void> {
@@ -270,7 +270,7 @@ export async function deleteActivity(
       // Delete each child activity
       for (const child of childActivities) {
         // Recursively delete with cascade to handle nested hierarchies
-        await deleteActivity(child.activityId, true);
+        await deleteNode(child.activityId, true);
       }
     }
 
@@ -284,7 +284,7 @@ export async function deleteActivity(
   }
 }
 
-export async function getActiveActivities(): Promise<Activity[]> {
+export async function getActiveActivities(): Promise<Node[]> {
   try {
     const client = await getConnection();
     const result = await client.query(
@@ -303,7 +303,7 @@ export async function getActiveActivities(): Promise<Activity[]> {
       created: new Date(row.created),
       lastAccessed: new Date(row.lastaccessed),
       active: row.active,
-      parentActivityId: row.parent_id,
+      parentNodeId: row.parent_id,
     }));
   } catch (error) {
     logger.error("Error getting active activities:", error);
@@ -311,23 +311,23 @@ export async function getActiveActivities(): Promise<Activity[]> {
   }
 }
 
-export async function updateActivityHistory(
-  currentActivityId: string,
-  previousActivityId: string,
+export async function updateNodeHistory(
+  currentNodeId: string,
+  previousNodeId: string,
 ): Promise<void> {
   try {
     const client = await getConnection();
 
     // Check if the previous activity ID exists or is empty
     let validPreviousId = null;
-    if (previousActivityId && previousActivityId.trim() !== "") {
-      const prevActivityExists = await client.query(
+    if (previousNodeId && previousNodeId.trim() !== "") {
+      const prevNodeExists = await client.query(
         "SELECT 1 FROM activities WHERE activityId = $1",
-        [previousActivityId],
+        [previousNodeId],
       );
 
-      if (prevActivityExists.rows.length > 0) {
-        validPreviousId = previousActivityId;
+      if (prevNodeExists.rows.length > 0) {
+        validPreviousId = previousNodeId;
       }
     }
 
@@ -335,14 +335,14 @@ export async function updateActivityHistory(
     await client.query(
       `INSERT INTO activity_history (current_activity_id, previous_activity_id)
        VALUES ($1, $2)`,
-      [currentActivityId, validPreviousId],
+      [currentNodeId, validPreviousId],
     );
 
     // Update the lastAccessed timestamp for the current activity
     await client.query(
       `UPDATE activities SET lastAccessed = CURRENT_TIMESTAMP 
        WHERE activityId = $1`,
-      [currentActivityId],
+      [currentNodeId],
     );
   } catch (error) {
     logger.error("Error updating activity history:", error);
@@ -350,7 +350,7 @@ export async function updateActivityHistory(
   }
 }
 
-export async function getCurrentActivity(): Promise<Activity | null> {
+export async function getCurrentNode(): Promise<Node | null> {
   try {
     const client = await getConnection();
 
@@ -364,23 +364,23 @@ export async function getCurrentActivity(): Promise<Activity | null> {
       return null;
     }
 
-    const currentActivityId = result.rows[0].current_activity_id;
+    const currentNodeId = result.rows[0].current_activity_id;
 
-    if (!currentActivityId) {
+    if (!currentNodeId) {
       logger.debug(
         "Current activity ID from history is null or undefined. No current activity.",
       );
       return null;
     }
 
-    return getActivityById(currentActivityId);
+    return getNodeById(currentNodeId);
   } catch (error) {
     logger.error("Error retrieving current activity:", error);
     throw error;
   }
 }
 
-export async function getPreviousActivity(): Promise<Activity | null> {
+export async function getPreviousNode(): Promise<Node | null> {
   try {
     const client = await getConnection();
 
@@ -397,8 +397,8 @@ export async function getPreviousActivity(): Promise<Activity | null> {
       return null;
     }
 
-    const previousActivityId = result.rows[0].previous_activity_id;
-    return getActivityById(previousActivityId);
+    const previousNodeId = result.rows[0].previous_activity_id;
+    return getNodeById(previousNodeId);
   } catch (error) {
     logger.error("Error retrieving previous activity:", error);
     throw error;
@@ -407,17 +407,17 @@ export async function getPreviousActivity(): Promise<Activity | null> {
 
 /**
  * Gets all child activities for a given parent activity
- * @param parentActivityId The ID of the parent activity
+ * @param parentNodeId The ID of the parent activity
  * @returns Array of child activities
  */
 export async function getChildActivities(
-  parentActivityId: string,
-): Promise<Activity[]> {
+  parentNodeId: string,
+): Promise<Node[]> {
   try {
     const client = await getConnection();
     const result = await client.query(
       "SELECT * FROM activities WHERE parent_id = $1;",
-      [parentActivityId],
+      [parentNodeId],
     );
 
     if (result.rows.length === 0) {
@@ -432,7 +432,7 @@ export async function getChildActivities(
       created: new Date(row.created),
       lastAccessed: new Date(row.lastaccessed),
       active: row.active,
-      parentActivityId: row.parent_id,
+      parentNodeId: row.parent_id,
     }));
   } catch (error) {
     logger.error("Error getting child activities:", error);
@@ -443,17 +443,17 @@ export async function getChildActivities(
 /**
  * Creates a new activity as a child of the specified parent activity
  * @param activity The activity to create
- * @param parentActivityId The ID of the parent activity
+ * @param parentNodeId The ID of the parent activity
  * @returns The ID of the created activity
  */
-export async function createChildActivity(
-  activity: ActivityCreate,
-  parentActivityId: string,
+export async function createChildNode(
+  activity: NodeCreate,
+  parentNodeId: string,
 ): Promise<string> {
   // Create a new activity with the parent ID
-  return await createActivity({
+  return await createNode({
     ...activity,
-    parentActivityId,
+    parentNodeId,
   });
 }
 
@@ -468,18 +468,18 @@ export async function createChildActivity(
  * @param activities - All activities in the tree
  * @returns Formatted activity name with hierarchy (e.g. "parent > child > grandchild")
  */
-export async function formatActivityWithHierarchy(
-  activity: ActivityTreeItem,
-  activities: ActivityTreeItem[],
+export async function formatNodeWithHierarchy(
+  activity: NodeTreeItem,
+  activities: NodeTreeItem[],
 ): Promise<string> {
   // If it's a root activity (no parent), just return the name
-  if (!activity.parentActivityId) {
+  if (!activity.parentNodeId) {
     return activity.name;
   }
 
   // Build the hierarchy path
   const path: string[] = [activity.name];
-  let currentId = activity.parentActivityId;
+  let currentId = activity.parentNodeId;
   let isDirectParentRoot = false;
 
   // Traverse up the hierarchy to build the path
@@ -489,7 +489,7 @@ export async function formatActivityWithHierarchy(
 
     // If not found in the array, fetch it directly from the database
     if (!parent) {
-      const fetchedParent = await getActivityById(currentId);
+      const fetchedParent = await getNodeById(currentId);
       if (fetchedParent) {
         parent = {
           ...fetchedParent,
@@ -505,14 +505,14 @@ export async function formatActivityWithHierarchy(
     }
 
     // If this is a root parent (no parent of its own), mark it
-    if (!parent.parentActivityId) {
+    if (!parent.parentNodeId) {
       isDirectParentRoot = true;
     } else {
       // Only add non-root parents to the path
       path.unshift(parent.name);
     }
 
-    currentId = parent.parentActivityId;
+    currentId = parent.parentNodeId;
   }
 
   // Join the path with "→"
@@ -520,18 +520,18 @@ export async function formatActivityWithHierarchy(
 }
 
 export async function activityTree(
-  filter: ActivityTreeFilter = ActivityTreeFilter.ALL,
-): Promise<ActivityTreeItem[]> {
+  filter: NodeTreeFilter = NodeTreeFilter.ALL,
+): Promise<NodeTreeItem[]> {
   try {
     const client = await getConnection();
 
     // Build the filter condition for the base case
     let filterCondition = "";
-    if (filter === ActivityTreeFilter.RECENT) {
+    if (filter === NodeTreeFilter.RECENT) {
       // Activities from the last 7 days
       filterCondition =
         "AND lastaccessed > (CURRENT_TIMESTAMP - INTERVAL '7 days')";
-    } else if (filter === ActivityTreeFilter.TEMP) {
+    } else if (filter === NodeTreeFilter.TEMP) {
       // Only temporary activities
       filterCondition = "AND temp = true";
     }
@@ -576,7 +576,7 @@ export async function activityTree(
         FROM activities a
         JOIN activity_tree at ON a.parent_id = at.activityid
         WHERE at.depth < 3  -- Limit recursion to depth 3
-        ${filter === ActivityTreeFilter.TEMP ? "AND a.temp = true" : ""}
+        ${filter === NodeTreeFilter.TEMP ? "AND a.temp = true" : ""}
       )
       
       SELECT 
@@ -609,7 +609,7 @@ export async function activityTree(
       created: new Date(row.created),
       lastAccessed: new Date(row.lastaccessed),
       active: row.active,
-      parentActivityId: row.parent_id,
+      parentNodeId: row.parent_id,
       temp: row.temp,
       depth: row.depth,
       selected: false,

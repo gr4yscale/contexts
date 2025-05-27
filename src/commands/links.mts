@@ -5,7 +5,7 @@ import { formatDistanceToNow } from "date-fns";
 
 import { rofiListSelect } from "../selection.mts";
 import { MenuItem } from "../menus.mts";
-import { getCurrentActivity } from "../db.mts";
+import { getCurrentNode } from "../db.mts";
 
 // fetching links metadata w/ requests?
 const extractLink = (line: string) => {
@@ -38,11 +38,11 @@ const extractLink = (line: string) => {
 
 // links, link groups
 export const linkLoad = async () => {
-  const currentActivity = await getCurrentActivity();
-  if (!currentActivity || !currentActivity.linkGroups[0]) {
+  const currentNode = await getCurrentNode();
+  if (!currentNode || !currentNode.linkGroups[0]) {
     return;
   }
-  const links = currentActivity.linkGroups[0].links;
+  const links = currentNode.linkGroups[0].links;
   const mapped = links.map((l) => {
     const description = l.description
       ? l.description.substring(0, 40).padEnd(40, " ")
@@ -59,28 +59,28 @@ export const linkStore = async () => {
 };
 
 export const stickyLinkStore = async () => {
-  const currentActivity = await getCurrentActivity();
+  const currentNode = await getCurrentNode();
   await sleep(500); //TOFIX sleep
   await $`xdotool key "Control_L+Shift+F12"`;
   await sleep(100);
   const clipboardSelection = clipboard.readSync() ?? "";
   const link = extractLink(clipboardSelection);
   link.sticky = true;
-  currentActivity.links.push(link);
+  currentNode.links.push(link);
   const msg = "Stored link " + link.title;
   $`notify-send ${msg}`;
 };
 
 export const linkGroupLoad = async (id: string) => {
-  const currentActivity = await getCurrentActivity();
-  if (!currentActivity || !currentActivity.linkGroups) {
+  const currentNode = await getCurrentNode();
+  if (!currentNode || !currentNode.linkGroups) {
     console.log("no link groups or activity");
     $`notify-send "Link Group not found."`;
     return;
   }
 
   // select link group, or is there a "selected link group?" state for current activity?
-  const linkGroup = currentActivity.linkGroups.find((lg) => lg.id === id);
+  const linkGroup = currentNode.linkGroups.find((lg) => lg.id === id);
   if (linkGroup) {
     const mapped = linkGroup.links.map((l) => l.url);
     await $`firefox -url ${mapped}`;
@@ -88,8 +88,8 @@ export const linkGroupLoad = async (id: string) => {
 };
 
 export const linkGroupStore = async () => {
-  const currentActivity = await getCurrentActivity();
-  if (!currentActivity) {
+  const currentNode = await getCurrentNode();
+  if (!currentNode) {
     return;
   }
 
@@ -109,7 +109,7 @@ export const linkGroupStore = async () => {
         accessed: new Date(),
         links,
       };
-      currentActivity.linkGroups.push(lg);
+      currentNode.linkGroups.push(lg);
       const msg = "Stored link group (" + links.length + ") " + lg.name;
       $`notify-send ${msg}`;
       console.log(`stored linkgroup ${lg.name}`);
@@ -120,12 +120,12 @@ export const linkGroupStore = async () => {
 };
 
 export const menuLinks = async () => {
-  const currentActivity = await getCurrentActivity();
-  if (!currentActivity || !currentActivity.linkGroups[0]) {
+  const currentNode = await getCurrentNode();
+  if (!currentNode || !currentNode.linkGroups[0]) {
     return [];
   }
 
-  const links = currentActivity.linkGroups
+  const links = currentNode.linkGroups
     .sort((l, r) => r.created.getTime() - l.created.getTime())
     .flatMap((lg) => lg.links);
 
@@ -157,9 +157,9 @@ export const menuLinks = async () => {
 };
 
 export const menuLinkGroups = () => {
-  const currentActivity = await getCurrentActivity();
+  const currentNode = await getCurrentNode();
 
-  const sorted = currentActivity.linkGroups.sort(
+  const sorted = currentNode.linkGroups.sort(
     (l, r) => r.created.getTime() - l.created.getTime(),
   );
 

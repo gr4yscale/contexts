@@ -1,16 +1,16 @@
 import { $ } from "zx";
 import * as logger from "../logger.mts";
 import { registerAction, ActionType } from "../actions.mts";
-import { Activity, ActivityDTO } from "../types.mts";
+import { Node, NodeDTO } from "../types.mts";
 import {
-  getWorkspacesForActivity,
+  getWorkspacesForNode,
   updateWorkspace,
   WorkspaceDTO,
   getAllWorkspaces,
   deleteWorkspaceById,
 } from "../models/workspace.mts";
 
-interface ActivityBulkAction extends Action {
+interface NodeBulkAction extends Action {
   type: ActionType.ACTIVITY_BULK;
   handler: () => Promise<void> | void;
 }
@@ -18,7 +18,7 @@ interface ActivityBulkAction extends Action {
 /**
  * Bulk delete activities
  */
-export const activitiesPrune: ActivityBulkAction = {
+export const activitiesPrune: NodeBulkAction = {
   id: "activitiesPrune",
   name: "Prune Activities",
   type: ActionType.ACTIVITY_BULK,
@@ -33,12 +33,12 @@ export const activitiesPrune: ActivityBulkAction = {
  * Execute the pruning of selected activities
  */
 export async function pruneActivities(
-  activities: ActivityDTO[],
+  activities: NodeDTO[],
 ): Promise<void> {
   for (const activity of activities) {
     try {
       // Get all workspaces for this activity
-      const workspaces = await getWorkspacesForActivity(activity.activityId);
+      const workspaces = await getWorkspacesForNode(activity.activityId);
 
       // Delete each workspace
       for (const workspace of workspaces) {
@@ -57,8 +57,8 @@ export async function pruneActivities(
  * Get activities with their X11 client counts
  */
 export async function getActivitiesWithX11Counts(
-  activities: Activity[],
-): Promise<Activity[]> {
+  activities: Node[],
+): Promise<Node[]> {
   // First get all workspace IDs and their window counts
   const workspaceCountsMap = new Map<number, number>();
 

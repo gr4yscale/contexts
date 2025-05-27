@@ -1,7 +1,7 @@
 import { $, fs } from "zx";
 import { activityByDwmTag } from "./state.mts";
-import { ActivityId } from "./types.mts";
-import { activateActivity } from "./commands/navigation.mts";
+import { NodeId } from "./types.mts";
+import { activateNode } from "./commands/navigation.mts";
 import { retryAsync, RetryStatus } from "./retry-async.mts";
 import { getActiveActivities } from "./db.mts";
 
@@ -21,7 +21,7 @@ type Window = {
   winid: number;
   title: string;
   tabs: Tab[];
-  activityId?: ActivityId;
+  activityId?: NodeId;
   dwmTag?: number;
 };
 
@@ -83,11 +83,11 @@ export const storeBrowserStates = async () => {
 
   const activeActivities = await getActiveActivities();
   for (const activity of activeActivities) {
-    const windowsForActivity = windows.filter(
+    const windowsForNode = windows.filter(
       (w) => w.activityId === activity.activityId,
     );
     const browserState: BrowserState = {
-      windows: windowsForActivity,
+      windows: windowsForNode,
       created: new Date(),
       accessed: new Date(),
     };
@@ -171,7 +171,7 @@ export const loadLastBrowserStateForActiveActivities = async () => {
       if (!windowAlreadyOpen(window, openWindows)) {
         // TOFIX
         // view dwm workspace for activity (activate)
-        await activateActivity(activity.activityId);
+        await activateNode(activity.activityId);
         const urls = window.tabs.map((t) => t.url);
         const firstTabTitle = window.tabs[0].title;
         if (urls.length === 1) {
@@ -233,5 +233,5 @@ export const loadLastBrowserStateForActiveActivities = async () => {
 // map Windows[].Links[] to dwmTags[]
 
 // foreach dwmTag
-//   - find the Activity associated with it
+//   - find the Node associated with it
 //   - store lists of Links in browserState

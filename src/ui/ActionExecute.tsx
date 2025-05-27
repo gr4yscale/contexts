@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Box, Text } from "ink";
-import { useCurrentActivity } from "./common/useCurrentActivity.mts";
+import { useCurrentNode } from "./common/useCurrentNode.mts";
 
 import CoreList from "./common/CoreList.tsx";
 
@@ -10,13 +10,13 @@ import {
   runRangerAction,
 } from "../actions/base.mts";
 import {
-  currentActivityRenameAction,
-  currentActivityAssignToParentAction,
-  currentActivityCreateChildActivityAction,
-  currentActivityCreateSiblingActivityAction,
-  currentActivityCreateRootActivityAction,
-  currentActivityDestroyAction,
-} from "../actions/currentActivity.mts";
+  currentNodeRenameAction,
+  currentNodeAssignToParentAction,
+  currentNodeCreateChildNodeAction,
+  currentNodeCreateSiblingNodeAction,
+  currentNodeCreateRootNodeAction,
+  currentNodeDestroyAction,
+} from "../actions/currentNode.mts";
 
 import { navigateExaSearch } from "../actions/navigation.mts";
 
@@ -29,7 +29,7 @@ interface Props {
 }
 
 const ActionExecute: React.FC<Props> = ({ keys = "asdfghjkl;" }) => {
-  const { currentActivity, loading } = useCurrentActivity();
+  const { currentNode, loading } = useCurrentNode();
 
   const [actions, setActions] = useState<Action[]>([
     navigateExaSearch,
@@ -37,12 +37,12 @@ const ActionExecute: React.FC<Props> = ({ keys = "asdfghjkl;" }) => {
     runFirefoxAction,
     runEmacsAction,
     runRangerAction,
-    currentActivityRenameAction,
-    currentActivityAssignToParentAction,
-    currentActivityCreateChildActivityAction,
-    currentActivityCreateSiblingActivityAction,
-    currentActivityCreateRootActivityAction,
-    currentActivityDestroyAction,
+    currentNodeRenameAction,
+    currentNodeAssignToParentAction,
+    currentNodeCreateChildNodeAction,
+    currentNodeCreateSiblingNodeAction,
+    currentNodeCreateRootNodeAction,
+    currentNodeDestroyAction,
   ]);
 
   return (
@@ -61,9 +61,9 @@ const ActionExecute: React.FC<Props> = ({ keys = "asdfghjkl;" }) => {
               const action = selectedItems[0];
               if (
                 action.type === ActionType.CURRENT_ACTIVITY &&
-                currentActivity
+                currentNode
               ) {
-                executeAction(action.id, currentActivity);
+                executeAction(action.id, currentNode);
               } else {
                 executeAction(action.id);
               }

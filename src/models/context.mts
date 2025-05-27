@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
-import { Activity, Context } from "../types.mts";
+import { Node, Context } from "../types.mts";
 import { getConnection } from "../db.mts";
-import { getActivityById } from "./activity.mts";
+import { getNodeById } from "./activity.mts";
 
 /**
  * Creates a new context
@@ -195,16 +195,16 @@ export async function deleteContext(contextId: string): Promise<void> {
  * Adds an activity to the latest context created
  * @param activityId The ID of the activity to add
  */
-export async function addActivityToLatestContext(
+export async function addNodeToLatestContext(
   activityId: string,
 ): Promise<void> {
   try {
     const client = await getConnection();
 
     // Check if the activity exists
-    const activity = await getActivityById(activityId);
+    const activity = await getNodeById(activityId);
     if (!activity) {
-      throw new Error(`Activity with ID ${activityId} not found`);
+      throw new Error(`Node with ID ${activityId} not found`);
     }
 
     // Find the latest context
@@ -235,7 +235,7 @@ export async function addActivityToLatestContext(
  * Removes an activity from the latest context created
  * @param activityId The ID of the activity to remove
  */
-export async function removeActivityFromLatestContext(
+export async function removeNodeFromLatestContext(
   activityId: string,
 ): Promise<void> {
   try {
@@ -266,11 +266,11 @@ export async function removeActivityFromLatestContext(
 /**
  * Gets all activities for a context
  * @param contextId The ID of the context
- * @returns Array of Activity objects
+ * @returns Array of Node objects
  */
 // export async function getContextActivities(
 //   contextId: string,
-// ): Promise<Activity[]> {
+// ): Promise<Node[]> {
 //   try {
 //     const client = await getConnection();
 
@@ -294,7 +294,7 @@ export async function removeActivityFromLatestContext(
 //       created: new Date(row.created),
 //       lastAccessed: new Date(row.lastaccessed),
 //       active: row.active,
-//       parentActivityId: row.parent_id,
+//       parentNodeId: row.parent_id,
 //     }));
 //   } catch (error) {
 //     console.error("Error getting context activities:", error);
@@ -343,9 +343,9 @@ export async function getCurrentContext(): Promise<Context | null> {
 
 /**
  * Gets all activities for the current (most recently created) context
- * @returns Array of Activity objects or empty array if no current context exists
+ * @returns Array of Node objects or empty array if no current context exists
  */
-// export async function getCurrentContextActivities(): Promise<Activity[]> {
+// export async function getCurrentContextActivities(): Promise<Node[]> {
 //   try {
 //     const currentContext = await getCurrentContext();
 

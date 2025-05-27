@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Box, Text } from "ink";
-import { useCurrentActivity } from "./common/useCurrentActivity.mts";
+import { useCurrentNode } from "./common/useCurrentNode.mts";
 import CoreList, { ListItem } from "../ui/common/CoreList.tsx";
 import { executeAction } from "../actions.mts";
 import {
-  updateActivity,
+  updateNode,
   activityTree,
-  formatActivityWithHierarchy,
-  ActivityTreeItem,
+  formatNodeWithHierarchy,
+  NodeTreeItem,
 } from "../models/activity.mts";
-import { Activity } from "../types.mts";
+import { Node } from "../types.mts";
 import * as logger from "../logger.mts";
 
-const CurrentActivityAssignToParent: React.FC = () => {
-  const { currentActivity, loading: currentActivityLoading } =
-    useCurrentActivity();
+const CurrentNodeAssignToParent: React.FC = () => {
+  const { currentNode, loading: currentNodeLoading } =
+    useCurrentNode();
   const [activities, setActivities] = useState<ListItem[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(true);
 
@@ -24,9 +24,9 @@ const CurrentActivityAssignToParent: React.FC = () => {
         setLoadingActivities(true);
         const allActivities = await activityTree();
         const formattedActivities = await Promise.all(
-          allActivities.map(async (act: ActivityTreeItem) => ({
+          allActivities.map(async (act: NodeTreeItem) => ({
             id: act.activityId,
-            display: await formatActivityWithHierarchy(act, allActivities),
+            display: await formatNodeWithHierarchy(act, allActivities),
             data: act,
           })),
         );
@@ -43,7 +43,7 @@ const CurrentActivityAssignToParent: React.FC = () => {
   }, []);
 
   const handleParentSelection = async (selectedItems: ListItem[]) => {
-    if (!currentActivity) {
+    if (!currentNode) {
       logger.error("No current activity to assign parent to.");
       return;
     }
@@ -51,18 +51,18 @@ const CurrentActivityAssignToParent: React.FC = () => {
       logger.error("Please select exactly one parent activity.");
       return;
     }
-    const parentActivityItem = selectedItems[0];
-    const parentActivity = parentActivityItem.data as Activity;
+    const parentNodeItem = selectedItems[0];
+    const parentNode = parentNodeItem.data as Node;
 
     // Prevent assigning an activity to itself or its own children as parent
-    if (parentActivity.activityId === currentActivity.activityId) {
+    if (parentNode.activityId === currentNode.activityId) {
       logger.error("Cannot assign an activity to itself as parent.");
       return;
     }
     try {
-      await updateActivity({
-        activityId: currentActivity.activityId,
-        parentActivityId: parentActivity.activityId,
+      await updateNode({
+        activityId: currentNode.activityId,
+        parentNodeId: parentNode.activityId,
       });
       executeAction("activityNavigate");
     } catch (error) {
@@ -72,18 +72,18 @@ const CurrentActivityAssignToParent: React.FC = () => {
 
   return (
     <Box flexDirection="column">
-      <Text>Current Activity: {currentActivity?.name || "None"}</Text>
+      <Text>Current Node: {currentNode?.name || "None"}</Text>
 
-      {currentActivityLoading || loadingActivities ? (
+      {currentNodeLoading || loadingActivities ? (
         <Text>Loading...</Text>
       ) : (
         <>
           <Box flexDirection="column">
-            <Text>Assign parent for: {currentActivity?.name}</Text>
+            <Text>Assign parent for: {currentNode?.name}</Text>
             {activities.length > 0 ? (
               <CoreList
                 items={activities.filter(
-                  (act) => act.id !== currentActivity?.activityId,
+                  (act) => act.id !== currentNode?.activityId,
                 )} // Prevent selecting self
                 onSelected={handleParentSelection}
                 multiple={false}
@@ -99,4 +99,4 @@ const CurrentActivityAssignToParent: React.FC = () => {
   );
 };
 
-export default CurrentActivityAssignToParent;
+export default CurrentNodeAssignToParent;

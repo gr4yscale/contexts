@@ -1,6 +1,6 @@
 import { parse } from "yaml";
 import { fs } from "zx";
-import { initializeDB, createActivity, Activity } from "../db.mts";
+import { initializeDB, createNode, Node } from "../db.mts";
 import { YamlDoc } from "../types.mts";
 
 async function importActivities() {
@@ -17,7 +17,7 @@ async function importActivities() {
     // Convert and import each activity
     for (const activity of parsed.activities) {
       try {
-        const activityDTO: Activity = {
+        const activityDTO: Node = {
           activityId: activity.activityId,
           orgId: activity.orgId,
           orgText: activity.orgText,
@@ -28,7 +28,7 @@ async function importActivities() {
           active: activity.active,
         };
 
-        await createActivity(activityDTO);
+        await createNode(activityDTO);
         console.log(
           `Imported activity: ${activity.name} (${activity.activityId})`,
         );

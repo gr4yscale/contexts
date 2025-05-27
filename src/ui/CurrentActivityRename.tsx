@@ -1,28 +1,28 @@
 import React from "react";
 import { Box, Text } from "ink";
-import { useCurrentActivity } from "./common/useCurrentActivity.mts";
+import { useCurrentNode } from "./common/useCurrentNode.mts";
 import TextInput from "./TextInput.tsx";
-import { updateActivity } from "../models/activity.mts";
+import { updateNode } from "../models/activity.mts";
 import { executeAction } from "../actions.mts";
 
-const CurrentActivityRename: React.FC = () => {
-  const { currentActivity, loading } = useCurrentActivity();
+const CurrentNodeRename: React.FC = () => {
+  const { currentNode, loading } = useCurrentNode();
 
   return (
     <Box flexDirection="column">
-      <Text>Current Activity: {currentActivity?.name || "None"}</Text>
+      <Text>Current Node: {currentNode?.name || "None"}</Text>
 
       {loading ? (
         <Text>Loading...</Text>
       ) : (
         <Box flexDirection="column">
-          <Text>Rename activity: {currentActivity?.name}</Text>
+          <Text>Rename activity: {currentNode?.name}</Text>
           <TextInput
             callback={(name: string) => {
               if (name === "") return; // TODO validation
-              if (currentActivity) {
-                updateActivity({
-                  activityId: currentActivity.activityId,
+              if (currentNode) {
+                updateNode({
+                  activityId: currentNode.activityId,
                   name: name
                 });
               }
@@ -35,4 +35,4 @@ const CurrentActivityRename: React.FC = () => {
   );
 };
 
-export default CurrentActivityRename;
+export default CurrentNodeRename;

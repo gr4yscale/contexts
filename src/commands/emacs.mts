@@ -4,9 +4,9 @@ import clipboard from "clipboardy";
 import { nanoid } from "nanoid";
 import { formatDistanceToNow } from "date-fns";
 
-import { getCurrentActivity } from "../db.mts";
+import { getCurrentNode } from "../db.mts";
 
-import { Activity, EmacsBookmark } from "../types.mts";
+import { Node, EmacsBookmark } from "../types.mts";
 
 export const viewEmacsWindowBookmark = (bookmark: EmacsBookmark) => {
   const evalArg = '(burly-open-bookmark "' + bookmark.id + '")';
@@ -19,19 +19,19 @@ export const viewEmacsWindowBookmark = (bookmark: EmacsBookmark) => {
 };
 
 export const viewEmacsWindowBookmarks = async () => {
-  const currentActivity = await getCurrentActivity();
-  if (!currentActivity) {return;}
+  const currentNode = await getCurrentNode();
+  if (!currentNode) {return;}
 
-  if (!currentActivity.emacsWindowBookmarks || !currentActivity.emacsWindowBookmarks.length) {
+  if (!currentNode.emacsWindowBookmarks || !currentNode.emacsWindowBookmarks.length) {
     $`notify-send "No Emacs bookmarks for current activity."`;
     return;
   }
-  for (const bm of currentActivity.emacsWindowBookmarks) {
+  for (const bm of currentNode.emacsWindowBookmarks) {
     viewEmacsWindowBookmark(bm);
   }
 };
 
-export const saveEmacsWindowBookmark = async (activity: Activity) => {
+export const saveEmacsWindowBookmark = async (activity: Node) => {
   await $`xdotool key "F10"`;
   await sleep(100);
 
@@ -57,8 +57,8 @@ export const saveEmacsWindowBookmark = async (activity: Activity) => {
 };
 
 export const menuEmacsWindowBookmarks = async () => {
-  const currentActivity = await getCurrentActivity();
-  return currentActivity.emacsWindowBookmarks.map((bm) => {
+  const currentNode = await getCurrentNode();
+  return currentNode.emacsWindowBookmarks.map((bm) => {
     const createdString = formatDistanceToNow(bm.created, {
       includeSeconds: true,
     });
@@ -99,19 +99,19 @@ export const viewEmacsOrgBookmark = (bookmark: EmacsBookmark) => {
 };
 
 export const viewEmacsOrgBookmarks = async () => {
-  const currentActivity = await getCurrentActivity();
-  if (!currentActivity.emacsOrgBookmarks || !currentActivity.emacsOrgBookmarks.length) {
+  const currentNode = await getCurrentNode();
+  if (!currentNode.emacsOrgBookmarks || !currentNode.emacsOrgBookmarks.length) {
     $`notify-send "No Emacs org bookmarks for current activity."`;
     return;
   }
-  for (const bm of currentActivity.emacsOrgBookmarks) {
+  for (const bm of currentNode.emacsOrgBookmarks) {
     viewEmacsOrgBookmark(bm);
   }
 };
 
 export const menuEmacsOrgBookmarks = () => {
-  const currentActivity = await getCurrentActivity();
-  return currentActivity.emacsOrgBookmarks.map((bm) => {
+  const currentNode = await getCurrentNode();
+  return currentNode.emacsOrgBookmarks.map((bm) => {
     const createdString = formatDistanceToNow(bm.created, {
       includeSeconds: true,
     });

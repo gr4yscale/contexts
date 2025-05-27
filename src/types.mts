@@ -1,7 +1,7 @@
 import { BrowserState } from "./browser.mts";
 
-/** Unique identifier for an Activity */
-export type ActivityId = string;
+/** Unique identifier for an Node */
+export type NodeId = string;
 /** Unique identifier for an Org-mode entry */
 export type OrgId = string;
 /** Unique identifier for a Context */
@@ -45,12 +45,12 @@ export interface Context {
 }
 
 /**
- * An Activity represents a focused work session or task.
+ * An Node represents a focused work session or task.
  * Activities can contain window configurations, bookmarks, links, and other resources
  * needed to work on a specific task or project.
  */
 
-export type Activity = {
+export type Node = {
   activityId: string;
   orgId?: string;
   orgText?: string;
@@ -58,14 +58,14 @@ export type Activity = {
   created: Date;
   lastAccessed: Date;
   active: boolean;
-  parentActivityId?: string;
+  parentNodeId?: string;
   temp?: boolean;
 };
 
 export type Tag = string;
 
 /**
- * A Link represents a URL resource associated with an Activity.
+ * A Link represents a URL resource associated with an Node.
  * Links can be organized into LinkGroups and marked as sticky for persistence.
  */
 export type Link = {
@@ -80,7 +80,7 @@ export type Link = {
 
 /**
  * A LinkGroup is, in practice, a list of tabs open in a browser window.
- * These are associated with an Activity.
+ * These are associated with an Node.
  */
 export type LinkGroup = {
   id: string;

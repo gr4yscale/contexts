@@ -1,15 +1,15 @@
 import { $ } from "zx";
 
 import {
-  getWorkspacesForActivity,
+  getWorkspacesForNode,
   getWorkspaceById,
-  createWorkspaceForActivity,
+  createWorkspaceForNode,
   deleteWorkspaceById,
   WorkspaceDTO,
 } from "./models/workspace.mts";
 
-import { getCurrentActivity } from "./models/activity.mts";
-import { Activity } from "./types.mts";
+import { getCurrentNode } from "./models/activity.mts";
+import { Node } from "./types.mts";
 
 $.verbose = false; // suppress stdout from zx subprocess calls
 
@@ -33,13 +33,13 @@ export async function viewWorkspace(workspaceId: number) {
   }
 }
 
-export async function viewWorkspaceForActivity(activity: Activity) {
-  let workspaces = await getWorkspacesForActivity(activity.activityId);
+export async function viewWorkspaceForNode(activity: Node) {
+  let workspaces = await getWorkspacesForNode(activity.activityId);
   let workspace: WorkspaceDTO | null;
   if (!workspaces || workspaces.length === 0) {
     try {
       // TOFIX: return a Promise without null here; throw an error if it failed
-      workspace = await createWorkspaceForActivity(
+      workspace = await createWorkspaceForNode(
         activity.activityId,
         activity.name,
       );
@@ -49,7 +49,7 @@ export async function viewWorkspaceForActivity(activity: Activity) {
         return true;
       }
     } catch (error) {
-      logger.error(`viewWorkspaceForActivity: Error creating workspace:`, error);
+      logger.error(`viewWorkspaceForNode: Error creating workspace:`, error);
       return false;
     }
   } else {
@@ -63,14 +63,14 @@ export async function viewWorkspaceForActivity(activity: Activity) {
   return false;
 }
 
-export async function viewNextWorkspaceForCurrentActivity() {
-  const currentActivity = await getCurrentActivity();
-  if (!currentActivity) {
+export async function viewNextWorkspaceForCurrentNode() {
+  const currentNode = await getCurrentNode();
+  if (!currentNode) {
     console.error(`No current activity found`);
     return;
   }
 
-  const workspaces = await getWorkspacesForActivity(currentActivity.activityId);
+  const workspaces = await getWorkspacesForNode(currentNode.activityId);
   const currentIndex = workspaces.findIndex((e) => e.id === currentWorkspaceId);
   let nextWorkspace = workspaces[currentIndex + 1];
   if (!nextWorkspace) {
@@ -81,14 +81,14 @@ export async function viewNextWorkspaceForCurrentActivity() {
   }
 }
 
-export async function viewPreviousWorkspaceForCurrentActivity() {
-  const currentActivity = await getCurrentActivity();
-  if (!currentActivity) {
+export async function viewPreviousWorkspaceForCurrentNode() {
+  const currentNode = await getCurrentNode();
+  if (!currentNode) {
     console.error(`No current activity found`);
     return;
   }
 
-  const workspaces = await getWorkspacesForActivity(currentActivity.activityId);
+  const workspaces = await getWorkspacesForNode(currentNode.activityId);
   const currentIndex = workspaces.findIndex((e) => e.id === currentWorkspaceId);
   let nextWorkspace = workspaces[currentIndex - 1];
   if (!nextWorkspace) {

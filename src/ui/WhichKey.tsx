@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { Box, Spacer, Text } from "ink";
 import { KeysContext } from "./common/Context.mts";
 import { Keymap, KeyEvent } from "./common/Keymapping.mts";
-import { useCurrentActivity } from "./common/useCurrentActivity.mts";
+import { useCurrentNode } from "./common/useCurrentNode.mts";
 import {
   registerActionListener,
   unregisterActionListener,
@@ -10,7 +10,7 @@ import {
 
 const WhichKey: React.FC = () => {
   const { keymap } = useContext(KeysContext);
-  const { currentActivity, fetchCurrentActivity } = useCurrentActivity();
+  const { currentNode, fetchCurrentNode } = useCurrentNode();
 
   const [lastKeyPressed, setLastKeyPressed] = useState("");
   const [lastCommandExecuted, setLastCommandExecuted] = useState("");
@@ -38,7 +38,7 @@ const WhichKey: React.FC = () => {
   useEffect(() => {
     const listener = (action: string) => {
       setLastActionExecuted(action);
-      fetchCurrentActivity();
+      fetchCurrentNode();
     };
 
     registerActionListener(listener);
@@ -78,7 +78,7 @@ const WhichKey: React.FC = () => {
         </Box>
         <Text color="magenta">{lastCommandExecuted}</Text>
         <Spacer />
-        <Text color="cyan">{currentActivity?.name || "None"}</Text>
+        <Text color="cyan">{currentNode?.name || "None"}</Text>
       </Box>
       <Box
         flexDirection="row"

@@ -2,10 +2,10 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { getConnection } from "../db.mts";
 import {
   getAllWorkspaces,
-  createWorkspaceForActivity,
+  createWorkspaceForNode,
   updateWorkspace,
-  assignWorkspaceToActivity,
-  getWorkspacesForActivity,
+  assignWorkspaceToNode,
+  getWorkspacesForNode,
   getWorkspaceById,
   deleteWorkspaceById,
 } from "./workspace.mts";
@@ -18,8 +18,8 @@ const testSuite = isIntegrationTest ? describe : describe.skip;
 
 testSuite("Workspace Model Integration Tests", () => {
   // Test activity IDs
-  const testActivityId1 = "test-activity-1";
-  const testActivityId2 = "test-activity-2";
+  const testNodeId1 = "test-activity-1";
+  const testNodeId2 = "test-activity-2";
 
   // Setup database and test tables
   beforeAll(async () => {
@@ -46,7 +46,7 @@ testSuite("Workspace Model Integration Tests", () => {
     // Insert test activities
     await client.query(
       "INSERT INTO activities (activityId, name) VALUES ($1, $2), ($3, $4)",
-      [testActivityId1, "Test Activity 1", testActivityId2, "Test Activity 2"],
+      [testNodeId1, "Test Node 1", testNodeId2, "Test Node 2"],
     );
   });
 
@@ -68,22 +68,22 @@ testSuite("Workspace Model Integration Tests", () => {
 
   it("should create a workspace for an activity", async () => {
     // Create a workspace
-    const workspace = await createWorkspaceForActivity(
-      testActivityId1,
+    const workspace = await createWorkspaceForNode(
+      testNodeId1,
       "Test Workspace",
     );
 
     // Verify the workspace was created
     expect(workspace).toBeDefined();
     expect(workspace.id).toBe(1);
-    expect(workspace.activityId).toBe(testActivityId1);
+    expect(workspace.activityId).toBe(testNodeId1);
     expect(workspace.name).toBe("Test Workspace");
   });
 
   it("should get all workspaces", async () => {
     // Create test workspaces
-    await createWorkspaceForActivity(testActivityId1, "Workspace 1");
-    await createWorkspaceForActivity(testActivityId2, "Workspace 2");
+    await createWorkspaceForNode(testNodeId1, "Workspace 1");
+    await createWorkspaceForNode(testNodeId2, "Workspace 2");
 
     // Get all workspaces
     const workspaces = await getAllWorkspaces();
@@ -91,17 +91,17 @@ testSuite("Workspace Model Integration Tests", () => {
     // Verify workspaces were retrieved
     expect(workspaces).toHaveLength(2);
     expect(workspaces[0].name).toBe("Workspace 1");
-    expect(workspaces[0].activityId).toBe(testActivityId1);
-    expect(workspaces[0].activityName).toBe("Test Activity 1");
+    expect(workspaces[0].activityId).toBe(testNodeId1);
+    expect(workspaces[0].activityName).toBe("Test Node 1");
     expect(workspaces[1].name).toBe("Workspace 2");
-    expect(workspaces[1].activityId).toBe(testActivityId2);
-    expect(workspaces[1].activityName).toBe("Test Activity 2");
+    expect(workspaces[1].activityId).toBe(testNodeId2);
+    expect(workspaces[1].activityName).toBe("Test Node 2");
   });
 
   it("should update a workspace", async () => {
     // Create a workspace
-    const workspace = await createWorkspaceForActivity(
-      testActivityId1,
+    const workspace = await createWorkspaceForNode(
+      testNodeId1,
       "Original Name",
     );
 
@@ -116,48 +116,48 @@ testSuite("Workspace Model Integration Tests", () => {
 
     // Verify the workspace was updated
     expect(updatedWorkspace.name).toBe("Updated Name");
-    expect(updatedWorkspace.activityId).toBe(testActivityId1);
+    expect(updatedWorkspace.activityId).toBe(testNodeId1);
   });
 
   it("should assign a workspace to a different activity", async () => {
     // Create a workspace
-    const workspace = await createWorkspaceForActivity(
-      testActivityId1,
+    const workspace = await createWorkspaceForNode(
+      testNodeId1,
       "Test Workspace",
     );
 
     // Assign the workspace to a different activity
-    await assignWorkspaceToActivity(workspace.id, testActivityId2);
+    await assignWorkspaceToNode(workspace.id, testNodeId2);
 
     // Get the updated workspace
     const updatedWorkspace = await getWorkspaceById(workspace.id);
 
     // Verify the workspace was assigned to the new activity
-    expect(updatedWorkspace.activityId).toBe(testActivityId2);
-    expect(updatedWorkspace.activityName).toBe("Test Activity 2");
+    expect(updatedWorkspace.activityId).toBe(testNodeId2);
+    expect(updatedWorkspace.activityName).toBe("Test Node 2");
   });
 
   it("should get workspaces for a specific activity", async () => {
     // Create test workspaces
-    await createWorkspaceForActivity(testActivityId1, "Activity 1 Workspace 1");
-    await createWorkspaceForActivity(testActivityId1, "Activity 1 Workspace 2");
-    await createWorkspaceForActivity(testActivityId2, "Activity 2 Workspace");
+    await createWorkspaceForNode(testNodeId1, "Node 1 Workspace 1");
+    await createWorkspaceForNode(testNodeId1, "Node 1 Workspace 2");
+    await createWorkspaceForNode(testNodeId2, "Node 2 Workspace");
 
     // Get workspaces for activity 1
-    const workspaces = await getWorkspacesForActivity(testActivityId1);
+    const workspaces = await getWorkspacesForNode(testNodeId1);
 
     // Verify only workspaces for activity 1 were retrieved
     expect(workspaces).toHaveLength(2);
-    expect(workspaces[0].name).toBe("Activity 1 Workspace 1");
-    expect(workspaces[1].name).toBe("Activity 1 Workspace 2");
-    expect(workspaces[0].activityId).toBe(testActivityId1);
-    expect(workspaces[1].activityId).toBe(testActivityId1);
+    expect(workspaces[0].name).toBe("Node 1 Workspace 1");
+    expect(workspaces[1].name).toBe("Node 1 Workspace 2");
+    expect(workspaces[0].activityId).toBe(testNodeId1);
+    expect(workspaces[1].activityId).toBe(testNodeId1);
   });
 
   it("should get a workspace by ID", async () => {
     // Create a workspace
-    const workspace = await createWorkspaceForActivity(
-      testActivityId1,
+    const workspace = await createWorkspaceForNode(
+      testNodeId1,
       "Test Workspace",
     );
 
@@ -168,14 +168,14 @@ testSuite("Workspace Model Integration Tests", () => {
     expect(retrievedWorkspace).toBeDefined();
     expect(retrievedWorkspace.id).toBe(workspace.id);
     expect(retrievedWorkspace.name).toBe("Test Workspace");
-    expect(retrievedWorkspace.activityId).toBe(testActivityId1);
-    expect(retrievedWorkspace.activityName).toBe("Test Activity 1");
+    expect(retrievedWorkspace.activityId).toBe(testNodeId1);
+    expect(retrievedWorkspace.activityName).toBe("Test Node 1");
   });
 
   it("should delete a workspace by ID", async () => {
     // Create a workspace
-    const workspace = await createWorkspaceForActivity(
-      testActivityId1,
+    const workspace = await createWorkspaceForNode(
+      testNodeId1,
       "Test Workspace",
     );
 
@@ -196,16 +196,16 @@ testSuite("Workspace Model Integration Tests", () => {
 
   it("should handle creating multiple workspaces with unique IDs", async () => {
     // Create multiple workspaces
-    const workspace1 = await createWorkspaceForActivity(
-      testActivityId1,
+    const workspace1 = await createWorkspaceForNode(
+      testNodeId1,
       "Workspace 1",
     );
-    const workspace2 = await createWorkspaceForActivity(
-      testActivityId1,
+    const workspace2 = await createWorkspaceForNode(
+      testNodeId1,
       "Workspace 2",
     );
-    const workspace3 = await createWorkspaceForActivity(
-      testActivityId2,
+    const workspace3 = await createWorkspaceForNode(
+      testNodeId2,
       "Workspace 3",
     );
 
@@ -223,8 +223,8 @@ testSuite("Workspace Model Integration Tests", () => {
 
   it("should allow reusing workspace IDs after deletion", async () => {
     // Create a workspace
-    const workspace1 = await createWorkspaceForActivity(
-      testActivityId1,
+    const workspace1 = await createWorkspaceForNode(
+      testNodeId1,
       "Workspace 1",
     );
     
@@ -232,8 +232,8 @@ testSuite("Workspace Model Integration Tests", () => {
     await deleteWorkspaceById(workspace1.id);
     
     // Create a new workspace - should reuse the ID
-    const workspace2 = await createWorkspaceForActivity(
-      testActivityId2,
+    const workspace2 = await createWorkspaceForNode(
+      testNodeId2,
       "Workspace 2",
     );
     
@@ -241,15 +241,15 @@ testSuite("Workspace Model Integration Tests", () => {
     expect(workspace2.id).toBe(workspace1.id);
     
     // Verify the new workspace has the correct properties
-    expect(workspace2.activityId).toBe(testActivityId2);
+    expect(workspace2.activityId).toBe(testNodeId2);
     expect(workspace2.name).toBe("Workspace 2");
   });
 
   it("should throw an error when maximum workspaces (29) is reached", async () => {
     // Create 29 workspaces (maximum allowed)
     for (let i = 1; i <= 29; i++) {
-      await createWorkspaceForActivity(
-        testActivityId1,
+      await createWorkspaceForNode(
+        testNodeId1,
         `Workspace ${i}`
       );
     }
@@ -260,7 +260,7 @@ testSuite("Workspace Model Integration Tests", () => {
     
     // Try to create one more workspace - should throw an error
     await expect(
-      createWorkspaceForActivity(testActivityId1, "One Too Many")
+      createWorkspaceForNode(testNodeId1, "One Too Many")
     ).rejects.toThrow("Maximum number of workspaces (29) reached");
   });
 });

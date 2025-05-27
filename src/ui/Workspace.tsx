@@ -6,8 +6,8 @@ import {
   WorkspaceDTO,
 } from "../models/workspace.mts";
 import {
-  viewNextWorkspaceForCurrentActivity,
-  viewPreviousWorkspaceForCurrentActivity,
+  viewNextWorkspaceForCurrentNode,
+  viewPreviousWorkspaceForCurrentNode,
   viewWorkspace,
   deleteCurrentWorkspace,
   getCurrentWorkspace,
@@ -121,13 +121,13 @@ const Workspace: React.FC = () => {
             sequence: [key("j")],
             description: "Next workspace for current activity",
             name: "workspace-next-for-current-activity",
-            handler: viewNextWorkspaceForCurrentActivity,
+            handler: viewNextWorkspaceForCurrentNode,
           },
           {
             sequence: [key("k")],
             description: "Prev workspace for current activity",
             name: "workspace-prev-for-current-activity",
-            handler: viewPreviousWorkspaceForCurrentActivity,
+            handler: viewPreviousWorkspaceForCurrentNode,
           },
           {
             sequence: [key("x")],

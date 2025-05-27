@@ -1,27 +1,27 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Box } from "ink";
-import { Activity } from "../types.mts";
+import { Node } from "../types.mts";
 import SelectionList from "./common/SelectionList.tsx";
 import { KeymapConfig } from "./common/Keymapping.mts";
 import { KeysContext } from "./common/Context.mts";
 
-import { activityTree, ActivityTreeItem } from "../models/activity.mts";
+import { activityTree, NodeTreeItem } from "../models/activity.mts";
 
-type ActivityItem = {
+type NodeItem = {
   id: string;
   display: string;
-  data: Activity;
-} & ActivityTreeItem; // TOFIX type union
+  data: Node;
+} & NodeTreeItem; // TOFIX type union
 
-type ActivityStates = "initial" | "find";
+type NodeStates = "initial" | "find";
 
 interface Props {
   onSelected?: (selectedItems: Item[]) => Promise<void>;
 }
 
-const ActivitySelection: React.FC<Props> = ({ onSelected }) => {
-  const [mode, setMode] = useState<ActivityStates>("initial");
-  const [items, setItems] = useState<Array<ActivityItem>>([]);
+const NodeSelection: React.FC<Props> = ({ onSelected }) => {
+  const [mode, setMode] = useState<NodeStates>("initial");
+  const [items, setItems] = useState<Array<NodeItem>>([]);
 
   const fetchActivities = async () => {
     try {
@@ -80,4 +80,4 @@ const ActivitySelection: React.FC<Props> = ({ onSelected }) => {
   );
 };
 
-export default ActivitySelection;
+export default NodeSelection;

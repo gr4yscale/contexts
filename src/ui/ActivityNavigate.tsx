@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useContext } from "react";
 import { Box, Text } from "ink";
 
-import { Activity } from "../types.mts";
+import { Node } from "../types.mts";
 import {
-  filteredActivityTree,
-  ActivityTreeFilter,
-  formatActivityWithHierarchy,
+  filteredNodeTree,
+  NodeTreeFilter,
+  formatNodeWithHierarchy,
 } from "../models/activity.mts";
 import { executeAction } from "../actions.mts";
 import * as logger from "../logger.mts";
@@ -18,7 +18,7 @@ import useListSwitching from "./common/useListSwitching.mts";
 
 export type Modes = "lists" | "items";
 
-const ActivityNavigate: React.FC = () => {
+const NodeNavigate: React.FC = () => {
   const [mode, setMode] = useState<Modes>("items");
 
   const [lists, setLists] = useState<Array<List>>([]);
@@ -31,7 +31,7 @@ const ActivityNavigate: React.FC = () => {
   const fetchActivities = async () => {
     try {
       // here we will use a different fetcher; use a generic?
-      const activities = await filteredActivityTree(ActivityTreeFilter.CONTEXT);
+      const activities = await filteredNodeTree(NodeTreeFilter.CONTEXT);
 
       const sortedActivities = [...activities].sort((a, b) => {
         const dateA = a.lastAccessed ? new Date(a.lastAccessed).getTime() : 0;
@@ -42,7 +42,7 @@ const ActivityNavigate: React.FC = () => {
       // Format activities with hierarchy paths
       const formattedActivities = await Promise.all(
         sortedActivities.map(async (activity) => {
-          const hierarchyPath = await formatActivityWithHierarchy(activity, sortedActivities);
+          const hierarchyPath = await formatNodeWithHierarchy(activity, sortedActivities);
           return {
             id: activity.activityId,
             display: hierarchyPath,
@@ -123,12 +123,12 @@ const ActivityNavigate: React.FC = () => {
           onSelected={(selectedItems: ListItem[]) => {
             if (selectedItems.length > 0) {
               const selectedItem = selectedItems[0];
-              const activity = selectedItem.data as Activity;
+              const activity = selectedItem.data as Node;
               if (activity && activity.activityId) {
-                executeAction("activateActivity", activity.activityId);
+                executeAction("activateNode", activity.activityId);
               } else {
                 console.error(
-                  "Selected item data is not a valid Activity:",
+                  "Selected item data is not a valid Node:",
                   selectedItem,
                 );
               }
@@ -143,12 +143,12 @@ const ActivityNavigate: React.FC = () => {
           onSelected={(selectedItems: ListItem[]) => {
             if (selectedItems.length > 0) {
               const selectedItem = selectedItems[0];
-              const activity = selectedItem.data as Activity;
+              const activity = selectedItem.data as Node;
               if (activity && activity.activityId) {
-                executeAction("activateActivity", activity.activityId);
+                executeAction("activateNode", activity.activityId);
               } else {
                 console.error(
-                  "Selected item data is not a valid Activity:",
+                  "Selected item data is not a valid Node:",
                   selectedItem,
                 );
               }
@@ -162,4 +162,4 @@ const ActivityNavigate: React.FC = () => {
   );
 };
 
-export default ActivityNavigate;
+export default NodeNavigate;
