@@ -6,14 +6,14 @@ import { createNode } from "../models/node.mts";
 
 // actions that operate on the current node
 interface CurrentNodeAction extends Action {
-  type: ActionType.CURRENT_ACTIVITY;
+  type: ActionType.CURRENT_NODE;
   handler: (node: Node) => Promise<void> | void;
 }
 
 export const currentNodeRenameAction: CurrentNodeAction = {
   id: "currentNodeRename",
   name: "Rename Node",
-  type: ActionType.CURRENT_ACTIVITY,
+  type: ActionType.CURRENT_NODE,
   handler: async (node: Node) => {
     logger.info(`Renaming node ${node.nodeId}...`);
   },
@@ -22,7 +22,7 @@ export const currentNodeRenameAction: CurrentNodeAction = {
 export const currentNodeAssignToParentAction: CurrentNodeAction = {
   id: "currentNodeAssignToParent",
   name: "Assign Node to Parent",
-  type: ActionType.CURRENT_ACTIVITY,
+  type: ActionType.CURRENT_NODE,
   handler: async (node: Node) => {
     logger.info(`Assigning node ${node.nodeId} to parent...`);
   },
@@ -31,7 +31,7 @@ export const currentNodeAssignToParentAction: CurrentNodeAction = {
 export const currentNodeCreateChildNodeAction: CurrentNodeAction = {
   id: "currentNodeCreateChildNode",
   name: "Create Child Node",
-  type: ActionType.CURRENT_ACTIVITY,
+  type: ActionType.CURRENT_NODE,
   handler: async (node: Node) => {
     const childNodeId = await createNode({
       name: `Child of ${node.name}`,
@@ -45,7 +45,7 @@ export const currentNodeCreateSiblingNodeAction: CurrentNodeAction =
   {
     id: "currentNodeCreateSiblingNode",
     name: "Create Sibling Node",
-    type: ActionType.CURRENT_ACTIVITY,
+    type: ActionType.CURRENT_NODE,
     handler: async (node: Node) => {
       const siblingNodeId = await createNode({
         name: `Sibling of ${node.name}`,
@@ -58,7 +58,7 @@ export const currentNodeCreateSiblingNodeAction: CurrentNodeAction =
 export const currentNodeCreateRootNodeAction: CurrentNodeAction = {
   id: "currentNodeCreateRootNode",
   name: "Create Root-level Node",
-  type: ActionType.CURRENT_ACTIVITY,
+  type: ActionType.CURRENT_NODE,
   handler: async () => {
     const nodeId = await createNode({
       name: `${nanoid()}`,
@@ -71,7 +71,7 @@ export const currentNodeCreateRootNodeAction: CurrentNodeAction = {
 export const currentNodeDestroyAction: CurrentNodeAction = {
   id: "currentNodeDestroy",
   name: "Delete Node",
-  type: ActionType.CURRENT_ACTIVITY,
+  type: ActionType.CURRENT_NODE,
   handler: async (node: Node) => {
     logger.info(`Deleting node ${node.nodeId}...`);
   },

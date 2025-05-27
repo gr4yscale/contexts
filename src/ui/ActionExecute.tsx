@@ -60,7 +60,7 @@ const ActionExecute: React.FC<Props> = ({ keys = "asdfghjkl;" }) => {
             onSelected={(selectedItems) => {
               const action = selectedItems[0];
               if (
-                action.type === ActionType.CURRENT_ACTIVITY &&
+                action.type === ActionType.CURRENT_NODE &&
                 currentNode
               ) {
                 executeAction(action.id, currentNode);

@@ -2,7 +2,7 @@ import * as logger from "./logger.mts";
 
 export enum ActionType {
   BASE = "base",
-  CURRENT_ACTIVITY = "currentNode",
+  CURRENT_NODE = "currentNode",
   RESOURCE = "resource",
   NAVIGATION = "navigation",
   NODE_BULK = "nodeBulk",

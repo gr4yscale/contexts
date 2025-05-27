@@ -11,7 +11,7 @@ import {
 } from "../models/workspace.mts";
 
 interface NodeBulkAction extends Action {
-  type: ActionType.ACTIVITY_BULK;
+  type: ActionType.NODE_BULK;
   handler: () => Promise<void> | void;
 }
 
@@ -21,7 +21,7 @@ interface NodeBulkAction extends Action {
 export const nodesPrune: NodeBulkAction = {
   id: "nodesPrune",
   name: "Prune Nodes",
-  type: ActionType.ACTIVITY_BULK,
+  type: ActionType.NODE_BULK,
   handler: async () => {
     await $`dwmc viewex 0`; // TOFIX: shared showTUI func
     // The actual pruning will be handled by callbacks in the UI
