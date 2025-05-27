@@ -23,6 +23,7 @@ import CurrentActivityDelete from "../CurrentActivityDelete.tsx";
 import ActivitiesPrune from "../ActivitiesPrune.tsx";
 import Testbed from "../Testbed.tsx";
 import ResourceNavigate from "../ResourceNavigate.tsx";
+import ExaSearch from "../ExaSearch.tsx"; // New import
 
 // consider adding props here that would set initial state of ActivityRoot
 // so that we can keep everything together (not making more components)
@@ -47,6 +48,7 @@ const routes = [
   { path: "/currentActivityDelete", component: CurrentActivityDelete },
   { path: "/activitiesPrune", component: ActivitiesPrune },
   { path: "/testbed", component: Testbed },
+  { path: "/exaSearch", component: ExaSearch }, // New route
 ];
 
 // define root keymap
@@ -111,6 +113,9 @@ const Root: React.FC = () => {
           break;
         case "testbed":
           setRoutePath("/testbed");
+          break;
+        case "exaSearchNavigate": // Action to navigate to the Exa search UI
+          setRoutePath("/exaSearch");
           break;
       }
     };

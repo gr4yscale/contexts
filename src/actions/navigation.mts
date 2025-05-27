@@ -234,6 +234,15 @@ export const navigateResourceNavigate: NavigationAction = {
   },
 };
 
+export const navigateExaSearch: NavigationAction = {
+  id: "exaSearchNavigate",
+  name: "Exa Search",
+  type: ActionType.NAVIGATION,
+  handler: async () => {
+    await showTUI(); // Ensures TUI is visible for the ExaSearch component
+  },
+};
+
 registerAction(navigateGlobalLeader);
 registerAction(navigateTestbed);
 registerAction(navigateActivityNavigate);
@@ -244,3 +253,4 @@ registerAction(navigateSendWindowToAnotherActivityAction);
 registerAction(navigateActivitySwitchOldAction);
 registerAction(navigateActivateActivityAction);
 registerAction(navigateResourceNavigate);
+registerAction(navigateExaSearch);

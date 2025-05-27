@@ -18,6 +18,8 @@ import {
   currentActivityDestroyAction,
 } from "../actions/currentActivity.mts";
 
+import { navigateExaSearch } from "../actions/navigation.mts";
+
 import { activitiesPrune } from "../actions/activity-bulk.mts";
 
 import { Action, executeAction, ActionType } from "../actions.mts";
@@ -30,6 +32,7 @@ const ActionExecute: React.FC<Props> = ({ keys = "asdfghjkl;" }) => {
   const { currentActivity, loading } = useCurrentActivity();
 
   const [actions, setActions] = useState<Action[]>([
+    navigateExaSearch,
     activitiesPrune,
     runFirefoxAction,
     runEmacsAction,
