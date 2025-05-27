@@ -74,12 +74,12 @@ export const stickyLinkStore = async () => {
 export const linkGroupLoad = async (id: string) => {
   const currentNode = await getCurrentNode();
   if (!currentNode || !currentNode.linkGroups) {
-    console.log("no link groups or activity");
+    console.log("no link groups or node");
     $`notify-send "Link Group not found."`;
     return;
   }
 
-  // select link group, or is there a "selected link group?" state for current activity?
+  // select link group, or is there a "selected link group?" state for current node?
   const linkGroup = currentNode.linkGroups.find((lg) => lg.id === id);
   if (linkGroup) {
     const mapped = linkGroup.links.map((l) => l.url);

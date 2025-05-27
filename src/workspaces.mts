@@ -8,7 +8,7 @@ import {
   WorkspaceDTO,
 } from "./models/workspace.mts";
 
-import { getCurrentNode } from "./models/activity.mts";
+import { getCurrentNode } from "./models/node.mts";
 import { Node } from "./types.mts";
 
 $.verbose = false; // suppress stdout from zx subprocess calls
@@ -33,15 +33,15 @@ export async function viewWorkspace(workspaceId: number) {
   }
 }
 
-export async function viewWorkspaceForNode(activity: Node) {
-  let workspaces = await getWorkspacesForNode(activity.activityId);
+export async function viewWorkspaceForNode(node: Node) {
+  let workspaces = await getWorkspacesForNode(node.nodeId);
   let workspace: WorkspaceDTO | null;
   if (!workspaces || workspaces.length === 0) {
     try {
       // TOFIX: return a Promise without null here; throw an error if it failed
       workspace = await createWorkspaceForNode(
-        activity.activityId,
-        activity.name,
+        node.nodeId,
+        node.name,
       );
       
       if (workspace) {
@@ -66,11 +66,11 @@ export async function viewWorkspaceForNode(activity: Node) {
 export async function viewNextWorkspaceForCurrentNode() {
   const currentNode = await getCurrentNode();
   if (!currentNode) {
-    console.error(`No current activity found`);
+    console.error(`No current node found`);
     return;
   }
 
-  const workspaces = await getWorkspacesForNode(currentNode.activityId);
+  const workspaces = await getWorkspacesForNode(currentNode.nodeId);
   const currentIndex = workspaces.findIndex((e) => e.id === currentWorkspaceId);
   let nextWorkspace = workspaces[currentIndex + 1];
   if (!nextWorkspace) {
@@ -84,11 +84,11 @@ export async function viewNextWorkspaceForCurrentNode() {
 export async function viewPreviousWorkspaceForCurrentNode() {
   const currentNode = await getCurrentNode();
   if (!currentNode) {
-    console.error(`No current activity found`);
+    console.error(`No current node found`);
     return;
   }
 
-  const workspaces = await getWorkspacesForNode(currentNode.activityId);
+  const workspaces = await getWorkspacesForNode(currentNode.nodeId);
   const currentIndex = workspaces.findIndex((e) => e.id === currentWorkspaceId);
   let nextWorkspace = workspaces[currentIndex - 1];
   if (!nextWorkspace) {

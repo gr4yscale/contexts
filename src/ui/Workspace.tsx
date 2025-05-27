@@ -60,7 +60,7 @@ const Workspace: React.FC = () => {
       const newItems = workspaces.map((workspace) => ({
         id: workspace.id.toString(),
         display: `${workspace.name} - ${
-          workspace.activityName || "No activity associated"
+          workspace.nodeName || "No node associated"
         }`,
         data: workspace,
       }));
@@ -95,7 +95,7 @@ const Workspace: React.FC = () => {
           },
           // {
           //   sequence: [key("n")],
-          //   description: "New workspace for current activity",
+          //   description: "New workspace for current node",
           //   name: "workspace-create-for-current-acctivity",
           //   handler: () => {
           //     //setMode("workspaceCreate");
@@ -119,14 +119,14 @@ const Workspace: React.FC = () => {
           },
           {
             sequence: [key("j")],
-            description: "Next workspace for current activity",
-            name: "workspace-next-for-current-activity",
+            description: "Next workspace for current node",
+            name: "workspace-next-for-current-node",
             handler: viewNextWorkspaceForCurrentNode,
           },
           {
             sequence: [key("k")],
-            description: "Prev workspace for current activity",
-            name: "workspace-prev-for-current-activity",
+            description: "Prev workspace for current node",
+            name: "workspace-prev-for-current-node",
             handler: viewPreviousWorkspaceForCurrentNode,
           },
           {

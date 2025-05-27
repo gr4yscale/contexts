@@ -16,10 +16,10 @@ import {
   NodeCreate,
   filteredNodeTree,
   NodeTreeFilter,
-} from "./activity.mts";
+} from "./node.mts";
 import { Node } from "../types.mts";
 
-import { filteredNodeTree, NodeTreeFilter } from "./activity.mts";
+import { filteredNodeTree, NodeTreeFilter } from "./node.mts";
 import { createContext, updateContext } from "./context.mts";
 
 const isIntegrationTest = process.env.RUN_INTEGRATION_TESTS === "true";
@@ -28,9 +28,9 @@ const isIntegrationTest = process.env.RUN_INTEGRATION_TESTS === "true";
 const testSuite = isIntegrationTest ? describe : describe.skip;
 
 testSuite("Node Model Integration Tests", () => {
-  // Test activity data
+  // Test node data
   const testNode1: Node = {
-    activityId: "test-activity-1",
+    nodeId: "test-node-1",
     name: "Test Node 1",
     created: new Date(),
     lastAccessed: new Date(),
@@ -40,7 +40,7 @@ testSuite("Node Model Integration Tests", () => {
   };
 
   const testNode2: Node = {
-    activityId: "test-activity-2",
+    nodeId: "test-node-2",
     name: "Test Node 2",
     created: new Date(),
     lastAccessed: new Date(),
@@ -66,7 +66,7 @@ testSuite("Node Model Integration Tests", () => {
 
     // Clear existing data
     await client.query("DELETE FROM activities");
-    await client.query("DELETE FROM activity_history");
+    await client.query("DELETE FROM node_history");
   });
 
   // Clean up after all tests
@@ -84,48 +84,48 @@ testSuite("Node Model Integration Tests", () => {
     }
   });
 
-  it("should create an activity", async () => {
-    // Create an activity
-    const activityId = await createNode(testNode1);
+  it("should create an node", async () => {
+    // Create an node
+    const nodeId = await createNode(testNode1);
 
-    // Verify the activity was created
-    const activity = await getNodeById(activityId);
-    expect(activity).toBeDefined();
-    expect(activity?.activityId).toBe(activityId);
-    expect(activity?.name).toBe(testNode1.name);
-    expect(activity?.orgId).toBe(testNode1.orgId);
-    expect(activity?.orgText).toBe(testNode1.orgText);
-    expect(activity?.active).toBe(testNode1.active);
+    // Verify the node was created
+    const node = await getNodeById(nodeId);
+    expect(node).toBeDefined();
+    expect(node?.nodeId).toBe(nodeId);
+    expect(node?.name).toBe(testNode1.name);
+    expect(node?.orgId).toBe(testNode1.orgId);
+    expect(node?.orgText).toBe(testNode1.orgText);
+    expect(node?.active).toBe(testNode1.active);
   });
 
-  it("should get an activity by ID", async () => {
-    // Create an activity
-    const activityId = await createNode(testNode1);
+  it("should get an node by ID", async () => {
+    // Create an node
+    const nodeId = await createNode(testNode1);
 
-    // Get the activity by ID
-    const activity = await getNodeById(activityId);
+    // Get the node by ID
+    const node = await getNodeById(nodeId);
 
-    // Verify the activity was retrieved
-    expect(activity).toBeDefined();
-    expect(activity?.activityId).toBe(activityId);
-    expect(activity?.name).toBe(testNode1.name);
-    expect(activity?.orgId).toBe(testNode1.orgId);
-    expect(activity?.orgText).toBe(testNode1.orgText);
-    expect(activity?.active).toBe(testNode1.active);
+    // Verify the node was retrieved
+    expect(node).toBeDefined();
+    expect(node?.nodeId).toBe(nodeId);
+    expect(node?.name).toBe(testNode1.name);
+    expect(node?.orgId).toBe(testNode1.orgId);
+    expect(node?.orgText).toBe(testNode1.orgText);
+    expect(node?.active).toBe(testNode1.active);
   });
 
-  it("should return null when getting a non-existent activity", async () => {
-    // Get a non-existent activity
-    const activity = await getNodeById("non-existent-id");
+  it("should return null when getting a non-existent node", async () => {
+    // Get a non-existent node
+    const node = await getNodeById("non-existent-id");
 
     // Verify null was returned
-    expect(activity).toBeNull();
+    expect(node).toBeNull();
   });
 
   it("should get all activities", async () => {
     // Create test activities
-    const activityId1 = await createNode(testNode1);
-    const activityId2 = await createNode(testNode2);
+    const nodeId1 = await createNode(testNode1);
+    const nodeId2 = await createNode(testNode2);
 
     // Get all activities
     const activities = await getAllNodes();
@@ -134,56 +134,56 @@ testSuite("Node Model Integration Tests", () => {
     expect(activities).toHaveLength(2);
 
     // Find activities by ID
-    const activity1 = activities.find((a) => a.activityId === activityId1);
-    const activity2 = activities.find((a) => a.activityId === activityId2);
+    const node1 = activities.find((a) => a.nodeId === nodeId1);
+    const node2 = activities.find((a) => a.nodeId === nodeId2);
 
-    expect(activity1).toBeDefined();
-    expect(activity1?.name).toBe(testNode1.name);
-    expect(activity1?.active).toBe(testNode1.active);
+    expect(node1).toBeDefined();
+    expect(node1?.name).toBe(testNode1.name);
+    expect(node1?.active).toBe(testNode1.active);
 
-    expect(activity2).toBeDefined();
-    expect(activity2?.name).toBe(testNode2.name);
-    expect(activity2?.active).toBe(testNode2.active);
+    expect(node2).toBeDefined();
+    expect(node2?.name).toBe(testNode2.name);
+    expect(node2?.active).toBe(testNode2.active);
   });
 
-  it("should update an activity", async () => {
-    // Create an activity
+  it("should update an node", async () => {
+    // Create an node
     await createNode(testNode1);
 
-    // Update the activity
+    // Update the node
     const updatedName = "Updated Node Name";
     const updatedOrgText = "* Updated Org Text";
     await updateNode({
-      activityId: testNode1.activityId,
+      nodeId: testNode1.nodeId,
       name: updatedName,
       orgText: updatedOrgText,
       active: false,
     });
 
-    // Get the updated activity
-    const activity = await getNodeById(testNode1.activityId);
+    // Get the updated node
+    const node = await getNodeById(testNode1.nodeId);
 
-    // Verify the activity was updated
-    expect(activity).toBeDefined();
-    expect(activity?.name).toBe(updatedName);
-    expect(activity?.orgText).toBe(updatedOrgText);
-    expect(activity?.active).toBe(false);
+    // Verify the node was updated
+    expect(node).toBeDefined();
+    expect(node?.name).toBe(updatedName);
+    expect(node?.orgText).toBe(updatedOrgText);
+    expect(node?.active).toBe(false);
     // Verify other fields weren't changed
-    expect(activity?.orgId).toBe(testNode1.orgId);
+    expect(node?.orgId).toBe(testNode1.orgId);
   });
 
-  it("should delete an activity", async () => {
-    // Create an activity
+  it("should delete an node", async () => {
+    // Create an node
     await createNode(testNode1);
 
-    // Delete the activity
-    await deleteNode(testNode1.activityId);
+    // Delete the node
+    await deleteNode(testNode1.nodeId);
 
-    // Try to get the deleted activity
-    const activity = await getNodeById(testNode1.activityId);
+    // Try to get the deleted node
+    const node = await getNodeById(testNode1.nodeId);
 
-    // Verify the activity was deleted
-    expect(activity).toBeNull();
+    // Verify the node was deleted
+    expect(node).toBeNull();
   });
 
   it("should get active activities", async () => {
@@ -196,7 +196,7 @@ testSuite("Node Model Integration Tests", () => {
 
     // Verify only active activities were retrieved
     expect(activities).toHaveLength(1);
-    expect(activities[0].activityId).toBe(testNode1.activityId);
+    expect(activities[0].nodeId).toBe(testNode1.nodeId);
     expect(activities[0].active).toBe(true);
   });
 
@@ -208,13 +208,13 @@ testSuite("Node Model Integration Tests", () => {
     expect(activities).toHaveLength(0);
   });
 
-  it("should create an activity with a parent-child relationship", async () => {
-    // Create parent activity
+  it("should create an node with a parent-child relationship", async () => {
+    // Create parent node
     const parentId = await createNode(testNode1);
 
-    // Create child activity with parent reference
+    // Create child node with parent reference
     const childNode: NodeCreate = {
-      activityId: "child-activity-1",
+      nodeId: "child-node-1",
       name: "Child Node 1",
       active: true,
       parentNodeId: parentId,
@@ -222,26 +222,26 @@ testSuite("Node Model Integration Tests", () => {
 
     const childId = await createNode(childNode);
 
-    // Verify the child activity was created with correct parent reference
+    // Verify the child node was created with correct parent reference
     const retrievedChild = await getNodeById(childId);
     expect(retrievedChild).toBeDefined();
     expect(retrievedChild?.parentNodeId).toBe(parentId);
   });
 
   it("should get child activities of a parent", async () => {
-    // Create parent activity
+    // Create parent node
     const parentId = await createNode(testNode1);
 
     // Create multiple child activities
     const childNode1: NodeCreate = {
-      activityId: "child-activity-1",
+      nodeId: "child-node-1",
       name: "Child Node 1",
       active: true,
       parentNodeId: parentId,
     };
 
     const childNode2: NodeCreate = {
-      activityId: "child-activity-2",
+      nodeId: "child-node-2",
       name: "Child Node 2",
       active: false,
       parentNodeId: parentId,
@@ -255,7 +255,7 @@ testSuite("Node Model Integration Tests", () => {
 
     // Verify children were retrieved correctly
     expect(children).toHaveLength(2);
-    expect(children.map((c) => c.activityId).sort()).toEqual(
+    expect(children.map((c) => c.nodeId).sort()).toEqual(
       [childId1, childId2].sort(),
     );
 
@@ -265,13 +265,13 @@ testSuite("Node Model Integration Tests", () => {
     });
   });
 
-  it("should fail deleting a parent activity which has children", async () => {
-    // Create parent activity
+  it("should fail deleting a parent node which has children", async () => {
+    // Create parent node
     const parentId = await createNode(testNode1);
 
-    // Create child activity
+    // Create child node
     const childNode: NodeCreate = {
-      activityId: "child-activity-1",
+      nodeId: "child-node-1",
       name: "Child Node 1",
       active: true,
       parentNodeId: parentId,
@@ -307,12 +307,12 @@ testSuite("Node Model Integration Tests", () => {
   });
 
   it("should delete parent and children when cascade parameter is true", async () => {
-    // Create parent activity
+    // Create parent node
     const parentId = await createNode(testNode1);
 
-    // Create child activity
+    // Create child node
     const childNode: NodeCreate = {
-      activityId: "child-activity-1",
+      nodeId: "child-node-1",
       name: "Child Node 1",
       active: true,
       parentNodeId: parentId,
@@ -320,9 +320,9 @@ testSuite("Node Model Integration Tests", () => {
 
     const childId = await createNode(childNode);
 
-    // Create grandchild activity
+    // Create grandchild node
     const grandchildNode: NodeCreate = {
-      activityId: "grandchild-activity-1",
+      nodeId: "grandchild-node-1",
       name: "Grandchild Node 1",
       active: true,
       parentNodeId: childId,
@@ -344,55 +344,55 @@ testSuite("Node Model Integration Tests", () => {
     expect(await getNodeById(grandchildId)).toBeNull();
   });
 
-  it("should retrieve activity tree with correct hierarchy and depth", async () => {
+  it("should retrieve node tree with correct hierarchy and depth", async () => {
     // Create a three-level hierarchy:
     // Root
     // ├── Child 1
     // │   └── Grandchild 1
     // └── Child 2
 
-    // Create root activity
+    // Create root node
     const rootId = await createNode({
-      activityId: "root-activity",
+      nodeId: "root-node",
       name: "Root Node",
       active: true,
     });
 
-    // Create first child activity
+    // Create first child node
     const child1Id = await createNode({
-      activityId: "child-activity-1",
+      nodeId: "child-node-1",
       name: "Child Node 1",
       active: true,
       parentNodeId: rootId,
     });
 
-    // Create second child activity
+    // Create second child node
     const child2Id = await createNode({
-      activityId: "child-activity-2",
+      nodeId: "child-node-2",
       name: "Child Node 2",
       active: true,
       parentNodeId: rootId,
     });
 
-    // Create grandchild activity
+    // Create grandchild node
     const grandchildId = await createNode({
-      activityId: "grandchild-activity",
+      nodeId: "grandchild-node",
       name: "Grandchild Node",
       active: true,
       parentNodeId: child1Id,
     });
 
-    // Get the activity tree
-    const tree = await activityTree();
+    // Get the node tree
+    const tree = await nodeTree();
 
     // Verify tree structure
     expect(tree).toHaveLength(4); // Root + 2 children + 1 grandchild
 
-    // Find each activity in the tree
-    const rootInTree = tree.find((a) => a.activityId === rootId);
-    const child1InTree = tree.find((a) => a.activityId === child1Id);
-    const child2InTree = tree.find((a) => a.activityId === child2Id);
-    const grandchildInTree = tree.find((a) => a.activityId === grandchildId);
+    // Find each node in the tree
+    const rootInTree = tree.find((a) => a.nodeId === rootId);
+    const child1InTree = tree.find((a) => a.nodeId === child1Id);
+    const child2InTree = tree.find((a) => a.nodeId === child2Id);
+    const grandchildInTree = tree.find((a) => a.nodeId === grandchildId);
 
     // Verify all activities are in the tree
     expect(rootInTree).toBeDefined();
@@ -413,11 +413,11 @@ testSuite("Node Model Integration Tests", () => {
     expect(grandchildInTree?.parentNodeId).toBe(child1Id);
 
     // Verify ordering (parents should come before their children)
-    const rootIndex = tree.findIndex((a) => a.activityId === rootId);
-    const child1Index = tree.findIndex((a) => a.activityId === child1Id);
-    const child2Index = tree.findIndex((a) => a.activityId === child2Id);
+    const rootIndex = tree.findIndex((a) => a.nodeId === rootId);
+    const child1Index = tree.findIndex((a) => a.nodeId === child1Id);
+    const child2Index = tree.findIndex((a) => a.nodeId === child2Id);
     const grandchildIndex = tree.findIndex(
-      (a) => a.activityId === grandchildId,
+      (a) => a.nodeId === grandchildId,
     );
 
     expect(rootIndex).toBeLessThan(child1Index);
@@ -425,46 +425,46 @@ testSuite("Node Model Integration Tests", () => {
     expect(child1Index).toBeLessThan(grandchildIndex);
   });
 
-  it("should update activity history and retrieve current activity", async () => {
+  it("should update node history and retrieve current node", async () => {
     // Create two test activities
-    const activityId1 = await createNode(testNode1);
-    const activityId2 = await createNode(testNode2);
+    const nodeId1 = await createNode(testNode1);
+    const nodeId2 = await createNode(testNode2);
 
-    // Update activity history (simulate switching from activity2 to activity1)
-    await updateNodeHistory(activityId1, activityId2);
+    // Update node history (simulate switching from node2 to node1)
+    await updateNodeHistory(nodeId1, nodeId2);
 
-    // Get current activity
+    // Get current node
     const currentNode = await getCurrentNode();
 
-    // Verify current activity is testNode1
+    // Verify current node is testNode1
     expect(currentNode).not.toBeNull();
-    expect(currentNode?.activityId).toBe(activityId1);
+    expect(currentNode?.nodeId).toBe(nodeId1);
 
-    // Get previous activity
+    // Get previous node
     const previousNode = await getPreviousNode();
 
-    // Verify previous activity is testNode2
+    // Verify previous node is testNode2
     expect(previousNode).not.toBeNull();
-    expect(previousNode?.activityId).toBe(activityId2);
+    expect(previousNode?.nodeId).toBe(nodeId2);
   });
 
-  it("should update lastAccessed timestamp when activity becomes current", async () => {
-    // Create test activity
-    const activityId = await createNode(testNode1);
+  it("should update lastAccessed timestamp when node becomes current", async () => {
+    // Create test node
+    const nodeId = await createNode(testNode1);
 
     // Get the initial lastAccessed timestamp
-    const initialNode = await getNodeById(activityId);
+    const initialNode = await getNodeById(nodeId);
     const initialTimestamp = initialNode?.lastAccessed;
 
     // Wait a small amount of time to ensure timestamp difference
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    // Update activity history to make it the current activity
+    // Update node history to make it the current node
     // Use empty string as previous ID to avoid foreign key constraint
-    await updateNodeHistory(activityId, "");
+    await updateNodeHistory(nodeId, "");
 
-    // Get the updated activity
-    const updatedNode = await getNodeById(activityId);
+    // Get the updated node
+    const updatedNode = await getNodeById(nodeId);
     const updatedTimestamp = updatedNode?.lastAccessed;
 
     // Verify lastAccessed timestamp was updated
@@ -474,43 +474,43 @@ testSuite("Node Model Integration Tests", () => {
     );
   });
 
-  it("should maintain history of activity transitions", async () => {
+  it("should maintain history of node transitions", async () => {
     // Create three test activities
-    const activityId1 = await createNode(testNode1);
-    const activityId2 = await createNode(testNode2);
+    const nodeId1 = await createNode(testNode1);
+    const nodeId2 = await createNode(testNode2);
 
     const testNode3: NodeCreate = {
-      activityId: "test-activity-3",
+      nodeId: "test-node-3",
       name: "Test Node 3",
       active: true,
       orgId: "org-id-3",
       orgText: "* Test Org Text 3",
     };
-    const activityId3 = await createNode(testNode3);
+    const nodeId3 = await createNode(testNode3);
 
-    // Simulate a sequence of activity transitions
-    // First transition: null -> activity1
-    await updateNodeHistory(activityId1, "");
+    // Simulate a sequence of node transitions
+    // First transition: null -> node1
+    await updateNodeHistory(nodeId1, "");
 
-    // Second transition: activity1 -> activity2
-    await updateNodeHistory(activityId2, activityId1);
+    // Second transition: node1 -> node2
+    await updateNodeHistory(nodeId2, nodeId1);
 
-    // Third transition: activity2 -> activity3
-    await updateNodeHistory(activityId3, activityId2);
+    // Third transition: node2 -> node3
+    await updateNodeHistory(nodeId3, nodeId2);
 
-    // Verify current activity is activity3
+    // Verify current node is node3
     const currentNode = await getCurrentNode();
-    expect(currentNode?.activityId).toBe(activityId3);
+    expect(currentNode?.nodeId).toBe(nodeId3);
 
-    // Verify previous activity is activity2
+    // Verify previous node is node2
     const previousNode = await getPreviousNode();
-    expect(previousNode?.activityId).toBe(activityId2);
+    expect(previousNode?.nodeId).toBe(nodeId2);
 
     // Verify history records in database
     const client = await getConnection();
     const result = await client.query(
-      `SELECT current_activity_id, previous_activity_id 
-       FROM activity_history 
+      `SELECT current_node_id, previous_node_id 
+       FROM node_history 
        ORDER BY timestamp ASC`,
     );
 
@@ -520,35 +520,35 @@ testSuite("Node Model Integration Tests", () => {
     // Check the sequence of transitions
     const transitions = result.rows.slice(-3); // Get the last 3 transitions
 
-    expect(transitions[0].current_activity_id).toBe(activityId1);
-    expect(transitions[0].previous_activity_id).toBe(null);
+    expect(transitions[0].current_node_id).toBe(nodeId1);
+    expect(transitions[0].previous_node_id).toBe(null);
 
-    expect(transitions[1].current_activity_id).toBe(activityId2);
-    expect(transitions[1].previous_activity_id).toBe(activityId1);
+    expect(transitions[1].current_node_id).toBe(nodeId2);
+    expect(transitions[1].previous_node_id).toBe(nodeId1);
 
-    expect(transitions[2].current_activity_id).toBe(activityId3);
-    expect(transitions[2].previous_activity_id).toBe(activityId2);
+    expect(transitions[2].current_node_id).toBe(nodeId3);
+    expect(transitions[2].previous_node_id).toBe(nodeId2);
   });
 
-  it("should handle null previous activity in history", async () => {
-    // Create test activity
-    const activityId = await createNode(testNode1);
+  it("should handle null previous node in history", async () => {
+    // Create test node
+    const nodeId = await createNode(testNode1);
 
-    // Update activity history with null previous activity
-    await updateNodeHistory(activityId, "");
+    // Update node history with null previous node
+    await updateNodeHistory(nodeId, "");
 
     // Get current and previous activities
     const currentNode = await getCurrentNode();
     const previousNode = await getPreviousNode();
 
-    // Verify current activity is set
-    expect(currentNode?.activityId).toBe(activityId);
+    // Verify current node is set
+    expect(currentNode?.nodeId).toBe(nodeId);
 
-    // Verify previous activity is null
+    // Verify previous node is null
     expect(previousNode).toBeNull();
   });
 
-  it("should limit activity tree depth to 3 levels", async () => {
+  it("should limit node tree depth to 3 levels", async () => {
     // Create a four-level hierarchy to test depth limitation:
     // Root
     // └── Level 1
@@ -556,9 +556,9 @@ testSuite("Node Model Integration Tests", () => {
     //         └── Level 3 (should be included)
     //             └── Level 4 (should NOT be included)
 
-    // Create root activity (level 0)
+    // Create root node (level 0)
     const rootId = await createNode({
-      activityId: "depth-root",
+      nodeId: "depth-root",
       name: "Depth Root",
       active: true,
     });
@@ -568,21 +568,21 @@ testSuite("Node Model Integration Tests", () => {
     const levelIds = [rootId];
 
     for (let i = 1; i <= 4; i++) {
-      const activityId = await createNode({
-        activityId: `depth-level-${i}`,
+      const nodeId = await createNode({
+        nodeId: `depth-level-${i}`,
         name: `Depth Level ${i}`,
         active: true,
         parentNodeId: parentId,
       });
-      levelIds.push(activityId);
-      parentId = activityId;
+      levelIds.push(nodeId);
+      parentId = nodeId;
     }
 
-    // Get the activity tree
-    const tree = await activityTree();
+    // Get the node tree
+    const tree = await nodeTree();
 
     // Find our test activities in the tree
-    const treeNodeIds = tree.map((a) => a.activityId);
+    const treeNodeIds = tree.map((a) => a.nodeId);
 
     // Verify levels 0-3 are included
     expect(treeNodeIds).toContain("depth-root");
@@ -594,10 +594,10 @@ testSuite("Node Model Integration Tests", () => {
     expect(treeNodeIds).not.toContain("depth-level-4");
 
     // Verify correct depth values for included activities
-    const level0 = tree.find((a) => a.activityId === "depth-root");
-    const level1 = tree.find((a) => a.activityId === "depth-level-1");
-    const level2 = tree.find((a) => a.activityId === "depth-level-2");
-    const level3 = tree.find((a) => a.activityId === "depth-level-3");
+    const level0 = tree.find((a) => a.nodeId === "depth-root");
+    const level1 = tree.find((a) => a.nodeId === "depth-level-1");
+    const level2 = tree.find((a) => a.nodeId === "depth-level-2");
+    const level3 = tree.find((a) => a.nodeId === "depth-level-3");
 
     expect(level0?.depth).toBe(0);
     expect(level1?.depth).toBe(1);
@@ -608,17 +608,17 @@ testSuite("Node Model Integration Tests", () => {
   describe("filteredNodeTree", () => {
     it("should return all activities with ALL filter", async () => {
       // Create several activities
-      const activity1 = await createNode({
+      const node1 = await createNode({
         name: "Regular Node 1",
         active: true,
       });
 
-      const activity2 = await createNode({
+      const node2 = await createNode({
         name: "Regular Node 2",
         active: true,
       });
 
-      const activity3 = await createNode({
+      const node3 = await createNode({
         name: "Temp Node",
         active: true,
         temp: true,
@@ -628,10 +628,10 @@ testSuite("Node Model Integration Tests", () => {
       const allNodes = await filteredNodeTree(NodeTreeFilter.ALL);
 
       // Should include all activities
-      const activityIds = allNodes.map((a) => a.activityId);
-      expect(activityIds).toContain(activity1);
-      expect(activityIds).toContain(activity2);
-      expect(activityIds).toContain(activity3);
+      const nodeIds = allNodes.map((a) => a.nodeId);
+      expect(nodeIds).toContain(node1);
+      expect(nodeIds).toContain(node2);
+      expect(nodeIds).toContain(node3);
 
       // All should have selected = false
       expect(allNodes.every((a) => a.selected === false)).toBe(true);
@@ -663,17 +663,17 @@ testSuite("Node Model Integration Tests", () => {
       );
 
       // Should only include temp activities
-      const activityIds = tempNodes.map((a) => a.activityId);
-      expect(activityIds).not.toContain(regularNode);
-      expect(activityIds).toContain(tempNode1);
-      expect(activityIds).toContain(tempNode2);
+      const nodeIds = tempNodes.map((a) => a.nodeId);
+      expect(nodeIds).not.toContain(regularNode);
+      expect(nodeIds).toContain(tempNode1);
+      expect(nodeIds).toContain(tempNode2);
 
       // All should have selected = false
       expect(tempNodes.every((a) => a.selected === false)).toBe(true);
     });
 
     it("should return recent activities with RECENT filter", async () => {
-      // Create an activity and update its lastAccessed to be older
+      // Create an node and update its lastAccessed to be older
       const oldNode = await createNode({
         name: "Old Node",
         active: true,
@@ -682,11 +682,11 @@ testSuite("Node Model Integration Tests", () => {
       // Manually update the lastAccessed date to be older than 7 days
       const client = await getConnection();
       await client.query(
-        "UPDATE activities SET lastAccessed = CURRENT_TIMESTAMP - INTERVAL '8 days' WHERE activityId = $1",
+        "UPDATE activities SET lastAccessed = CURRENT_TIMESTAMP - INTERVAL '8 days' WHERE nodeId = $1",
         [oldNode],
       );
 
-      // Create a new activity (which will have current timestamp)
+      // Create a new node (which will have current timestamp)
       const recentNode = await createNode({
         name: "Recent Node",
         active: true,
@@ -698,32 +698,32 @@ testSuite("Node Model Integration Tests", () => {
       );
 
       // Should only include recent activities
-      const activityIds = recentNodes.map((a) => a.activityId);
-      expect(activityIds).not.toContain(oldNode);
-      expect(activityIds).toContain(recentNode);
+      const nodeIds = recentNodes.map((a) => a.nodeId);
+      expect(nodeIds).not.toContain(oldNode);
+      expect(nodeIds).toContain(recentNode);
     });
 
     it("should mark activities in context as selected with CONTEXT filter", async () => {
       // Create activities
-      const activity1 = await createNode({
+      const node1 = await createNode({
         name: "Node 1",
         active: true,
       });
 
-      const activity2 = await createNode({
+      const node2 = await createNode({
         name: "Node 2",
         active: true,
       });
 
-      const activity3 = await createNode({
+      const node3 = await createNode({
         name: "Node 3",
         active: true,
       });
 
-      // Create a context with activity1 and activity3
+      // Create a context with node1 and node3
       const contextId = await createContext({
         name: "Test Context",
-        activityIds: [activity1, activity3],
+        nodeIds: [node1, node3],
       });
 
       // Get filtered activities with CONTEXT filter
@@ -732,35 +732,35 @@ testSuite("Node Model Integration Tests", () => {
       );
 
       // All activities should be included
-      const activityIds = contextNodes.map((a) => a.activityId);
-      expect(activityIds).toContain(activity1);
-      expect(activityIds).toContain(activity2);
-      expect(activityIds).toContain(activity3);
+      const nodeIds = contextNodes.map((a) => a.nodeId);
+      expect(nodeIds).toContain(node1);
+      expect(nodeIds).toContain(node2);
+      expect(nodeIds).toContain(node3);
 
       // Check selected state
-      const activity1InResult = contextNodes.find(
-        (a) => a.activityId === activity1,
+      const node1InResult = contextNodes.find(
+        (a) => a.nodeId === node1,
       );
-      const activity2InResult = contextNodes.find(
-        (a) => a.activityId === activity2,
+      const node2InResult = contextNodes.find(
+        (a) => a.nodeId === node2,
       );
-      const activity3InResult = contextNodes.find(
-        (a) => a.activityId === activity3,
+      const node3InResult = contextNodes.find(
+        (a) => a.nodeId === node3,
       );
 
-      expect(activity1InResult?.selected).toBe(true);
-      expect(activity2InResult?.selected).toBe(false);
-      expect(activity3InResult?.selected).toBe(true);
+      expect(node1InResult?.selected).toBe(true);
+      expect(node2InResult?.selected).toBe(false);
+      expect(node3InResult?.selected).toBe(true);
     });
 
     it("should handle empty context with CONTEXT filter", async () => {
       // Create activities
-      const activity1 = await createNode({
+      const node1 = await createNode({
         name: "Node 1",
         active: true,
       });
 
-      const activity2 = await createNode({
+      const node2 = await createNode({
         name: "Node 2",
         active: true,
       });
@@ -768,7 +768,7 @@ testSuite("Node Model Integration Tests", () => {
       // Create a context with no activities
       const contextId = await createContext({
         name: "Empty Context",
-        activityIds: [],
+        nodeIds: [],
       });
 
       // Get filtered activities with CONTEXT filter
@@ -777,9 +777,9 @@ testSuite("Node Model Integration Tests", () => {
       );
 
       // All activities should be included but none selected
-      const activityIds = contextNodes.map((a) => a.activityId);
-      expect(activityIds).toContain(activity1);
-      expect(activityIds).toContain(activity2);
+      const nodeIds = contextNodes.map((a) => a.nodeId);
+      expect(nodeIds).toContain(node1);
+      expect(nodeIds).toContain(node2);
 
       // All should have selected = false
       expect(contextNodes.every((a) => a.selected === false)).toBe(true);

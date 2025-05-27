@@ -14,30 +14,30 @@ async function importNodes() {
     const parsed = parse(file, { maxAliasCount: -1 }) as YamlDoc;
     console.log(`Found ${parsed.activities.length} activities in YAML file`);
 
-    // Convert and import each activity
-    for (const activity of parsed.activities) {
+    // Convert and import each node
+    for (const node of parsed.activities) {
       try {
-        const activityDTO: Node = {
-          activityId: activity.activityId,
-          orgId: activity.orgId,
-          orgText: activity.orgText,
-          name: activity.name,
-          dwmTag: activity.dwmTag ?? 0,
-          created: new Date(activity.created),
-          lastAccessed: new Date(activity.lastAccessed),
-          active: activity.active,
+        const nodeDTO: Node = {
+          nodeId: node.nodeId,
+          orgId: node.orgId,
+          orgText: node.orgText,
+          name: node.name,
+          dwmTag: node.dwmTag ?? 0,
+          created: new Date(node.created),
+          lastAccessed: new Date(node.lastAccessed),
+          active: node.active,
         };
 
-        await createNode(activityDTO);
+        await createNode(nodeDTO);
         console.log(
-          `Imported activity: ${activity.name} (${activity.activityId})`,
+          `Imported node: ${node.name} (${node.nodeId})`,
         );
       } catch (error) {
         console.error(
-          `Error importing activity ${activity.activityId}:`,
+          `Error importing node ${node.nodeId}:`,
           error,
         );
-        // Continue with next activity even if one fails
+        // Continue with next node even if one fails
       }
     }
 

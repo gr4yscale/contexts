@@ -171,7 +171,7 @@ export async function updateResource(
 export async function deleteResource(id: ResourceId): Promise<boolean> {
   const client = await getConnection();
   try {
-    // TODO: Consider implications for related entities, e.g., activity_resources links.
+    // TODO: Consider implications for related entities, e.g., node_resources links.
     // For now, it just deletes the resource itself.
     const result = await client.query(
       "DELETE FROM resources WHERE id = $1;",

@@ -5,7 +5,7 @@ import SelectionList from "./common/SelectionList.tsx";
 import { KeymapConfig } from "./common/Keymapping.mts";
 import { KeysContext } from "./common/Context.mts";
 
-import { activityTree, NodeTreeItem } from "../models/activity.mts";
+import { nodeTree, NodeTreeItem } from "../models/node.mts";
 
 type NodeItem = {
   id: string;
@@ -25,16 +25,16 @@ const NodeSelection: React.FC<Props> = ({ onSelected }) => {
 
   const fetchNodes = async () => {
     try {
-      const tree = await activityTree();
+      const tree = await nodeTree();
 
-      const newItems = tree.map((activity) => ({
-        id: activity.activityId,
-        activity,
-        selected: activity.selected,
+      const newItems = tree.map((node) => ({
+        id: node.nodeId,
+        node,
+        selected: node.selected,
         display:
-          "  ".repeat(activity.depth || 0) +
-          (activity.depth || 0 > 0 ? "└─ " : "") +
-          activity.name,
+          "  ".repeat(node.depth || 0) +
+          (node.depth || 0 > 0 ? "└─ " : "") +
+          node.name,
       }));
 
       setItems(newItems);

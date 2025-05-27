@@ -66,7 +66,7 @@ testSuite("Workspace Model Integration Tests", () => {
     }
   });
 
-  it("should create a workspace for an activity", async () => {
+  it("should create a workspace for an node", async () => {
     // Create a workspace
     const workspace = await createWorkspaceForNode(
       testNodeId1,
@@ -76,7 +76,7 @@ testSuite("Workspace Model Integration Tests", () => {
     // Verify the workspace was created
     expect(workspace).toBeDefined();
     expect(workspace.id).toBe(1);
-    expect(workspace.activityId).toBe(testNodeId1);
+    expect(workspace.nodeId).toBe(testNodeId1);
     expect(workspace.name).toBe("Test Workspace");
   });
 
@@ -91,11 +91,11 @@ testSuite("Workspace Model Integration Tests", () => {
     // Verify workspaces were retrieved
     expect(workspaces).toHaveLength(2);
     expect(workspaces[0].name).toBe("Workspace 1");
-    expect(workspaces[0].activityId).toBe(testNodeId1);
-    expect(workspaces[0].activityName).toBe("Test Node 1");
+    expect(workspaces[0].nodeId).toBe(testNodeId1);
+    expect(workspaces[0].nodeName).toBe("Test Node 1");
     expect(workspaces[1].name).toBe("Workspace 2");
-    expect(workspaces[1].activityId).toBe(testNodeId2);
-    expect(workspaces[1].activityName).toBe("Test Node 2");
+    expect(workspaces[1].nodeId).toBe(testNodeId2);
+    expect(workspaces[1].nodeName).toBe("Test Node 2");
   });
 
   it("should update a workspace", async () => {
@@ -116,42 +116,42 @@ testSuite("Workspace Model Integration Tests", () => {
 
     // Verify the workspace was updated
     expect(updatedWorkspace.name).toBe("Updated Name");
-    expect(updatedWorkspace.activityId).toBe(testNodeId1);
+    expect(updatedWorkspace.nodeId).toBe(testNodeId1);
   });
 
-  it("should assign a workspace to a different activity", async () => {
+  it("should assign a workspace to a different node", async () => {
     // Create a workspace
     const workspace = await createWorkspaceForNode(
       testNodeId1,
       "Test Workspace",
     );
 
-    // Assign the workspace to a different activity
+    // Assign the workspace to a different node
     await assignWorkspaceToNode(workspace.id, testNodeId2);
 
     // Get the updated workspace
     const updatedWorkspace = await getWorkspaceById(workspace.id);
 
-    // Verify the workspace was assigned to the new activity
-    expect(updatedWorkspace.activityId).toBe(testNodeId2);
-    expect(updatedWorkspace.activityName).toBe("Test Node 2");
+    // Verify the workspace was assigned to the new node
+    expect(updatedWorkspace.nodeId).toBe(testNodeId2);
+    expect(updatedWorkspace.nodeName).toBe("Test Node 2");
   });
 
-  it("should get workspaces for a specific activity", async () => {
+  it("should get workspaces for a specific node", async () => {
     // Create test workspaces
     await createWorkspaceForNode(testNodeId1, "Node 1 Workspace 1");
     await createWorkspaceForNode(testNodeId1, "Node 1 Workspace 2");
     await createWorkspaceForNode(testNodeId2, "Node 2 Workspace");
 
-    // Get workspaces for activity 1
+    // Get workspaces for node 1
     const workspaces = await getWorkspacesForNode(testNodeId1);
 
-    // Verify only workspaces for activity 1 were retrieved
+    // Verify only workspaces for node 1 were retrieved
     expect(workspaces).toHaveLength(2);
     expect(workspaces[0].name).toBe("Node 1 Workspace 1");
     expect(workspaces[1].name).toBe("Node 1 Workspace 2");
-    expect(workspaces[0].activityId).toBe(testNodeId1);
-    expect(workspaces[1].activityId).toBe(testNodeId1);
+    expect(workspaces[0].nodeId).toBe(testNodeId1);
+    expect(workspaces[1].nodeId).toBe(testNodeId1);
   });
 
   it("should get a workspace by ID", async () => {
@@ -168,8 +168,8 @@ testSuite("Workspace Model Integration Tests", () => {
     expect(retrievedWorkspace).toBeDefined();
     expect(retrievedWorkspace.id).toBe(workspace.id);
     expect(retrievedWorkspace.name).toBe("Test Workspace");
-    expect(retrievedWorkspace.activityId).toBe(testNodeId1);
-    expect(retrievedWorkspace.activityName).toBe("Test Node 1");
+    expect(retrievedWorkspace.nodeId).toBe(testNodeId1);
+    expect(retrievedWorkspace.nodeName).toBe("Test Node 1");
   });
 
   it("should delete a workspace by ID", async () => {
@@ -241,7 +241,7 @@ testSuite("Workspace Model Integration Tests", () => {
     expect(workspace2.id).toBe(workspace1.id);
     
     // Verify the new workspace has the correct properties
-    expect(workspace2.activityId).toBe(testNodeId2);
+    expect(workspace2.nodeId).toBe(testNodeId2);
     expect(workspace2.name).toBe("Workspace 2");
   });
 

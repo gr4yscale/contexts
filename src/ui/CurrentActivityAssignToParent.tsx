@@ -5,10 +5,10 @@ import CoreList, { ListItem } from "../ui/common/CoreList.tsx";
 import { executeAction } from "../actions.mts";
 import {
   updateNode,
-  activityTree,
+  nodeTree,
   formatNodeWithHierarchy,
   NodeTreeItem,
-} from "../models/activity.mts";
+} from "../models/node.mts";
 import { Node } from "../types.mts";
 import * as logger from "../logger.mts";
 
@@ -22,10 +22,10 @@ const CurrentNodeAssignToParent: React.FC = () => {
     const fetchNodes = async () => {
       try {
         setLoadingNodes(true);
-        const allNodes = await activityTree();
+        const allNodes = await nodeTree();
         const formattedNodes = await Promise.all(
           allNodes.map(async (act: NodeTreeItem) => ({
-            id: act.activityId,
+            id: act.nodeId,
             display: await formatNodeWithHierarchy(act, allNodes),
             data: act,
           })),
@@ -44,29 +44,29 @@ const CurrentNodeAssignToParent: React.FC = () => {
 
   const handleParentSelection = async (selectedItems: ListItem[]) => {
     if (!currentNode) {
-      logger.error("No current activity to assign parent to.");
+      logger.error("No current node to assign parent to.");
       return;
     }
     if (selectedItems.length !== 1) {
-      logger.error("Please select exactly one parent activity.");
+      logger.error("Please select exactly one parent node.");
       return;
     }
     const parentNodeItem = selectedItems[0];
     const parentNode = parentNodeItem.data as Node;
 
-    // Prevent assigning an activity to itself or its own children as parent
-    if (parentNode.activityId === currentNode.activityId) {
-      logger.error("Cannot assign an activity to itself as parent.");
+    // Prevent assigning an node to itself or its own children as parent
+    if (parentNode.nodeId === currentNode.nodeId) {
+      logger.error("Cannot assign an node to itself as parent.");
       return;
     }
     try {
       await updateNode({
-        activityId: currentNode.activityId,
-        parentNodeId: parentNode.activityId,
+        nodeId: currentNode.nodeId,
+        parentNodeId: parentNode.nodeId,
       });
-      executeAction("activityNavigate");
+      executeAction("nodeNavigate");
     } catch (error) {
-      logger.error("Error assigning parent activity:", error);
+      logger.error("Error assigning parent node:", error);
     }
   };
 
@@ -83,7 +83,7 @@ const CurrentNodeAssignToParent: React.FC = () => {
             {activities.length > 0 ? (
               <CoreList
                 items={activities.filter(
-                  (act) => act.id !== currentNode?.activityId,
+                  (act) => act.id !== currentNode?.nodeId,
                 )} // Prevent selecting self
                 onSelected={handleParentSelection}
                 multiple={false}

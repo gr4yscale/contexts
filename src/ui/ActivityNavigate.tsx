@@ -6,7 +6,7 @@ import {
   filteredNodeTree,
   NodeTreeFilter,
   formatNodeWithHierarchy,
-} from "../models/activity.mts";
+} from "../models/node.mts";
 import { executeAction } from "../actions.mts";
 import * as logger from "../logger.mts";
 
@@ -41,12 +41,12 @@ const NodeNavigate: React.FC = () => {
 
       // Format activities with hierarchy paths
       const formattedNodes = await Promise.all(
-        sortedNodes.map(async (activity) => {
-          const hierarchyPath = await formatNodeWithHierarchy(activity, sortedNodes);
+        sortedNodes.map(async (node) => {
+          const hierarchyPath = await formatNodeWithHierarchy(node, sortedNodes);
           return {
-            id: activity.activityId,
+            id: node.nodeId,
             display: hierarchyPath,
-            data: activity,
+            data: node,
           };
         })
       );
@@ -123,9 +123,9 @@ const NodeNavigate: React.FC = () => {
           onSelected={(selectedItems: ListItem[]) => {
             if (selectedItems.length > 0) {
               const selectedItem = selectedItems[0];
-              const activity = selectedItem.data as Node;
-              if (activity && activity.activityId) {
-                executeAction("activateNode", activity.activityId);
+              const node = selectedItem.data as Node;
+              if (node && node.nodeId) {
+                executeAction("activateNode", node.nodeId);
               } else {
                 console.error(
                   "Selected item data is not a valid Node:",
@@ -143,9 +143,9 @@ const NodeNavigate: React.FC = () => {
           onSelected={(selectedItems: ListItem[]) => {
             if (selectedItems.length > 0) {
               const selectedItem = selectedItems[0];
-              const activity = selectedItem.data as Node;
-              if (activity && activity.activityId) {
-                executeAction("activateNode", activity.activityId);
+              const node = selectedItem.data as Node;
+              if (node && node.nodeId) {
+                executeAction("activateNode", node.nodeId);
               } else {
                 console.error(
                   "Selected item data is not a valid Node:",

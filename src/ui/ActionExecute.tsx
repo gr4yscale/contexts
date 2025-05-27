@@ -20,7 +20,7 @@ import {
 
 import { navigateExaSearch } from "../actions/navigation.mts";
 
-import { activitiesPrune } from "../actions/activity-bulk.mts";
+import { activitiesPrune } from "../actions/node-bulk.mts";
 
 import { Action, executeAction, ActionType } from "../actions.mts";
 

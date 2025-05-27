@@ -2,9 +2,9 @@ import { getConnection } from "../db.mts";
 
 export interface WorkspaceDTO {
   id: number;
-  activityId: string;
+  nodeId: string;
   name: string;
-  activityName?: string;
+  nodeName?: string;
 }
 
 export async function getAllWorkspaces(): Promise<WorkspaceDTO[]> {
@@ -12,11 +12,11 @@ export async function getAllWorkspaces(): Promise<WorkspaceDTO[]> {
   const result = await client.query(`
     SELECT 
       w.id, 
-      w.activityId, 
+      w.nodeId, 
       w.name,
-      a.name as activityName
+      a.name as nodeName
     FROM workspaces w
-    LEFT JOIN activities a ON w.activityId = a.activityId
+    LEFT JOIN activities a ON w.nodeId = a.nodeId
     ORDER BY w.id ASC;
   `);
 
@@ -26,23 +26,23 @@ export async function getAllWorkspaces(): Promise<WorkspaceDTO[]> {
 
   return result.rows.map((row) => ({
     id: row.id,
-    activityId: row.activityid,
+    nodeId: row.nodeid,
     name: row.name,
-    activityName: row.activityname,
+    nodeName: row.nodename,
   }));
 }
 
 /**
- * Creates a new workspace for the given activity with a unique ID.
+ * Creates a new workspace for the given node with a unique ID.
  * Tries to find any available ID in the range 1-32 that isn't currently used.
  * If all IDs are in use, it will throw an error.
  *
- * @param activityId - The ID of the activity to create a workspace for
+ * @param nodeId - The ID of the node to create a workspace for
  * @returns Promise<WorkspaceDTO> - The newly created workspace
  * @throws {Error} When all workspace IDs are in use or when insertion fails
  */
 export async function createWorkspaceForNode(
-  activityId: string,
+  nodeId: string,
   name: string,
 ): Promise<WorkspaceDTO> {
   const client = await getConnection();
@@ -69,22 +69,22 @@ export async function createWorkspaceForNode(
         ORDER BY id
         LIMIT 1
       )
-      INSERT INTO workspaces (id, activityId, name)
+      INSERT INTO workspaces (id, nodeId, name)
       SELECT 
         id,
         $1,
         $2
       FROM available_ids
-      RETURNING id, activityId, name;
+      RETURNING id, nodeId, name;
     `,
-      [activityId, name],
+      [nodeId, name],
     );
 
     if (result.rows && result.rows.length > 0) {
       const row = result.rows[0];
       return {
         id: row.id,
-        activityId: row.activityid,
+        nodeId: row.nodeid,
         name: row.name,
       };
     }
@@ -102,10 +102,10 @@ export async function updateWorkspace(
     const fields: string[] = [];
     const values: any[] = [];
 
-    const { id, activityId, name } = workspace;
+    const { id, nodeId, name } = workspace;
 
     const fieldMappings: [string, any][] = [
-      ["activityId", activityId],
+      ["nodeId", nodeId],
       ["name", name],
     ];
 
@@ -137,35 +137,35 @@ export async function updateWorkspace(
 
 export async function assignWorkspaceToNode(
   workspaceId: number,
-  activityId: string,
+  nodeId: string,
 ): Promise<void> {
   try {
-    const query = `UPDATE workspaces SET activityId = $1 WHERE id = $2`;
+    const query = `UPDATE workspaces SET nodeId = $1 WHERE id = $2`;
     const client = await getConnection();
-    await client.query(query, [activityId, workspaceId]);
+    await client.query(query, [nodeId, workspaceId]);
   } catch (error) {
-    console.error("Error assigning workspace to activity:", error);
+    console.error("Error assigning workspace to node:", error);
     throw error;
   }
 }
 
 export async function getWorkspacesForNode(
-  activityId: string,
+  nodeId: string,
 ): Promise<WorkspaceDTO[]> {
   const client = await getConnection();
   const result = await client.query(
     `
     SELECT 
       w.id, 
-      w.activityId, 
+      w.nodeId, 
       w.name,
-      a.name as activityName
+      a.name as nodeName
     FROM workspaces w
-    LEFT JOIN activities a ON w.activityId = a.activityId
-    WHERE w.activityId = $1
+    LEFT JOIN activities a ON w.nodeId = a.nodeId
+    WHERE w.nodeId = $1
     ORDER BY w.id ASC;
   `,
-    [activityId],
+    [nodeId],
   );
 
   if (!result.rows || result.rows.length === 0) {
@@ -174,9 +174,9 @@ export async function getWorkspacesForNode(
 
   return result.rows.map((row) => ({
     id: row.id,
-    activityId: row.activityid,
+    nodeId: row.nodeid,
     name: row.name,
-    activityName: row.activityname,
+    nodeName: row.nodename,
   }));
 }
 
@@ -186,11 +186,11 @@ export async function getWorkspaceById(id: number): Promise<WorkspaceDTO> {
     `
     SELECT 
       w.id, 
-      w.activityId, 
+      w.nodeId, 
       w.name,
-      a.name as activityName
+      a.name as nodeName
     FROM workspaces w
-    LEFT JOIN activities a ON w.activityId = a.activityId
+    LEFT JOIN activities a ON w.nodeId = a.nodeId
     WHERE w.id = $1
   `,
     [id],
@@ -203,9 +203,9 @@ export async function getWorkspaceById(id: number): Promise<WorkspaceDTO> {
   const row = result.rows[0];
   return {
     id: row.id,
-    activityId: row.activityid,
+    nodeId: row.nodeid,
     name: row.name,
-    activityName: row.activityname,
+    nodeName: row.nodename,
   };
 }
 

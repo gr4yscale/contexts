@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Text } from "ink";
 import { useCurrentNode } from "./common/useCurrentNode.mts";
 import TextInput from "./TextInput.tsx";
-import { updateNode } from "../models/activity.mts";
+import { updateNode } from "../models/node.mts";
 import { executeAction } from "../actions.mts";
 
 const CurrentNodeRename: React.FC = () => {
@@ -16,17 +16,17 @@ const CurrentNodeRename: React.FC = () => {
         <Text>Loading...</Text>
       ) : (
         <Box flexDirection="column">
-          <Text>Rename activity: {currentNode?.name}</Text>
+          <Text>Rename node: {currentNode?.name}</Text>
           <TextInput
             callback={(name: string) => {
               if (name === "") return; // TODO validation
               if (currentNode) {
                 updateNode({
-                  activityId: currentNode.activityId,
+                  nodeId: currentNode.nodeId,
                   name: name
                 });
               }
-              executeAction("activityNavigate");
+              executeAction("nodeNavigate");
             }}
           />
         </Box>

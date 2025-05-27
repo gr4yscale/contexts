@@ -41,7 +41,7 @@ export interface Context {
   contextId: string;
   name: string;
   created: Date;
-  activityIds: string[];
+  nodeIds: string[];
 }
 
 /**
@@ -51,7 +51,7 @@ export interface Context {
  */
 
 export type Node = {
-  activityId: string;
+  nodeId: string;
   orgId?: string;
   orgText?: string;
   name: string;
@@ -84,7 +84,7 @@ export type Link = {
  */
 export type LinkGroup = {
   id: string;
-  name: string; // default to created time, plus details of parent activity?
+  name: string; // default to created time, plus details of parent node?
   description?: string;
   created: Date;
   accessed: Date;

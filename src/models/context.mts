@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import { Node, Context } from "../types.mts";
 import { getConnection } from "../db.mts";
-import { getNodeById } from "./activity.mts";
+import { getNodeById } from "./node.mts";
 
 /**
  * Creates a new context
@@ -23,13 +23,13 @@ export async function createContext(
       [contextId, context.name, created.toISOString()],
     );
 
-    // If activityIds are provided, add them to the junction table
-    if (context.activityIds && context.activityIds.length > 0) {
-      for (const activityId of context.activityIds) {
+    // If nodeIds are provided, add them to the junction table
+    if (context.nodeIds && context.nodeIds.length > 0) {
+      for (const nodeId of context.nodeIds) {
         await client.query(
-          `INSERT INTO context_activities (context_id, activity_id)
+          `INSERT INTO context_activities (context_id, node_id)
            VALUES ($1, $2);`,
-          [contextId, activityId],
+          [contextId, nodeId],
         );
       }
     }
@@ -38,7 +38,7 @@ export async function createContext(
       contextId,
       name: context.name,
       created,
-      activityIds: context.activityIds || [],
+      nodeIds: context.nodeIds || [],
     };
   } catch (error) {
     console.error("Error creating context:", error);
@@ -71,17 +71,17 @@ export async function getContextById(
 
     // Get the associated activities
     const activitiesResult = await client.query(
-      `SELECT activity_id FROM context_activities WHERE context_id = $1;`,
+      `SELECT node_id FROM context_activities WHERE context_id = $1;`,
       [contextId],
     );
 
-    const activityIds = activitiesResult.rows.map((row) => row.activity_id);
+    const nodeIds = activitiesResult.rows.map((row) => row.node_id);
 
     return {
       contextId: context.context_id,
       name: context.name,
       created: new Date(context.created),
-      activityIds,
+      nodeIds,
     };
   } catch (error) {
     console.error("Error getting context:", error);
@@ -109,17 +109,17 @@ export async function getAllContexts(): Promise<Context[]> {
 
     for (const contextRow of contextsResult.rows) {
       const activitiesResult = await client.query(
-        `SELECT activity_id FROM context_activities WHERE context_id = $1;`,
+        `SELECT node_id FROM context_activities WHERE context_id = $1;`,
         [contextRow.context_id],
       );
 
-      const activityIds = activitiesResult.rows.map((row) => row.activity_id);
+      const nodeIds = activitiesResult.rows.map((row) => row.node_id);
 
       contexts.push({
         contextId: contextRow.context_id,
         name: contextRow.name,
         created: new Date(contextRow.created),
-        activityIds,
+        nodeIds,
       });
     }
 
@@ -139,7 +139,7 @@ export async function updateContext(
 ): Promise<void> {
   try {
     const client = await getConnection();
-    const { contextId, name, activityIds } = context;
+    const { contextId, name, nodeIds } = context;
 
     // Update the context name if provided
     if (name !== undefined) {
@@ -150,7 +150,7 @@ export async function updateContext(
     }
 
     // Update activities if provided
-    if (activityIds !== undefined) {
+    if (nodeIds !== undefined) {
       // First, remove all existing associations
       await client.query(
         `DELETE FROM context_activities WHERE context_id = $1;`,
@@ -158,11 +158,11 @@ export async function updateContext(
       );
 
       // Then add the new ones
-      for (const activityId of activityIds) {
+      for (const nodeId of nodeIds) {
         await client.query(
-          `INSERT INTO context_activities (context_id, activity_id)
+          `INSERT INTO context_activities (context_id, node_id)
            VALUES ($1, $2);`,
-          [contextId, activityId],
+          [contextId, nodeId],
         );
       }
     }
@@ -192,19 +192,19 @@ export async function deleteContext(contextId: string): Promise<void> {
 }
 
 /**
- * Adds an activity to the latest context created
- * @param activityId The ID of the activity to add
+ * Adds an node to the latest context created
+ * @param nodeId The ID of the node to add
  */
 export async function addNodeToLatestContext(
-  activityId: string,
+  nodeId: string,
 ): Promise<void> {
   try {
     const client = await getConnection();
 
-    // Check if the activity exists
-    const activity = await getNodeById(activityId);
-    if (!activity) {
-      throw new Error(`Node with ID ${activityId} not found`);
+    // Check if the node exists
+    const node = await getNodeById(nodeId);
+    if (!node) {
+      throw new Error(`Node with ID ${nodeId} not found`);
     }
 
     // Find the latest context
@@ -218,25 +218,25 @@ export async function addNodeToLatestContext(
 
     const contextId = latestContextResult.rows[0].context_id;
 
-    // Add the activity to the context (if not already added)
+    // Add the node to the context (if not already added)
     await client.query(
-      `INSERT INTO context_activities (context_id, activity_id)
+      `INSERT INTO context_activities (context_id, node_id)
        VALUES ($1, $2)
-       ON CONFLICT (context_id, activity_id) DO NOTHING;`,
-      [contextId, activityId],
+       ON CONFLICT (context_id, node_id) DO NOTHING;`,
+      [contextId, nodeId],
     );
   } catch (error) {
-    console.error("Error adding activity to latest context:", error);
+    console.error("Error adding node to latest context:", error);
     throw error;
   }
 }
 
 /**
- * Removes an activity from the latest context created
- * @param activityId The ID of the activity to remove
+ * Removes an node from the latest context created
+ * @param nodeId The ID of the node to remove
  */
 export async function removeNodeFromLatestContext(
-  activityId: string,
+  nodeId: string,
 ): Promise<void> {
   try {
     const client = await getConnection();
@@ -254,11 +254,11 @@ export async function removeNodeFromLatestContext(
 
     await client.query(
       `DELETE FROM context_activities 
-       WHERE context_id = $1 AND activity_id = $2;`,
-      [contextId, activityId],
+       WHERE context_id = $1 AND node_id = $2;`,
+      [contextId, nodeId],
     );
   } catch (error) {
-    console.error("Error removing activity from latest context:", error);
+    console.error("Error removing node from latest context:", error);
     throw error;
   }
 }
@@ -275,9 +275,9 @@ export async function removeNodeFromLatestContext(
 //     const client = await getConnection();
 
 //     const result = await client.query(
-//       `SELECT a.activityid, a.name, a.created, a.lastaccessed, a.active, a.parent_id, a.orgid, a.orgtext
+//       `SELECT a.nodeid, a.name, a.created, a.lastaccessed, a.active, a.parent_id, a.orgid, a.orgtext
 //        FROM activities a
-//        JOIN context_activities ca ON a.activityid = ca.activity_id
+//        JOIN context_activities ca ON a.nodeid = ca.node_id
 //        WHERE ca.context_id = $1;`,
 //       [contextId],
 //     );
@@ -287,7 +287,7 @@ export async function removeNodeFromLatestContext(
 //     }
 
 //     return result.rows.map((row) => ({
-//       activityId: row.activityid,
+//       nodeId: row.nodeid,
 //       orgId: row.orgid || "",
 //       orgText: row.orgtext || "",
 //       name: row.name,
@@ -323,17 +323,17 @@ export async function getCurrentContext(): Promise<Context | null> {
 
     // Get the associated activities
     const activitiesResult = await client.query(
-      `SELECT activity_id FROM context_activities WHERE context_id = $1;`,
+      `SELECT node_id FROM context_activities WHERE context_id = $1;`,
       [context.context_id],
     );
 
-    const activityIds = activitiesResult.rows.map((row) => row.activity_id);
+    const nodeIds = activitiesResult.rows.map((row) => row.node_id);
 
     return {
       contextId: context.context_id,
       name: context.name,
       created: new Date(context.created),
-      activityIds,
+      nodeIds,
     };
   } catch (error) {
     console.error("Error getting current context:", error);

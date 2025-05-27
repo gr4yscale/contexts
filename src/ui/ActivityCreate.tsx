@@ -2,7 +2,7 @@ import React from "react";
 import { Box } from "ink";
 import TextInput from "./TextInput.tsx";
 
-import { createNode } from "../models/activity.mts";
+import { createNode } from "../models/node.mts";
 
 const NodeCreate: React.FC = () => {
   return (

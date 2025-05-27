@@ -5,7 +5,7 @@ import CoreList, { List } from "./common/CoreList.tsx";
 import {
   filteredNodeTree,
   NodeTreeFilter,
-} from "../models/activity.mts";
+} from "../models/node.mts";
 
 const Testbed: React.FC = () => {
   const [lists, setLists] = useState<Array<List>>([]);
@@ -14,14 +14,14 @@ const Testbed: React.FC = () => {
     try {
       const activities = await filteredNodeTree(NodeTreeFilter.ALL);
 
-      const items = tree.map((activity) => ({
-        id: activity.activityId,
-        activity,
-        selected: activity.selected,
+      const items = tree.map((node) => ({
+        id: node.nodeId,
+        node,
+        selected: node.selected,
         display:
-          "  ".repeat(activity.depth || 0) +
-          (activity.depth || 0 > 0 ? "└─ " : "") +
-          activity.name,
+          "  ".repeat(node.depth || 0) +
+          (node.depth || 0 > 0 ? "└─ " : "") +
+          node.name,
       }));
       setLists([{ items, id: "default", display: "default" }]);
     } catch (error) {

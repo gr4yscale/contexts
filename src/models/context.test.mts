@@ -25,17 +25,17 @@ testSuite("Context Model Integration Tests", () => {
   // Test context data
   const testContext1: Omit<Context, "contextId" | "created"> = {
     name: "Test Context 1",
-    activityIds: [],
+    nodeIds: [],
   };
 
   const testContext2: Omit<Context, "contextId" | "created"> = {
     name: "Test Context 2",
-    activityIds: [],
+    nodeIds: [],
   };
 
-  // Test activity data
+  // Test node data
   const testNode1: Node = {
-    activityId: "test-activity-1",
+    nodeId: "test-node-1",
     name: "Test Node 1",
     created: new Date(),
     lastAccessed: new Date(),
@@ -45,7 +45,7 @@ testSuite("Context Model Integration Tests", () => {
   };
 
   const testNode2: Node = {
-    activityId: "test-activity-2",
+    nodeId: "test-node-2",
     name: "Test Node 2",
     created: new Date(),
     lastAccessed: new Date(),
@@ -93,7 +93,7 @@ testSuite("Context Model Integration Tests", () => {
     expect(context.contextId).toBeDefined();
     expect(context.name).toBe(testContext1.name);
     expect(context.created).toBeInstanceOf(Date);
-    expect(context.activityIds).toEqual([]);
+    expect(context.nodeIds).toEqual([]);
   });
 
   it("should create a context with activities", async () => {
@@ -104,17 +104,17 @@ testSuite("Context Model Integration Tests", () => {
     // Create context with activities
     const contextWithNodes = await createContext({
       name: "Context with Nodes",
-      activityIds: [testNode1.activityId, testNode2.activityId],
+      nodeIds: [testNode1.nodeId, testNode2.nodeId],
     });
 
     // Verify the context was created with activities
     expect(contextWithNodes).toBeDefined();
-    expect(contextWithNodes.activityIds).toHaveLength(2);
-    expect(contextWithNodes.activityIds).toContain(
-      testNode1.activityId,
+    expect(contextWithNodes.nodeIds).toHaveLength(2);
+    expect(contextWithNodes.nodeIds).toContain(
+      testNode1.nodeId,
     );
-    expect(contextWithNodes.activityIds).toContain(
-      testNode2.activityId,
+    expect(contextWithNodes.nodeIds).toContain(
+      testNode2.nodeId,
     );
   });
 
@@ -130,7 +130,7 @@ testSuite("Context Model Integration Tests", () => {
     expect(context?.contextId).toBe(createdContext.contextId);
     expect(context?.name).toBe(testContext1.name);
     expect(context?.created).toBeInstanceOf(Date);
-    expect(context?.activityIds).toEqual([]);
+    expect(context?.nodeIds).toEqual([]);
   });
 
   it("should return null when getting a non-existent context", async () => {
@@ -186,7 +186,7 @@ testSuite("Context Model Integration Tests", () => {
     expect(context?.name).toBe(updatedName);
     // Verify other fields weren't changed
     expect(context?.contextId).toBe(createdContext.contextId);
-    expect(context?.activityIds).toEqual([]);
+    expect(context?.nodeIds).toEqual([]);
   });
 
   it("should update context activities", async () => {
@@ -200,7 +200,7 @@ testSuite("Context Model Integration Tests", () => {
     // Update the context to add activities
     await updateContext({
       contextId: createdContext.contextId,
-      activityIds: [testNode1.activityId, testNode2.activityId],
+      nodeIds: [testNode1.nodeId, testNode2.nodeId],
     });
 
     // Get the updated context
@@ -208,9 +208,9 @@ testSuite("Context Model Integration Tests", () => {
 
     // Verify the context activities were updated
     expect(context).toBeDefined();
-    expect(context?.activityIds).toHaveLength(2);
-    expect(context?.activityIds).toContain(testNode1.activityId);
-    expect(context?.activityIds).toContain(testNode2.activityId);
+    expect(context?.nodeIds).toHaveLength(2);
+    expect(context?.nodeIds).toContain(testNode1.nodeId);
+    expect(context?.nodeIds).toContain(testNode2.nodeId);
     // Verify name wasn't changed
     expect(context?.name).toBe(testContext1.name);
   });
@@ -229,67 +229,67 @@ testSuite("Context Model Integration Tests", () => {
     expect(context).toBeNull();
   });
 
-  it("should add an activity to the latest context", async () => {
-    // Create a test activity
+  it("should add an node to the latest context", async () => {
+    // Create a test node
     await createNode(testNode1);
 
     // Create a context without activities
     const createdContext = await createContext(testContext1);
 
-    // Add the activity to the latest context
-    await addNodeToLatestContext(testNode1.activityId);
+    // Add the node to the latest context
+    await addNodeToLatestContext(testNode1.nodeId);
 
     // Get the updated context
     const context = await getContextById(createdContext.contextId);
 
-    // Verify the activity was added to the context
+    // Verify the node was added to the context
     expect(context).toBeDefined();
-    expect(context?.activityIds).toHaveLength(1);
-    expect(context?.activityIds[0]).toBe(testNode1.activityId);
+    expect(context?.nodeIds).toHaveLength(1);
+    expect(context?.nodeIds[0]).toBe(testNode1.nodeId);
   });
 
-  it("should remove an activity from the latest context", async () => {
-    // Create a test activity
+  it("should remove an node from the latest context", async () => {
+    // Create a test node
     await createNode(testNode1);
 
-    // Create a context with the activity
+    // Create a context with the node
     const createdContext = await createContext({
       name: testContext1.name,
-      activityIds: [testNode1.activityId],
+      nodeIds: [testNode1.nodeId],
     });
 
-    // Verify the activity is in the context
+    // Verify the node is in the context
     const contextBefore = await getContextById(createdContext.contextId);
-    expect(contextBefore?.activityIds).toContain(testNode1.activityId);
+    expect(contextBefore?.nodeIds).toContain(testNode1.nodeId);
 
-    // Remove the activity from the latest context
-    await removeNodeFromLatestContext(testNode1.activityId);
+    // Remove the node from the latest context
+    await removeNodeFromLatestContext(testNode1.nodeId);
 
     // Get the updated context
     const contextAfter = await getContextById(createdContext.contextId);
 
-    // Verify the activity was removed from the context
+    // Verify the node was removed from the context
     expect(contextAfter).toBeDefined();
-    expect(contextAfter?.activityIds).toHaveLength(0);
+    expect(contextAfter?.nodeIds).toHaveLength(0);
   });
 
-  it("should throw an error when adding activity to latest context if no contexts exist", async () => {
-    // Create a test activity
+  it("should throw an error when adding node to latest context if no contexts exist", async () => {
+    // Create a test node
     await createNode(testNode1);
 
-    // Try to add the activity to the latest context when no contexts exist
+    // Try to add the node to the latest context when no contexts exist
     await expect(
-      addNodeToLatestContext(testNode1.activityId),
+      addNodeToLatestContext(testNode1.nodeId),
     ).rejects.toThrow("No contexts found");
   });
 
-  it("should throw an error when removing activity from latest context if no contexts exist", async () => {
-    // Create a test activity
+  it("should throw an error when removing node from latest context if no contexts exist", async () => {
+    // Create a test node
     await createNode(testNode1);
 
-    // Try to remove the activity from the latest context when no contexts exist
+    // Try to remove the node from the latest context when no contexts exist
     await expect(
-      removeNodeFromLatestContext(testNode1.activityId),
+      removeNodeFromLatestContext(testNode1.nodeId),
     ).rejects.toThrow("No contexts found");
   });
 
@@ -301,7 +301,7 @@ testSuite("Context Model Integration Tests", () => {
     // Create a context with activities
     const createdContext = await createContext({
       name: "Context with Nodes",
-      activityIds: [testNode1.activityId, testNode2.activityId],
+      nodeIds: [testNode1.nodeId, testNode2.nodeId],
     });
 
     // Get activities for the context
@@ -312,20 +312,20 @@ testSuite("Context Model Integration Tests", () => {
     expect(activities).toHaveLength(2);
 
     // Find activities by ID
-    const activity1 = activities?.find(
-      (a) => a.activityId === testNode1.activityId,
+    const node1 = activities?.find(
+      (a) => a.nodeId === testNode1.nodeId,
     );
-    const activity2 = activities?.find(
-      (a) => a.activityId === testNode2.activityId,
+    const node2 = activities?.find(
+      (a) => a.nodeId === testNode2.nodeId,
     );
 
-    expect(activity1).toBeDefined();
-    expect(activity1?.name).toBe(testNode1.name);
-    expect(activity1?.active).toBe(testNode1.active);
+    expect(node1).toBeDefined();
+    expect(node1?.name).toBe(testNode1.name);
+    expect(node1?.active).toBe(testNode1.active);
 
-    expect(activity2).toBeDefined();
-    expect(activity2?.name).toBe(testNode2.name);
-    expect(activity2?.active).toBe(testNode2.active);
+    expect(node2).toBeDefined();
+    expect(node2?.name).toBe(testNode2.name);
+    expect(node2?.active).toBe(testNode2.active);
   });
 
   it("should handle empty results when getting context activities", async () => {
@@ -347,7 +347,7 @@ testSuite("Context Model Integration Tests", () => {
     // Create a context with activities
     const createdContext = await createContext({
       name: "Context with Nodes",
-      activityIds: [testNode1.activityId, testNode2.activityId],
+      nodeIds: [testNode1.nodeId, testNode2.nodeId],
     });
 
     // Delete the context
@@ -360,8 +360,8 @@ testSuite("Context Model Integration Tests", () => {
     // Verify the activities still exist
     const client = await getConnection();
     const result = await client.query(
-      "SELECT COUNT(*) FROM activities WHERE activityid IN ($1, $2)",
-      [testNode1.activityId, testNode2.activityId],
+      "SELECT COUNT(*) FROM activities WHERE nodeid IN ($1, $2)",
+      [testNode1.nodeId, testNode2.nodeId],
     );
 
     expect(parseInt(result.rows[0].count)).toBe(2);
@@ -405,7 +405,7 @@ testSuite("Context Model Integration Tests", () => {
     // Create a context with activities
     await createContext({
       name: "Context with Nodes",
-      activityIds: [testNode1.activityId, testNode2.activityId],
+      nodeIds: [testNode1.nodeId, testNode2.nodeId],
     });
 
     // Get activities for the current context
@@ -416,18 +416,18 @@ testSuite("Context Model Integration Tests", () => {
     expect(activities).toHaveLength(2);
 
     // Find activities by ID
-    const activity1 = activities.find(
-      (a) => a.activityId === testNode1.activityId,
+    const node1 = activities.find(
+      (a) => a.nodeId === testNode1.nodeId,
     );
-    const activity2 = activities.find(
-      (a) => a.activityId === testNode2.activityId,
+    const node2 = activities.find(
+      (a) => a.nodeId === testNode2.nodeId,
     );
 
-    expect(activity1).toBeDefined();
-    expect(activity1?.name).toBe(testNode1.name);
+    expect(node1).toBeDefined();
+    expect(node1?.name).toBe(testNode1.name);
 
-    expect(activity2).toBeDefined();
-    expect(activity2?.name).toBe(testNode2.name);
+    expect(node2).toBeDefined();
+    expect(node2?.name).toBe(testNode2.name);
   });
 
   it("should return empty array from getCurrentContextNodes when no contexts exist", async () => {

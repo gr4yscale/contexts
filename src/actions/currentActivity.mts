@@ -2,20 +2,20 @@ import { nanoid } from "nanoid";
 import * as logger from "../logger.mts";
 import { ActionType, Action, registerAction } from "../actions.mts";
 import { Node } from "../types.mts";
-import { createNode } from "../models/activity.mts";
+import { createNode } from "../models/node.mts";
 
-// actions that operate on the current activity
+// actions that operate on the current node
 interface CurrentNodeAction extends Action {
   type: ActionType.CURRENT_ACTIVITY;
-  handler: (activity: Node) => Promise<void> | void;
+  handler: (node: Node) => Promise<void> | void;
 }
 
 export const currentNodeRenameAction: CurrentNodeAction = {
   id: "currentNodeRename",
   name: "Rename Node",
   type: ActionType.CURRENT_ACTIVITY,
-  handler: async (activity: Node) => {
-    logger.info(`Renaming activity ${activity.activityId}...`);
+  handler: async (node: Node) => {
+    logger.info(`Renaming node ${node.nodeId}...`);
   },
 };
 
@@ -23,8 +23,8 @@ export const currentNodeAssignToParentAction: CurrentNodeAction = {
   id: "currentNodeAssignToParent",
   name: "Assign Node to Parent",
   type: ActionType.CURRENT_ACTIVITY,
-  handler: async (activity: Node) => {
-    logger.info(`Assigning activity ${activity.activityId} to parent...`);
+  handler: async (node: Node) => {
+    logger.info(`Assigning node ${node.nodeId} to parent...`);
   },
 };
 
@@ -32,12 +32,12 @@ export const currentNodeCreateChildNodeAction: CurrentNodeAction = {
   id: "currentNodeCreateChildNode",
   name: "Create Child Node",
   type: ActionType.CURRENT_ACTIVITY,
-  handler: async (activity: Node) => {
+  handler: async (node: Node) => {
     const childNodeId = await createNode({
-      name: `Child of ${activity.name}`,
-      parentNodeId: activity.activityId,
+      name: `Child of ${node.name}`,
+      parentNodeId: node.nodeId,
     });
-    logger.info(`Created child activity with ID: ${childNodeId}`);
+    logger.info(`Created child node with ID: ${childNodeId}`);
   },
 };
 
@@ -46,12 +46,12 @@ export const currentNodeCreateSiblingNodeAction: CurrentNodeAction =
     id: "currentNodeCreateSiblingNode",
     name: "Create Sibling Node",
     type: ActionType.CURRENT_ACTIVITY,
-    handler: async (activity: Node) => {
+    handler: async (node: Node) => {
       const siblingNodeId = await createNode({
-        name: `Sibling of ${activity.name}`,
-        parentNodeId: activity.parentNodeId,
+        name: `Sibling of ${node.name}`,
+        parentNodeId: node.parentNodeId,
       });
-      logger.info(`Created sibling activity with ID: ${siblingNodeId}`);
+      logger.info(`Created sibling node with ID: ${siblingNodeId}`);
     },
   };
 
@@ -60,11 +60,11 @@ export const currentNodeCreateRootNodeAction: CurrentNodeAction = {
   name: "Create Root-level Node",
   type: ActionType.CURRENT_ACTIVITY,
   handler: async () => {
-    const activityId = await createNode({
+    const nodeId = await createNode({
       name: `${nanoid()}`,
       parentNodeId: `zydKL5p5RuJM50pQLHMM7`,
     });
-    logger.info(`Created activity with ID: ${activityId}`);
+    logger.info(`Created node with ID: ${nodeId}`);
   },
 };
 
@@ -72,8 +72,8 @@ export const currentNodeDestroyAction: CurrentNodeAction = {
   id: "currentNodeDestroy",
   name: "Delete Node",
   type: ActionType.CURRENT_ACTIVITY,
-  handler: async (activity: Node) => {
-    logger.info(`Deleting activity ${activity.activityId}...`);
+  handler: async (node: Node) => {
+    logger.info(`Deleting node ${node.nodeId}...`);
   },
 };
 

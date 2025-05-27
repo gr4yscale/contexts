@@ -15,11 +15,11 @@ const CurrentNodeCreateChild: React.FC = () => {
         <Text>Loading...</Text>
       ) : (
         <Box flexDirection="column">
-          <Text>Create child activity for: {currentNode?.name}</Text>
+          <Text>Create child node for: {currentNode?.name}</Text>
           <TextInput
             callback={(name: string) => {
               if (name === "") return; // TODO validation
-              console.log(`Creating child activity: ${name}`);
+              console.log(`Creating child node: ${name}`);
               // TODO: call actual implementation
               executeAction("actionExecute");
             }}

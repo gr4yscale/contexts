@@ -13,7 +13,7 @@ import "./actions/base.mts";
 import "./actions/navigation.mts";
 import "./actions/currentNode.mts";
 import "./actions/resource.mts";
-import "./actions/activity-bulk.mts";
+import "./actions/node-bulk.mts";
 
 import { executeAction } from "./actions.mts";
 

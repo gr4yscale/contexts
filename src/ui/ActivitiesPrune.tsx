@@ -6,13 +6,13 @@ import CoreList, { ListItem } from "./common/CoreList.tsx";
 import {
   filteredNodeTree,
   NodeTreeFilter,
-} from "../models/activity.mts";
+} from "../models/node.mts";
 import { getAllWorkspaces } from "../models/workspace.mts";
 import { executeAction } from "../actions.mts";
 import {
   getNodesWithX11Counts,
   pruneNodes,
-} from "../actions/activity-bulk.mts";
+} from "../actions/node-bulk.mts";
 
 const NodesPrune: React.FC = () => {
   const [items, setItems] = useState<ListItem[]>([]);
@@ -27,25 +27,25 @@ const NodesPrune: React.FC = () => {
       // Enhance with X11 client counts
       const activitiesWithCounts = await getNodesWithX11Counts(activities);
 
-      // Get all workspaces and create a set of their activityIds
+      // Get all workspaces and create a set of their nodeIds
       const workspaces = await getAllWorkspaces();
       const workspaceNodeIds = new Set(
-        workspaces.map((ws) => ws.activityId),
+        workspaces.map((ws) => ws.nodeId),
       );
 
       // Filter activities to include only those with an associated workspace
-      const activitiesWithWorkspaces = activitiesWithCounts.filter((activity) =>
-        workspaceNodeIds.has(activity.activityId),
+      const activitiesWithWorkspaces = activitiesWithCounts.filter((node) =>
+        workspaceNodeIds.has(node.nodeId),
       );
 
-      const newItems: ListItem[] = activitiesWithWorkspaces.map((activity) => ({
-        id: activity.activityId,
+      const newItems: ListItem[] = activitiesWithWorkspaces.map((node) => ({
+        id: node.nodeId,
         display:
-          activity.name +
-          (activity.x11ClientCount !== undefined
-            ? ` (${activity.x11ClientCount})`
+          node.name +
+          (node.x11ClientCount !== undefined
+            ? ` (${node.x11ClientCount})`
             : ""),
-        data: activity,
+        data: node,
       }));
 
       setItems(newItems);
@@ -78,7 +78,7 @@ const NodesPrune: React.FC = () => {
 
               try {
                 await pruneNodes(activities);
-                await executeAction("activityNavigate");
+                await executeAction("nodeNavigate");
               } catch (error) {
                 console.error("Error pruning activities:", error);
               }

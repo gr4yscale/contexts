@@ -2,7 +2,7 @@ import {
   enabledTags,
   availableTags,
   toggleTagEnabled,
-} from "../activityList.mts";
+} from "../nodeList.mts";
 
 export const menuTagsToggle = () => {
   const tags = Array.from(availableTags());

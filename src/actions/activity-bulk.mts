@@ -35,20 +35,20 @@ export const activitiesPrune: NodeBulkAction = {
 export async function pruneNodes(
   activities: NodeDTO[],
 ): Promise<void> {
-  for (const activity of activities) {
+  for (const node of activities) {
     try {
-      // Get all workspaces for this activity
-      const workspaces = await getWorkspacesForNode(activity.activityId);
+      // Get all workspaces for this node
+      const workspaces = await getWorkspacesForNode(node.nodeId);
 
       // Delete each workspace
       for (const workspace of workspaces) {
         await deleteWorkspaceById(workspace.id);
         logger.info(
-          `Deleted workspace ${workspace.id} from activity ${activity.activityId}`,
+          `Deleted workspace ${workspace.id} from node ${node.nodeId}`,
         );
       }
     } catch (error) {
-      logger.error(`Error pruning activity ${activity.activityId}:`, error);
+      logger.error(`Error pruning node ${node.nodeId}:`, error);
     }
   }
 }
@@ -94,34 +94,34 @@ export async function getNodesWithX11Counts(
   // Get all workspaces from the database
   const allWorkspaces = await getAllWorkspaces();
 
-  // Create a map of activityId to workspaces
-  const activityWorkspacesMap = new Map<string, WorkspaceDTO[]>();
+  // Create a map of nodeId to workspaces
+  const nodeWorkspacesMap = new Map<string, WorkspaceDTO[]>();
 
-  // Group workspaces by activityId
+  // Group workspaces by nodeId
   for (const workspace of allWorkspaces) {
-    if (workspace.activityId) {
-      const workspaces = activityWorkspacesMap.get(workspace.activityId) || [];
+    if (workspace.nodeId) {
+      const workspaces = nodeWorkspacesMap.get(workspace.nodeId) || [];
       workspaces.push(workspace);
-      activityWorkspacesMap.set(workspace.activityId, workspaces);
+      nodeWorkspacesMap.set(workspace.nodeId, workspaces);
     }
   }
 
   // Now map activities to their workspaces and assign counts
   const activitiesWithCounts = await Promise.all(
-    activities.map(async (activity) => {
+    activities.map(async (node) => {
       let totalCount = 0;
 
-      // Get workspaces for this activity
-      const workspaces = activityWorkspacesMap.get(activity.activityId) || [];
+      // Get workspaces for this node
+      const workspaces = nodeWorkspacesMap.get(node.nodeId) || [];
 
-      // Sum up the window counts for all workspaces associated with this activity
+      // Sum up the window counts for all workspaces associated with this node
       for (const workspace of workspaces) {
         const count = workspaceCountsMap.get(workspace.id) || 0;
         totalCount += count;
       }
 
       return {
-        ...activity,
+        ...node,
         x11ClientCount: totalCount,
       };
     }),

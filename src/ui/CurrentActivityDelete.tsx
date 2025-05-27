@@ -8,7 +8,7 @@ const CurrentNodeDelete: React.FC = () => {
   const { currentNode, loading } = useCurrentNode();
 
   const confirmDelete = () => {
-    console.log("Deleting activity - not implemented yet");
+    console.log("Deleting node - not implemented yet");
     // Implementation would go here
     executeAction("actionExecute");
   };

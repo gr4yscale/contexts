@@ -1,5 +1,5 @@
 import { $, fs } from "zx";
-import { activityByDwmTag } from "./state.mts";
+import { nodeByDwmTag } from "./state.mts";
 import { NodeId } from "./types.mts";
 import { activateNode } from "./commands/navigation.mts";
 import { retryAsync, RetryStatus } from "./retry-async.mts";
@@ -9,7 +9,7 @@ import { getActiveNodes } from "./db.mts";
 // ui for executing global actions can be copied from linkgroups
 // ui for executing actions on activities can be copied from linkgroups
 
-// dont forget hotkey: end, end (current activity actions)
+// dont forget hotkey: end, end (current node actions)
 
 type Tab = {
   url: string;
@@ -21,7 +21,7 @@ type Window = {
   winid: number;
   title: string;
   tabs: Tab[];
-  activityId?: NodeId;
+  nodeId?: NodeId;
   dwmTag?: number;
 };
 
@@ -69,9 +69,9 @@ const mapWindowsToNodes = async (): Promise<Window[]> => {
       ?.dwmTag;
     if (dwmTag) {
       //console.log(window);
-      const activity = activityByDwmTag(Number(dwmTag));
-      if (activity) {
-        window.activityId = activity.activityId;
+      const node = nodeByDwmTag(Number(dwmTag));
+      if (node) {
+        window.nodeId = node.nodeId;
       }
     }
   }
@@ -82,16 +82,16 @@ export const storeBrowserStates = async () => {
   const windows = await mapWindowsToNodes();
 
   const activeNodes = await getActiveNodes();
-  for (const activity of activeNodes) {
+  for (const node of activeNodes) {
     const windowsForNode = windows.filter(
-      (w) => w.activityId === activity.activityId,
+      (w) => w.nodeId === node.nodeId,
     );
     const browserState: BrowserState = {
       windows: windowsForNode,
       created: new Date(),
       accessed: new Date(),
     };
-    activity.browserStates.push(browserState);
+    node.browserStates.push(browserState);
     // TOFIX: prune oldest browserState if > 10 stored
   }
 
@@ -150,7 +150,7 @@ const findIt = async (firstTabTitle: string) => {
   });
 };
 
-// make a per-activity action for this
+// make a per-node action for this
 // make a global action for all activities restore
 
 export const loadLastBrowserStateForActiveNodes = async () => {
@@ -163,15 +163,15 @@ export const loadLastBrowserStateForActiveNodes = async () => {
   // });
 
   const activeNodes = await getActiveNodes();
-  for (const activity of activeNodes) {
-    const [lastBrowserState] = activity.browserStates.slice(-1);
-    // open windows which haven't already been opened in this activity
+  for (const node of activeNodes) {
+    const [lastBrowserState] = node.browserStates.slice(-1);
+    // open windows which haven't already been opened in this node
     for (const window of lastBrowserState.windows) {
       // TOFIX compare hash of tab's URLs
       if (!windowAlreadyOpen(window, openWindows)) {
         // TOFIX
-        // view dwm workspace for activity (activate)
-        await activateNode(activity.activityId);
+        // view dwm workspace for node (activate)
+        await activateNode(node.nodeId);
         const urls = window.tabs.map((t) => t.url);
         const firstTabTitle = window.tabs[0].title;
         if (urls.length === 1) {
@@ -217,7 +217,7 @@ export const loadLastBrowserStateForActiveNodes = async () => {
       }
     }
   }
-  // verify that the activity has all windows for the browser state open?
+  // verify that the node has all windows for the browser state open?
 };
 
 // -------------------------------------------

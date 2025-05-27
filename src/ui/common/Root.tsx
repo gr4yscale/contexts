@@ -31,8 +31,8 @@ import ExaSearch from "../ExaSearch.tsx"; // New import
 const routes = [
   { path: "/dummy", component: Box },
   { path: "/", component: NodeNavigate },
-  { path: "/activityCreate", component: NodeCreate },
-  { path: "/activityNavigate", component: NodeNavigate },
+  { path: "/nodeCreate", component: NodeCreate },
+  { path: "/nodeNavigate", component: NodeNavigate },
   { path: "/resourceNavigate", component: ResourceNavigate },
   { path: "/contextNodeSelect", component: ContextNodeSelection },
   { path: "/actionExecute", component: ActionExecute },
@@ -80,15 +80,15 @@ const Root: React.FC = () => {
         case "globalLeader":
           setRoutePath("/");
           break;
-        case "activityNavigate":
-          setRoutePath("/activityNavigate");
+        case "nodeNavigate":
+          setRoutePath("/nodeNavigate");
           break;
         case "resourceNavigate":
           setRoutePath("/resourceNavigate");
           break;
         case "activateNode":
           setRoutePath("/dummy"); // hack to force a re-render
-          setRoutePath("/activityNavigate");
+          setRoutePath("/nodeNavigate");
           break;
         case "contextNodeSelect":
           setRoutePath("/contextNodeSelect");

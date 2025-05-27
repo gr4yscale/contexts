@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Node } from "../../types.mts";
-import { getCurrentNode } from "../../models/activity.mts";
+import { getCurrentNode } from "../../models/node.mts";
 
 export const useCurrentNode = () => {
   const [currentNode, setCurrentNode] = useState<Node | null>(null);
@@ -8,10 +8,10 @@ export const useCurrentNode = () => {
 
   const fetchCurrentNode = async () => {
     try {
-      const activity = await getCurrentNode();
-      setCurrentNode(activity);
+      const node = await getCurrentNode();
+      setCurrentNode(node);
     } catch (error) {
-      console.error("Error fetching current activity:", error);
+      console.error("Error fetching current node:", error);
     } finally {
       setLoading(false);
     }

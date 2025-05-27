@@ -6,7 +6,7 @@ import CoreList, { List, ListItem } from "./common/CoreList.tsx";
 import {
   filteredNodeTree,
   NodeTreeFilter,
-} from "../models/activity.mts";
+} from "../models/node.mts";
 import {
   createContext,
   getCurrentContext,
@@ -26,14 +26,14 @@ const ContextNodeSelection: React.FC = () => {
       const activities = await filteredNodeTree(NodeTreeFilter.ALL);
       //console.log(activities);
 
-      const newItems: ListItem[] = activities.map((activity) => ({
-        id: activity.activityId,
+      const newItems: ListItem[] = activities.map((node) => ({
+        id: node.nodeId,
         display:
-          "  ".repeat(activity.depth || 0) +
-          (activity.depth && activity.depth > 0 ? "└─ " : "") +
-          activity.name,
-        data: activity,
-        selected: activity.selected,
+          "  ".repeat(node.depth || 0) +
+          (node.depth && node.depth > 0 ? "└─ " : "") +
+          node.name,
+        data: node,
+        selected: node.selected,
       }));
 
       setLists([
@@ -67,8 +67,8 @@ const ContextNodeSelection: React.FC = () => {
             const activities = selectedItems.map(
               (item) => item.data as Node,
             );
-            const activityIds = activities.map(
-              (activity) => activity.activityId,
+            const nodeIds = activities.map(
+              (node) => node.nodeId,
             );
 
             try {
@@ -77,15 +77,15 @@ const ContextNodeSelection: React.FC = () => {
               if (currentContext) {
                 await updateContext({
                   contextId: currentContext.contextId,
-                  activityIds: activityIds,
+                  nodeIds: nodeIds,
                 });
               } else {
                 await createContext({
                   name: `Context ${new Date().toLocaleString()}`,
-                  activityIds: activityIds,
+                  nodeIds: nodeIds,
                 });
               }
-              await executeAction("activityNavigate");
+              await executeAction("nodeNavigate");
             } catch (error) {
               console.error("Error updating context:", error);
             }

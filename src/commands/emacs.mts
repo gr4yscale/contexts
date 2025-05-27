@@ -23,7 +23,7 @@ export const viewEmacsWindowBookmarks = async () => {
   if (!currentNode) {return;}
 
   if (!currentNode.emacsWindowBookmarks || !currentNode.emacsWindowBookmarks.length) {
-    $`notify-send "No Emacs bookmarks for current activity."`;
+    $`notify-send "No Emacs bookmarks for current node."`;
     return;
   }
   for (const bm of currentNode.emacsWindowBookmarks) {
@@ -31,7 +31,7 @@ export const viewEmacsWindowBookmarks = async () => {
   }
 };
 
-export const saveEmacsWindowBookmark = async (activity: Node) => {
+export const saveEmacsWindowBookmark = async (node: Node) => {
   await $`xdotool key "F10"`;
   await sleep(100);
 
@@ -40,13 +40,13 @@ export const saveEmacsWindowBookmark = async (activity: Node) => {
   await $`xdotool key "Control_L+F10"`;
   await sleep(500);
 
-  const bookmarkTitle = `activities.${activity.name}.${nanoid()}`;
+  const bookmarkTitle = `activities.${node.name}.${nanoid()}`;
   await $`xdotool type "${bookmarkTitle}"`;
   await $`xdotool key Return`;
 
-  const env = activity.tags.includes("dev") ? "dev" : "org";
+  const env = node.tags.includes("dev") ? "dev" : "org";
 
-  activity.emacsWindowBookmarks.push({
+  node.emacsWindowBookmarks.push({
     id: nanoid(),
     title: headlinePath,
     env,
@@ -101,7 +101,7 @@ export const viewEmacsOrgBookmark = (bookmark: EmacsBookmark) => {
 export const viewEmacsOrgBookmarks = async () => {
   const currentNode = await getCurrentNode();
   if (!currentNode.emacsOrgBookmarks || !currentNode.emacsOrgBookmarks.length) {
-    $`notify-send "No Emacs org bookmarks for current activity."`;
+    $`notify-send "No Emacs org bookmarks for current node."`;
     return;
   }
   for (const bm of currentNode.emacsOrgBookmarks) {
@@ -139,7 +139,7 @@ export const viewEmacsSession = (id: string) => {
   child.unref();
 };
 
-// for saving emacs session, we're not gauranteed to be in the right emacs daemon for the activity
+// for saving emacs session, we're not gauranteed to be in the right emacs daemon for the node
 
 // we should call easysession-save-as on the current window
 

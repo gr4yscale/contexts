@@ -13,7 +13,7 @@ import {
   updateNodeHistory,
   updateNode,
   formatNodeWithHierarchy,
-} from "../models/activity.mts";
+} from "../models/node.mts";
 
 import { viewWorkspaceForNode } from "../workspaces.mts";
 
@@ -22,7 +22,7 @@ import { buildMenu } from "../menus.mts";
 // actions that navigate to workspaces (dwm tag) of activities
 interface NavigationAction extends Action {
   type: ActionType.NAVIGATION;
-  handler: (activityId?: string) => Promise<void> | void;
+  handler: (nodeId?: string) => Promise<void> | void;
 }
 
 /** views the dwm tag which is reserved for the TUI
@@ -34,24 +34,24 @@ export const showTUI = async () => {
 };
 
 export const activateNode = async (id: NodeId) => {
-  let activity: Node | null;
-  activity = await getNodeById(id);
-  if (!activity) return false;
+  let node: Node | null;
+  node = await getNodeById(id);
+  if (!node) return false;
 
-  const viewed = await viewWorkspaceForNode(activity);
+  const viewed = await viewWorkspaceForNode(node);
 
   if (viewed) {
-    await updateNode({ activityId: id, lastAccessed: new Date() });
+    await updateNode({ nodeId: id, lastAccessed: new Date() });
 
     const previousNode = await getCurrentNode();
     await updateNodeHistory(
       id,
-      previousNode ? previousNode.activityId : "",
+      previousNode ? previousNode.nodeId : "",
     );
 
-    $`notify-send -a activity -t 500 "${activity.name}"`;
+    $`notify-send -a node -t 500 "${node.name}"`;
   } else {
-    $`notify-send "No workspace for activity: ${id}"`;
+    $`notify-send "No workspace for node: ${id}"`;
   }
 
   return viewed;
@@ -60,7 +60,7 @@ export const activateNode = async (id: NodeId) => {
 export const swapNode = async () => {
   const previousNode = await getPreviousNode();
   if (previousNode) {
-    await activateNode(previousNode.activityId);
+    await activateNode(previousNode.nodeId);
   }
 };
 
@@ -77,31 +77,31 @@ export const sendWindowToAnotherNode = async () => {
 
   // Format activities with hierarchy paths (TOFIX: cache)
   const formattedNodes = await Promise.all(
-    unselected.map(async (activity) => {
+    unselected.map(async (node) => {
       const hierarchyPath = await formatNodeWithHierarchy(
-        activity,
+        node,
         unselected,
       );
-      return { ...activity, name: hierarchyPath };
+      return { ...node, name: hierarchyPath };
     }),
   );
 
-  const menuItem = (activity: Node) => ({
-    display: activity.name,
+  const menuItem = (node: Node) => ({
+    display: node.name,
     handler: async (selectedIndex?: number) => {
       if (selectedIndex !== undefined) {
-        const workspaces = await getWorkspacesForNode(activity.activityId);
+        const workspaces = await getWorkspacesForNode(node.nodeId);
         if (workspaces && workspaces[0]) {
           await $`dwmc tagex ${workspaces[0].id.toString()}`;
         } else {
-          $`notify-send "No workspace found for activity: ${activity.name}"`;
+          $`notify-send "No workspace found for node: ${node.name}"`;
         }
       }
     },
   });
 
   await buildMenu({
-    display: `Send window to activity:`,
+    display: `Send window to node:`,
     builder: () => formattedNodes.map(menuItem),
   });
 };
@@ -125,7 +125,7 @@ export const navigateTestbed: NavigationAction = {
 };
 
 export const navigateNodeNavigate: NavigationAction = {
-  id: "activityNavigate",
+  id: "nodeNavigate",
   name: "Node Navigation",
   type: ActionType.NAVIGATION,
   handler: async () => {
@@ -152,7 +152,7 @@ export const navigateActionExecute: NavigationAction = {
 };
 
 export const navigateSwapNodeAction: NavigationAction = {
-  id: "activitySwap",
+  id: "nodeSwap",
   name: "Node Swap",
   type: ActionType.NAVIGATION,
   handler: async () => {
@@ -173,9 +173,9 @@ export const navigateActivateNodeAction: NavigationAction = {
   id: "activateNode",
   name: "Activate Node",
   type: ActionType.NAVIGATION,
-  handler: async (activityId?: string) => {
-    if (activityId) {
-      await activateNode(activityId);
+  handler: async (nodeId?: string) => {
+    if (nodeId) {
+      await activateNode(nodeId);
     }
   },
 };
