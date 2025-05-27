@@ -11,7 +11,7 @@ import { initializeDB } from "./db.mts";
 
 import "./actions/base.mts";
 import "./actions/navigation.mts";
-import "./actions/currentActivity.mts";
+import "./actions/currentNode.mts";
 import "./actions/resource.mts";
 import "./actions/activity-bulk.mts";
 

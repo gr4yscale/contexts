@@ -15,31 +15,31 @@ import * as logger from "../logger.mts";
 const CurrentNodeAssignToParent: React.FC = () => {
   const { currentNode, loading: currentNodeLoading } =
     useCurrentNode();
-  const [activities, setActivities] = useState<ListItem[]>([]);
-  const [loadingActivities, setLoadingActivities] = useState(true);
+  const [activities, setNodes] = useState<ListItem[]>([]);
+  const [loadingNodes, setLoadingNodes] = useState(true);
 
   useEffect(() => {
-    const fetchActivities = async () => {
+    const fetchNodes = async () => {
       try {
-        setLoadingActivities(true);
-        const allActivities = await activityTree();
-        const formattedActivities = await Promise.all(
-          allActivities.map(async (act: NodeTreeItem) => ({
+        setLoadingNodes(true);
+        const allNodes = await activityTree();
+        const formattedNodes = await Promise.all(
+          allNodes.map(async (act: NodeTreeItem) => ({
             id: act.activityId,
-            display: await formatNodeWithHierarchy(act, allActivities),
+            display: await formatNodeWithHierarchy(act, allNodes),
             data: act,
           })),
         );
-        setActivities(formattedActivities);
+        setNodes(formattedNodes);
       } catch (error) {
         logger.error("Error fetching activities for parent assignment:", error);
-        setActivities([]);
+        setNodes([]);
       } finally {
-        setLoadingActivities(false);
+        setLoadingNodes(false);
       }
     };
 
-    fetchActivities();
+    fetchNodes();
   }, []);
 
   const handleParentSelection = async (selectedItems: ListItem[]) => {
@@ -74,7 +74,7 @@ const CurrentNodeAssignToParent: React.FC = () => {
     <Box flexDirection="column">
       <Text>Current Node: {currentNode?.name || "None"}</Text>
 
-      {currentNodeLoading || loadingActivities ? (
+      {currentNodeLoading || loadingNodes ? (
         <Text>Loading...</Text>
       ) : (
         <>

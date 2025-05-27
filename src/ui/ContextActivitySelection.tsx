@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Box, Text } from "ink";
-import { Activity } from "../types.mts";
+import { Node } from "../types.mts";
 import CoreList, { List, ListItem } from "./common/CoreList.tsx";
 
 import {
@@ -20,7 +20,7 @@ const ContextNodeSelection: React.FC = () => {
   ]);
   const [loading, setLoading] = useState(true);
 
-  const fetchActivities = async () => {
+  const fetchNodes = async () => {
     setLoading(true);
     try {
       const activities = await filteredNodeTree(NodeTreeFilter.ALL);
@@ -38,8 +38,8 @@ const ContextNodeSelection: React.FC = () => {
 
       setLists([
         {
-          id: "contextActivities",
-          display: "Select Activities for Context",
+          id: "contextNodes",
+          display: "Select Nodes for Context",
           items: newItems,
         },
       ]);
@@ -51,7 +51,7 @@ const ContextNodeSelection: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchActivities();
+    fetchNodes();
   }, []);
 
   return (

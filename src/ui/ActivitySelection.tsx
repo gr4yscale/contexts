@@ -23,7 +23,7 @@ const NodeSelection: React.FC<Props> = ({ onSelected }) => {
   const [mode, setMode] = useState<NodeStates>("initial");
   const [items, setItems] = useState<Array<NodeItem>>([]);
 
-  const fetchActivities = async () => {
+  const fetchNodes = async () => {
     try {
       const tree = await activityTree();
 
@@ -46,7 +46,7 @@ const NodeSelection: React.FC<Props> = ({ onSelected }) => {
   };
 
   useEffect(() => {
-    fetchActivities();
+    fetchNodes();
   }, []);
 
   const { keymap }: any = useContext(KeysContext);

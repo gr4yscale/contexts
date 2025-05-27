@@ -55,7 +55,7 @@ export const linkLoad = async () => {
 };
 
 export const linkStore = async () => {
-  $`notify-send "Activities: Not Implemented."`;
+  $`notify-send "Nodes: Not Implemented."`;
 };
 
 export const stickyLinkStore = async () => {
@@ -115,7 +115,7 @@ export const linkGroupStore = async () => {
       console.log(`stored linkgroup ${lg.name}`);
     }
   } catch (e) {
-    $`notify-send "Activities: Error occurred while storing link group."`;
+    $`notify-send "Nodes: Error occurred while storing link group."`;
   }
 };
 

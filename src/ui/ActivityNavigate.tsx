@@ -28,21 +28,21 @@ const NodeNavigate: React.FC = () => {
 
   const [loading, setLoading] = useState(true);
 
-  const fetchActivities = async () => {
+  const fetchNodes = async () => {
     try {
       // here we will use a different fetcher; use a generic?
       const activities = await filteredNodeTree(NodeTreeFilter.CONTEXT);
 
-      const sortedActivities = [...activities].sort((a, b) => {
+      const sortedNodes = [...activities].sort((a, b) => {
         const dateA = a.lastAccessed ? new Date(a.lastAccessed).getTime() : 0;
         const dateB = b.lastAccessed ? new Date(b.lastAccessed).getTime() : 0;
         return dateB - dateA;
       });
 
       // Format activities with hierarchy paths
-      const formattedActivities = await Promise.all(
-        sortedActivities.map(async (activity) => {
-          const hierarchyPath = await formatNodeWithHierarchy(activity, sortedActivities);
+      const formattedNodes = await Promise.all(
+        sortedNodes.map(async (activity) => {
+          const hierarchyPath = await formatNodeWithHierarchy(activity, sortedNodes);
           return {
             id: activity.activityId,
             display: hierarchyPath,
@@ -51,12 +51,12 @@ const NodeNavigate: React.FC = () => {
         })
       );
 
-      const newItems: ListItem[] = formattedActivities;
+      const newItems: ListItem[] = formattedNodes;
 
       setLists([
         {
           id: "activities",
-          display: "Activities",
+          display: "Nodes",
           items: newItems,
         },
       ]);
@@ -68,7 +68,7 @@ const NodeNavigate: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchActivities();
+    fetchNodes();
   }, []);
 
   // keymapping

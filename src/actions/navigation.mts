@@ -7,7 +7,7 @@ import { getWorkspacesForNode } from "../models/workspace.mts";
 
 import {
   getNodeById,
-  getAllActivities,
+  getAllNodes,
   getCurrentNode,
   getPreviousNode,
   updateNodeHistory,
@@ -68,7 +68,7 @@ export const swapNode = async () => {
 // so this commmand needs to be handled via socket, not TUI
 
 export const sendWindowToAnotherNode = async () => {
-  const activities = await getAllActivities();
+  const activities = await getAllNodes();
   const sorted = activities.sort(
     (l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime(),
   );
@@ -76,7 +76,7 @@ export const sendWindowToAnotherNode = async () => {
   const unselected = sorted.map((a) => ({ ...a, selected: false }));
 
   // Format activities with hierarchy paths (TOFIX: cache)
-  const formattedActivities = await Promise.all(
+  const formattedNodes = await Promise.all(
     unselected.map(async (activity) => {
       const hierarchyPath = await formatNodeWithHierarchy(
         activity,
@@ -102,7 +102,7 @@ export const sendWindowToAnotherNode = async () => {
 
   await buildMenu({
     display: `Send window to activity:`,
-    builder: () => formattedActivities.map(menuItem),
+    builder: () => formattedNodes.map(menuItem),
   });
 };
 

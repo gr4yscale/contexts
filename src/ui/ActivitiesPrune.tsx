@@ -10,22 +10,22 @@ import {
 import { getAllWorkspaces } from "../models/workspace.mts";
 import { executeAction } from "../actions.mts";
 import {
-  getActivitiesWithX11Counts,
-  pruneActivities,
+  getNodesWithX11Counts,
+  pruneNodes,
 } from "../actions/activity-bulk.mts";
 
-const ActivitiesPrune: React.FC = () => {
+const NodesPrune: React.FC = () => {
   const [items, setItems] = useState<ListItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchActivities = async () => {
+  const fetchNodes = async () => {
     setLoading(true);
     try {
       // Get all activities
       const activities = await filteredNodeTree(NodeTreeFilter.ALL);
 
       // Enhance with X11 client counts
-      const activitiesWithCounts = await getActivitiesWithX11Counts(activities);
+      const activitiesWithCounts = await getNodesWithX11Counts(activities);
 
       // Get all workspaces and create a set of their activityIds
       const workspaces = await getAllWorkspaces();
@@ -57,7 +57,7 @@ const ActivitiesPrune: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchActivities();
+    fetchNodes();
   }, []);
 
   return (
@@ -66,7 +66,7 @@ const ActivitiesPrune: React.FC = () => {
         <Text>Loading activities...</Text>
       ) : (
         <Box flexDirection="column">
-          <Text bold>Prune Workspaces for Activities</Text>
+          <Text bold>Prune Workspaces for Nodes</Text>
           <CoreList
             items={items}
             multiple={true}
@@ -77,7 +77,7 @@ const ActivitiesPrune: React.FC = () => {
               );
 
               try {
-                await pruneActivities(activities);
+                await pruneNodes(activities);
                 await executeAction("activityNavigate");
               } catch (error) {
                 console.error("Error pruning activities:", error);
@@ -90,4 +90,4 @@ const ActivitiesPrune: React.FC = () => {
   );
 };
 
-export default ActivitiesPrune;
+export default NodesPrune;

@@ -95,7 +95,7 @@ export async function filteredNodeTree(
 ): Promise<NodeTreeItem[]> {
   try {
     // Get activities filtered by the specified filter (except for CONTEXT which needs special handling)
-    const filteredActivities = await activityTree(
+    const filteredNodes = await activityTree(
       filter ? filter : NodeTreeFilter.ALL,
     );
 
@@ -108,7 +108,7 @@ export async function filteredNodeTree(
       }
 
       // For non-CONTEXT filters with no context, return all activities as unselected
-      return filteredActivities.map((activity) => ({
+      return filteredNodes.map((activity) => ({
         ...activity,
         selected: false,
       }));
@@ -118,18 +118,18 @@ export async function filteredNodeTree(
     const contextNodeIds = new Set(currentContext.activityIds);
 
     if (filter === NodeTreeFilter.CONTEXT) {
-      const contextFilteredActivities = filteredActivities.filter((activity) =>
+      const contextFilteredNodes = filteredNodes.filter((activity) =>
         contextNodeIds.has(activity.activityId),
       );
 
-      return contextFilteredActivities.map((activity) => ({
+      return contextFilteredNodes.map((activity) => ({
         ...activity,
         selected: true,
       }));
     }
 
     // For non-CONTEXT filters, just return the filtered activities with selected=false
-    const result = filteredActivities.map((activity) => ({
+    const result = filteredNodes.map((activity) => ({
       ...activity,
       selected: contextNodeIds.has(activity.activityId),
     }));
@@ -173,7 +173,7 @@ export async function getNodeById(
   }
 }
 
-export async function getAllActivities(): Promise<Node[]> {
+export async function getAllNodes(): Promise<Node[]> {
   try {
     const client = await getConnection();
     const result = await client.query("SELECT * FROM activities;");
@@ -265,10 +265,10 @@ export async function deleteNode(
     // If cascade is true, first delete all child activities
     if (cascade) {
       // Get all child activities
-      const childActivities = await getChildActivities(activityId);
+      const childNodes = await getChildNodes(activityId);
 
       // Delete each child activity
-      for (const child of childActivities) {
+      for (const child of childNodes) {
         // Recursively delete with cascade to handle nested hierarchies
         await deleteNode(child.activityId, true);
       }
@@ -284,7 +284,7 @@ export async function deleteNode(
   }
 }
 
-export async function getActiveActivities(): Promise<Node[]> {
+export async function getActiveNodes(): Promise<Node[]> {
   try {
     const client = await getConnection();
     const result = await client.query(
@@ -410,7 +410,7 @@ export async function getPreviousNode(): Promise<Node | null> {
  * @param parentNodeId The ID of the parent activity
  * @returns Array of child activities
  */
-export async function getChildActivities(
+export async function getChildNodes(
   parentNodeId: string,
 ): Promise<Node[]> {
   try {
@@ -528,7 +528,7 @@ export async function activityTree(
     // Build the filter condition for the base case
     let filterCondition = "";
     if (filter === NodeTreeFilter.RECENT) {
-      // Activities from the last 7 days
+      // Nodes from the last 7 days
       filterCondition =
         "AND lastaccessed > (CURRENT_TIMESTAMP - INTERVAL '7 days')";
     } else if (filter === NodeTreeFilter.TEMP) {

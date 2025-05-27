@@ -268,7 +268,7 @@ export async function removeNodeFromLatestContext(
  * @param contextId The ID of the context
  * @returns Array of Node objects
  */
-// export async function getContextActivities(
+// export async function getContextNodes(
 //   contextId: string,
 // ): Promise<Node[]> {
 //   try {
@@ -345,7 +345,7 @@ export async function getCurrentContext(): Promise<Context | null> {
  * Gets all activities for the current (most recently created) context
  * @returns Array of Node objects or empty array if no current context exists
  */
-// export async function getCurrentContextActivities(): Promise<Node[]> {
+// export async function getCurrentContextNodes(): Promise<Node[]> {
 //   try {
 //     const currentContext = await getCurrentContext();
 
@@ -353,7 +353,7 @@ export async function getCurrentContext(): Promise<Context | null> {
 //       return [];
 //     }
 
-//     return await getContextActivities(currentContext.contextId);
+//     return await getContextNodes(currentContext.contextId);
 //   } catch (error) {
 //     console.error("Error getting current context activities:", error);
 //     throw error;

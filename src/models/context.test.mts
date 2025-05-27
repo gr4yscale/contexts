@@ -8,9 +8,9 @@ import {
   deleteContext,
   addNodeToLatestContext,
   removeNodeFromLatestContext,
-  getContextActivities,
+  getContextNodes,
   getCurrentContext,
-  getCurrentContextActivities,
+  getCurrentContextNodes,
 } from "./context.mts";
 import { createNode } from "./activity.mts";
 import { Node, Context } from "../types.mts";
@@ -102,18 +102,18 @@ testSuite("Context Model Integration Tests", () => {
     await createNode(testNode2);
 
     // Create context with activities
-    const contextWithActivities = await createContext({
-      name: "Context with Activities",
+    const contextWithNodes = await createContext({
+      name: "Context with Nodes",
       activityIds: [testNode1.activityId, testNode2.activityId],
     });
 
     // Verify the context was created with activities
-    expect(contextWithActivities).toBeDefined();
-    expect(contextWithActivities.activityIds).toHaveLength(2);
-    expect(contextWithActivities.activityIds).toContain(
+    expect(contextWithNodes).toBeDefined();
+    expect(contextWithNodes.activityIds).toHaveLength(2);
+    expect(contextWithNodes.activityIds).toContain(
       testNode1.activityId,
     );
-    expect(contextWithActivities.activityIds).toContain(
+    expect(contextWithNodes.activityIds).toContain(
       testNode2.activityId,
     );
   });
@@ -300,12 +300,12 @@ testSuite("Context Model Integration Tests", () => {
 
     // Create a context with activities
     const createdContext = await createContext({
-      name: "Context with Activities",
+      name: "Context with Nodes",
       activityIds: [testNode1.activityId, testNode2.activityId],
     });
 
     // Get activities for the context
-    const activities = await getContextActivities(createdContext.contextId);
+    const activities = await getContextNodes(createdContext.contextId);
 
     // Verify activities were retrieved
     expect(activities).toBeDefined();
@@ -333,7 +333,7 @@ testSuite("Context Model Integration Tests", () => {
     const createdContext = await createContext(testContext1);
 
     // Get activities for the context
-    const activities = await getContextActivities(createdContext.contextId);
+    const activities = await getContextNodes(createdContext.contextId);
 
     // Verify empty array was returned
     expect(activities).toHaveLength(0);
@@ -346,7 +346,7 @@ testSuite("Context Model Integration Tests", () => {
 
     // Create a context with activities
     const createdContext = await createContext({
-      name: "Context with Activities",
+      name: "Context with Nodes",
       activityIds: [testNode1.activityId, testNode2.activityId],
     });
 
@@ -404,12 +404,12 @@ testSuite("Context Model Integration Tests", () => {
 
     // Create a context with activities
     await createContext({
-      name: "Context with Activities",
+      name: "Context with Nodes",
       activityIds: [testNode1.activityId, testNode2.activityId],
     });
 
     // Get activities for the current context
-    const activities = await getCurrentContextActivities();
+    const activities = await getCurrentContextNodes();
 
     // Verify activities were retrieved
     expect(activities).toBeDefined();
@@ -430,13 +430,13 @@ testSuite("Context Model Integration Tests", () => {
     expect(activity2?.name).toBe(testNode2.name);
   });
 
-  it("should return empty array from getCurrentContextActivities when no contexts exist", async () => {
+  it("should return empty array from getCurrentContextNodes when no contexts exist", async () => {
     // Ensure no contexts exist
     const client = await getConnection();
     await client.query("DELETE FROM contexts");
 
     // Get activities for the current context
-    const activities = await getCurrentContextActivities();
+    const activities = await getCurrentContextNodes();
 
     // Verify empty array was returned
     expect(activities).toHaveLength(0);

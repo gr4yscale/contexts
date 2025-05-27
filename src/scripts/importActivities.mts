@@ -3,7 +3,7 @@ import { fs } from "zx";
 import { initializeDB, createNode, Node } from "../db.mts";
 import { YamlDoc } from "../types.mts";
 
-async function importActivities() {
+async function importNodes() {
   try {
     // Initialize the database
     await initializeDB();
@@ -49,4 +49,4 @@ async function importActivities() {
 }
 
 // Run the import
-importActivities();
+importNodes();

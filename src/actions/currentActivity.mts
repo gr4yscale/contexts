@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import * as logger from "../logger.mts";
 import { ActionType, Action, registerAction } from "../actions.mts";
-import { Activity } from "../types.mts";
+import { Node } from "../types.mts";
 import { createNode } from "../models/activity.mts";
 
 // actions that operate on the current activity

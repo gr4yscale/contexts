@@ -34,8 +34,8 @@ export interface Resource {
 }
 
 /**
- * A Context is a collection of related Activities.
- * It allows grouping multiple Activities that belong to the same theme or project.
+ * A Context is a collection of related Nodes.
+ * It allows grouping multiple Nodes that belong to the same theme or project.
  */
 export interface Context {
   contextId: string;
@@ -46,7 +46,7 @@ export interface Context {
 
 /**
  * An Node represents a focused work session or task.
- * Activities can contain window configurations, bookmarks, links, and other resources
+ * Nodes can contain window configurations, bookmarks, links, and other resources
  * needed to work on a specific task or project.
  */
 

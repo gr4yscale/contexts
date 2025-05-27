@@ -3,7 +3,7 @@ import { activityByDwmTag } from "./state.mts";
 import { NodeId } from "./types.mts";
 import { activateNode } from "./commands/navigation.mts";
 import { retryAsync, RetryStatus } from "./retry-async.mts";
-import { getActiveActivities } from "./db.mts";
+import { getActiveNodes } from "./db.mts";
 
 // make action for storing browser snapshots to all activities
 // ui for executing global actions can be copied from linkgroups
@@ -60,7 +60,7 @@ const getWindowsAndTabs = () => {
   });
 };
 
-const mapWindowsToActivities = async (): Promise<Window[]> => {
+const mapWindowsToNodes = async (): Promise<Window[]> => {
   const dwmTagsAndTitles = await getDwmTagsAndTitles();
   const windows = getWindowsAndTabs();
 
@@ -79,10 +79,10 @@ const mapWindowsToActivities = async (): Promise<Window[]> => {
 };
 
 export const storeBrowserStates = async () => {
-  const windows = await mapWindowsToActivities();
+  const windows = await mapWindowsToNodes();
 
-  const activeActivities = await getActiveActivities();
-  for (const activity of activeActivities) {
+  const activeNodes = await getActiveNodes();
+  for (const activity of activeNodes) {
     const windowsForNode = windows.filter(
       (w) => w.activityId === activity.activityId,
     );
@@ -153,8 +153,8 @@ const findIt = async (firstTabTitle: string) => {
 // make a per-activity action for this
 // make a global action for all activities restore
 
-export const loadLastBrowserStateForActiveActivities = async () => {
-  const openWindows = await mapWindowsToActivities();
+export const loadLastBrowserStateForActiveNodes = async () => {
+  const openWindows = await mapWindowsToNodes();
 
   // const decoratedWindowFinder = retryDecorator(findIt, {
   //   retries: 10,
@@ -162,8 +162,8 @@ export const loadLastBrowserStateForActiveActivities = async () => {
   //   timeout: 5 * 1000,
   // });
 
-  const activeActivities = await getActiveActivities();
-  for (const activity of activeActivities) {
+  const activeNodes = await getActiveNodes();
+  for (const activity of activeNodes) {
     const [lastBrowserState] = activity.browserStates.slice(-1);
     // open windows which haven't already been opened in this activity
     for (const window of lastBrowserState.windows) {

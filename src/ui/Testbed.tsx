@@ -10,7 +10,7 @@ import {
 const Testbed: React.FC = () => {
   const [lists, setLists] = useState<Array<List>>([]);
 
-  const fetchActivities = async () => {
+  const fetchNodes = async () => {
     try {
       const activities = await filteredNodeTree(NodeTreeFilter.ALL);
 
@@ -30,7 +30,7 @@ const Testbed: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchActivities();
+    fetchNodes();
   }, []);
 
   return (

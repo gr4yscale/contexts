@@ -4,15 +4,15 @@ import { setupTestDatabase, teardownTestDatabase } from "../testUtils.mts";
 import {
   createNode,
   getNodeById,
-  getAllActivities,
+  getAllNodes,
   updateNode,
   deleteNode,
-  getActiveActivities,
+  getActiveNodes,
   activityTree,
   updateNodeHistory,
   getCurrentNode,
   getPreviousNode,
-  getChildActivities,
+  getChildNodes,
   NodeCreate,
   filteredNodeTree,
   NodeTreeFilter,
@@ -128,7 +128,7 @@ testSuite("Node Model Integration Tests", () => {
     const activityId2 = await createNode(testNode2);
 
     // Get all activities
-    const activities = await getAllActivities();
+    const activities = await getAllNodes();
 
     // Verify activities were retrieved
     expect(activities).toHaveLength(2);
@@ -192,7 +192,7 @@ testSuite("Node Model Integration Tests", () => {
     await createNode(testNode2); // active: false
 
     // Get active activities
-    const activities = await getActiveActivities();
+    const activities = await getActiveNodes();
 
     // Verify only active activities were retrieved
     expect(activities).toHaveLength(1);
@@ -202,7 +202,7 @@ testSuite("Node Model Integration Tests", () => {
 
   it("should handle empty results", async () => {
     // Get all activities from empty table
-    const activities = await getAllActivities();
+    const activities = await getAllNodes();
 
     // Verify empty array was returned
     expect(activities).toHaveLength(0);
@@ -251,7 +251,7 @@ testSuite("Node Model Integration Tests", () => {
     const childId2 = await createNode(childNode2);
 
     // Get children of parent
-    const children = await getChildActivities(parentId);
+    const children = await getChildNodes(parentId);
 
     // Verify children were retrieved correctly
     expect(children).toHaveLength(2);
@@ -625,16 +625,16 @@ testSuite("Node Model Integration Tests", () => {
       });
 
       // Get filtered activities with ALL filter
-      const allActivities = await filteredNodeTree(NodeTreeFilter.ALL);
+      const allNodes = await filteredNodeTree(NodeTreeFilter.ALL);
 
       // Should include all activities
-      const activityIds = allActivities.map((a) => a.activityId);
+      const activityIds = allNodes.map((a) => a.activityId);
       expect(activityIds).toContain(activity1);
       expect(activityIds).toContain(activity2);
       expect(activityIds).toContain(activity3);
 
       // All should have selected = false
-      expect(allActivities.every((a) => a.selected === false)).toBe(true);
+      expect(allNodes.every((a) => a.selected === false)).toBe(true);
     });
 
     it("should return only temp activities with TEMP filter", async () => {
@@ -658,18 +658,18 @@ testSuite("Node Model Integration Tests", () => {
       });
 
       // Get filtered activities with TEMP filter
-      const tempActivities = await filteredNodeTree(
+      const tempNodes = await filteredNodeTree(
         NodeTreeFilter.TEMP,
       );
 
       // Should only include temp activities
-      const activityIds = tempActivities.map((a) => a.activityId);
+      const activityIds = tempNodes.map((a) => a.activityId);
       expect(activityIds).not.toContain(regularNode);
       expect(activityIds).toContain(tempNode1);
       expect(activityIds).toContain(tempNode2);
 
       // All should have selected = false
-      expect(tempActivities.every((a) => a.selected === false)).toBe(true);
+      expect(tempNodes.every((a) => a.selected === false)).toBe(true);
     });
 
     it("should return recent activities with RECENT filter", async () => {
@@ -693,12 +693,12 @@ testSuite("Node Model Integration Tests", () => {
       });
 
       // Get filtered activities with RECENT filter
-      const recentActivities = await filteredNodeTree(
+      const recentNodes = await filteredNodeTree(
         NodeTreeFilter.RECENT,
       );
 
       // Should only include recent activities
-      const activityIds = recentActivities.map((a) => a.activityId);
+      const activityIds = recentNodes.map((a) => a.activityId);
       expect(activityIds).not.toContain(oldNode);
       expect(activityIds).toContain(recentNode);
     });
@@ -727,24 +727,24 @@ testSuite("Node Model Integration Tests", () => {
       });
 
       // Get filtered activities with CONTEXT filter
-      const contextActivities = await filteredNodeTree(
+      const contextNodes = await filteredNodeTree(
         NodeTreeFilter.CONTEXT,
       );
 
       // All activities should be included
-      const activityIds = contextActivities.map((a) => a.activityId);
+      const activityIds = contextNodes.map((a) => a.activityId);
       expect(activityIds).toContain(activity1);
       expect(activityIds).toContain(activity2);
       expect(activityIds).toContain(activity3);
 
       // Check selected state
-      const activity1InResult = contextActivities.find(
+      const activity1InResult = contextNodes.find(
         (a) => a.activityId === activity1,
       );
-      const activity2InResult = contextActivities.find(
+      const activity2InResult = contextNodes.find(
         (a) => a.activityId === activity2,
       );
-      const activity3InResult = contextActivities.find(
+      const activity3InResult = contextNodes.find(
         (a) => a.activityId === activity3,
       );
 
@@ -772,17 +772,17 @@ testSuite("Node Model Integration Tests", () => {
       });
 
       // Get filtered activities with CONTEXT filter
-      const contextActivities = await filteredNodeTree(
+      const contextNodes = await filteredNodeTree(
         NodeTreeFilter.CONTEXT,
       );
 
       // All activities should be included but none selected
-      const activityIds = contextActivities.map((a) => a.activityId);
+      const activityIds = contextNodes.map((a) => a.activityId);
       expect(activityIds).toContain(activity1);
       expect(activityIds).toContain(activity2);
 
       // All should have selected = false
-      expect(contextActivities.every((a) => a.selected === false)).toBe(true);
+      expect(contextNodes.every((a) => a.selected === false)).toBe(true);
     });
   });
 });

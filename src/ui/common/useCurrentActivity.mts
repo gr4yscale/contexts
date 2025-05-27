@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Activity } from "../../types.mts";
+import { Node } from "../../types.mts";
 import { getCurrentNode } from "../../models/activity.mts";
 
 export const useCurrentNode = () => {

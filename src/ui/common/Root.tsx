@@ -20,12 +20,12 @@ import CurrentNodeAssignToParent from "../CurrentNodeAssignToParent.tsx";
 import CurrentNodeCreateChild from "../CurrentNodeCreateChild.tsx";
 import CurrentNodeRename from "../CurrentNodeRename.tsx";
 import CurrentNodeDelete from "../CurrentNodeDelete.tsx";
-import ActivitiesPrune from "../ActivitiesPrune.tsx";
+import NodesPrune from "../NodesPrune.tsx";
 import Testbed from "../Testbed.tsx";
 import ResourceNavigate from "../ResourceNavigate.tsx";
 import ExaSearch from "../ExaSearch.tsx"; // New import
 
-// consider adding props here that would set initial state of ActivityRoot
+// consider adding props here that would set initial state of NodeRoot
 // so that we can keep everything together (not making more components)
 
 const routes = [
@@ -46,7 +46,7 @@ const routes = [
   },
   { path: "/currentNodeRename", component: CurrentNodeRename },
   { path: "/currentNodeDelete", component: CurrentNodeDelete },
-  { path: "/activitiesPrune", component: ActivitiesPrune },
+  { path: "/activitiesPrune", component: NodesPrune },
   { path: "/testbed", component: Testbed },
   { path: "/exaSearch", component: ExaSearch }, // New route
 ];

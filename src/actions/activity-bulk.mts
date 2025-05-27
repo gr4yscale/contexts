@@ -20,7 +20,7 @@ interface NodeBulkAction extends Action {
  */
 export const activitiesPrune: NodeBulkAction = {
   id: "activitiesPrune",
-  name: "Prune Activities",
+  name: "Prune Nodes",
   type: ActionType.ACTIVITY_BULK,
   handler: async () => {
     await $`dwmc viewex 0`; // TOFIX: shared showTUI func
@@ -32,7 +32,7 @@ export const activitiesPrune: NodeBulkAction = {
 /**
  * Execute the pruning of selected activities
  */
-export async function pruneActivities(
+export async function pruneNodes(
   activities: NodeDTO[],
 ): Promise<void> {
   for (const activity of activities) {
@@ -56,7 +56,7 @@ export async function pruneActivities(
 /**
  * Get activities with their X11 client counts
  */
-export async function getActivitiesWithX11Counts(
+export async function getNodesWithX11Counts(
   activities: Node[],
 ): Promise<Node[]> {
   // First get all workspace IDs and their window counts
