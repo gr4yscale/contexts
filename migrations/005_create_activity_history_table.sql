@@ -3,12 +3,15 @@ CREATE TABLE activity_history (
     id SERIAL PRIMARY KEY,
     current_activity_id TEXT NOT NULL,
     previous_activity_id TEXT,
-    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT activity_history_current_activity_fk FOREIGN KEY (current_activity_id) 
-        REFERENCES activities(activityId) ON DELETE CASCADE,
-    CONSTRAINT activity_history_previous_activity_fk FOREIGN KEY (previous_activity_id) 
-        REFERENCES activities(activityId) ON DELETE SET NULL
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Add foreign key constraints after table creation
+ALTER TABLE activity_history ADD CONSTRAINT activity_history_current_activity_fk 
+    FOREIGN KEY (current_activity_id) REFERENCES activities(activityId) ON DELETE CASCADE;
+
+ALTER TABLE activity_history ADD CONSTRAINT activity_history_previous_activity_fk 
+    FOREIGN KEY (previous_activity_id) REFERENCES activities(activityId) ON DELETE SET NULL;
 
 -- Create an index for faster lookups
 CREATE INDEX idx_activity_history_timestamp ON activity_history(timestamp);
