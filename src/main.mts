@@ -1,5 +1,6 @@
 #!/usr/bin/env tsx
 
+import "dotenv/config";
 import { createServer, Socket } from "net";
 import { $, fs } from "zx";
 import { createElement } from "react";
