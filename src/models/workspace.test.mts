@@ -38,14 +38,14 @@ testSuite("Workspace Model Integration Tests", () => {
 
     // Clear existing data
     await client.query("DELETE FROM workspaces");
-    await client.query("DELETE FROM activities");
+    await client.query("DELETE FROM nodes");
 
     // Reset sequences
     await client.query("ALTER SEQUENCE workspace_id_seq RESTART WITH 1");
 
-    // Insert test activities
+    // Insert test nodes
     await client.query(
-      "INSERT INTO activities (activityId, name) VALUES ($1, $2), ($3, $4)",
+      "INSERT INTO nodes (activityId, name) VALUES ($1, $2), ($3, $4)",
       [testNodeId1, "Test Node 1", testNodeId2, "Test Node 2"],
     );
   });
@@ -57,7 +57,7 @@ testSuite("Workspace Model Integration Tests", () => {
 
       // Drop test tables
       await client.query("DROP TABLE IF EXISTS workspaces CASCADE");
-      await client.query("DROP TABLE IF EXISTS activities CASCADE");
+      await client.query("DROP TABLE IF EXISTS nodes CASCADE");
 
       // Always teardown after tests
       await teardownTestDatabase();

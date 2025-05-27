@@ -21,11 +21,11 @@ const NodesPrune: React.FC = () => {
   const fetchNodes = async () => {
     setLoading(true);
     try {
-      // Get all activities
-      const activities = await filteredNodeTree(NodeTreeFilter.ALL);
+      // Get all nodes
+      const nodes = await filteredNodeTree(NodeTreeFilter.ALL);
 
       // Enhance with X11 client counts
-      const activitiesWithCounts = await getNodesWithX11Counts(activities);
+      const nodesWithCounts = await getNodesWithX11Counts(nodes);
 
       // Get all workspaces and create a set of their nodeIds
       const workspaces = await getAllWorkspaces();
@@ -33,12 +33,12 @@ const NodesPrune: React.FC = () => {
         workspaces.map((ws) => ws.nodeId),
       );
 
-      // Filter activities to include only those with an associated workspace
-      const activitiesWithWorkspaces = activitiesWithCounts.filter((node) =>
+      // Filter nodes to include only those with an associated workspace
+      const nodesWithWorkspaces = nodesWithCounts.filter((node) =>
         workspaceNodeIds.has(node.nodeId),
       );
 
-      const newItems: ListItem[] = activitiesWithWorkspaces.map((node) => ({
+      const newItems: ListItem[] = nodesWithWorkspaces.map((node) => ({
         id: node.nodeId,
         display:
           node.name +
@@ -50,7 +50,7 @@ const NodesPrune: React.FC = () => {
 
       setItems(newItems);
     } catch (error) {
-      console.error("Error fetching activities:", error);
+      console.error("Error fetching nodes:", error);
     } finally {
       setLoading(false);
     }
@@ -63,7 +63,7 @@ const NodesPrune: React.FC = () => {
   return (
     <Box borderStyle="single" borderColor="gray">
       {loading ? (
-        <Text>Loading activities...</Text>
+        <Text>Loading nodes...</Text>
       ) : (
         <Box flexDirection="column">
           <Text bold>Prune Workspaces for Nodes</Text>
@@ -72,15 +72,15 @@ const NodesPrune: React.FC = () => {
             multiple={true}
             initialMode="select"
             onSelected={async (selectedItems: ListItem[]) => {
-              const activities = selectedItems.map(
+              const nodes = selectedItems.map(
                 (item) => item.data as Node,
               );
 
               try {
-                await pruneNodes(activities);
+                await pruneNodes(nodes);
                 await executeAction("nodeNavigate");
               } catch (error) {
-                console.error("Error pruning activities:", error);
+                console.error("Error pruning nodes:", error);
               }
             }}
           />

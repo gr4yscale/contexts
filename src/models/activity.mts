@@ -44,7 +44,7 @@ export async function createNode(
     // If parentNodeId is provided, check if it exists
     if (parentNodeId) {
       const parentExists = await client.query(
-        "SELECT 1 FROM activities WHERE nodeId = $1",
+        "SELECT 1 FROM nodes WHERE nodeId = $1",
         [parentNodeId],
       );
 
@@ -60,7 +60,7 @@ export async function createNode(
 
     await client.query(
       `
-              INSERT INTO activities (
+              INSERT INTO nodes (
                   nodeId, orgId, orgText, name, created, lastAccessed,
                   active, parent_id, temp
               ) VALUES 
@@ -87,14 +87,14 @@ export async function createNode(
 /**
  * Fetches the node tree for the last created context
  * Sets the selected field based on whether the node is in the context
- * @param filter - The filter to apply to the activities (all, recent, temp, context)
- * @returns Array of activities with depth and selection information
+ * @param filter - The filter to apply to the nodes (all, recent, temp, context)
+ * @returns Array of nodes with depth and selection information
  */
 export async function filteredNodeTree(
   filter: NodeTreeFilter = NodeTreeFilter.ALL,
 ): Promise<NodeTreeItem[]> {
   try {
-    // Get activities filtered by the specified filter (except for CONTEXT which needs special handling)
+    // Get nodes filtered by the specified filter (except for CONTEXT which needs special handling)
     const filteredNodes = await nodeTree(
       filter ? filter : NodeTreeFilter.ALL,
     );
@@ -107,7 +107,7 @@ export async function filteredNodeTree(
         return [];
       }
 
-      // For non-CONTEXT filters with no context, return all activities as unselected
+      // For non-CONTEXT filters with no context, return all nodes as unselected
       return filteredNodes.map((node) => ({
         ...node,
         selected: false,
@@ -128,7 +128,7 @@ export async function filteredNodeTree(
       }));
     }
 
-    // For non-CONTEXT filters, just return the filtered activities with selected=false
+    // For non-CONTEXT filters, just return the filtered nodes with selected=false
     const result = filteredNodes.map((node) => ({
       ...node,
       selected: contextNodeIds.has(node.nodeId),
@@ -147,7 +147,7 @@ export async function getNodeById(
   try {
     const client = await getConnection();
     const result = await client.query(
-      "SELECT * FROM activities WHERE nodeId = $1;",
+      "SELECT * FROM nodes WHERE nodeId = $1;",
       [nodeId],
     );
 
@@ -176,7 +176,7 @@ export async function getNodeById(
 export async function getAllNodes(): Promise<Node[]> {
   try {
     const client = await getConnection();
-    const result = await client.query("SELECT * FROM activities;");
+    const result = await client.query("SELECT * FROM nodes;");
 
     if (result.rows.length === 0) {
       return [];
@@ -193,7 +193,7 @@ export async function getAllNodes(): Promise<Node[]> {
       parentNodeId: row.parent_id,
     }));
   } catch (error) {
-    logger.error("Error getting all activities:", error);
+    logger.error("Error getting all nodes:", error);
     throw error;
   }
 }
@@ -244,7 +244,7 @@ export async function updateNode(
 
     values.push(nodeId);
 
-    const query = `UPDATE activities SET ${fields.join(
+    const query = `UPDATE nodes SET ${fields.join(
       ", ",
     )} WHERE nodeid = $${paramIndex};`;
 
@@ -262,9 +262,9 @@ export async function deleteNode(
   try {
     const client = await getConnection();
 
-    // If cascade is true, first delete all child activities
+    // If cascade is true, first delete all child nodes
     if (cascade) {
-      // Get all child activities
+      // Get all child nodes
       const childNodes = await getChildNodes(nodeId);
 
       // Delete each child node
@@ -275,7 +275,7 @@ export async function deleteNode(
     }
 
     // Now delete the node itself
-    await client.query("DELETE FROM activities WHERE nodeId = $1;", [
+    await client.query("DELETE FROM nodes WHERE nodeId = $1;", [
       nodeId,
     ]);
   } catch (error) {
@@ -288,7 +288,7 @@ export async function getActiveNodes(): Promise<Node[]> {
   try {
     const client = await getConnection();
     const result = await client.query(
-      "SELECT * FROM activities WHERE active = true;",
+      "SELECT * FROM nodes WHERE active = true;",
     );
 
     if (result.rows.length === 0) {
@@ -306,7 +306,7 @@ export async function getActiveNodes(): Promise<Node[]> {
       parentNodeId: row.parent_id,
     }));
   } catch (error) {
-    logger.error("Error getting active activities:", error);
+    logger.error("Error getting active nodes:", error);
     throw error;
   }
 }
@@ -322,7 +322,7 @@ export async function updateNodeHistory(
     let validPreviousId = null;
     if (previousNodeId && previousNodeId.trim() !== "") {
       const prevNodeExists = await client.query(
-        "SELECT 1 FROM activities WHERE nodeId = $1",
+        "SELECT 1 FROM nodes WHERE nodeId = $1",
         [previousNodeId],
       );
 
@@ -340,7 +340,7 @@ export async function updateNodeHistory(
 
     // Update the lastAccessed timestamp for the current node
     await client.query(
-      `UPDATE activities SET lastAccessed = CURRENT_TIMESTAMP 
+      `UPDATE nodes SET lastAccessed = CURRENT_TIMESTAMP 
        WHERE nodeId = $1`,
       [currentNodeId],
     );
@@ -406,9 +406,9 @@ export async function getPreviousNode(): Promise<Node | null> {
 }
 
 /**
- * Gets all child activities for a given parent node
+ * Gets all child nodes for a given parent node
  * @param parentNodeId The ID of the parent node
- * @returns Array of child activities
+ * @returns Array of child nodes
  */
 export async function getChildNodes(
   parentNodeId: string,
@@ -416,7 +416,7 @@ export async function getChildNodes(
   try {
     const client = await getConnection();
     const result = await client.query(
-      "SELECT * FROM activities WHERE parent_id = $1;",
+      "SELECT * FROM nodes WHERE parent_id = $1;",
       [parentNodeId],
     );
 
@@ -435,7 +435,7 @@ export async function getChildNodes(
       parentNodeId: row.parent_id,
     }));
   } catch (error) {
-    logger.error("Error getting child activities:", error);
+    logger.error("Error getting child nodes:", error);
     throw error;
   }
 }
@@ -458,19 +458,19 @@ export async function createChildNode(
 }
 
 /**
- * Recursively fetches activities and their children up to a maximum depth of 3
- * @param filter - The filter to apply to the activities (all, recent, temp)
- * @returns Array of activities with depth information
+ * Recursively fetches nodes and their children up to a maximum depth of 3
+ * @param filter - The filter to apply to the nodes (all, recent, temp)
+ * @returns Array of nodes with depth information
  */
 /**
  * Formats an node name with its hierarchy path
  * @param node - The node to format
- * @param activities - All activities in the tree
+ * @param nodes - All nodes in the tree
  * @returns Formatted node name with hierarchy (e.g. "parent > child > grandchild")
  */
 export async function formatNodeWithHierarchy(
   node: NodeTreeItem,
-  activities: NodeTreeItem[],
+  nodes: NodeTreeItem[],
 ): Promise<string> {
   // If it's a root node (no parent), just return the name
   if (!node.parentNodeId) {
@@ -484,8 +484,8 @@ export async function formatNodeWithHierarchy(
 
   // Traverse up the hierarchy to build the path
   while (currentId) {
-    // First try to find the parent in the provided activities array
-    let parent = activities.find((a) => a.nodeId === currentId);
+    // First try to find the parent in the provided nodes array
+    let parent = nodes.find((a) => a.nodeId === currentId);
 
     // If not found in the array, fetch it directly from the database
     if (!parent) {
@@ -532,17 +532,17 @@ export async function nodeTree(
       filterCondition =
         "AND lastaccessed > (CURRENT_TIMESTAMP - INTERVAL '7 days')";
     } else if (filter === NodeTreeFilter.TEMP) {
-      // Only temporary activities
+      // Only temporary nodes
       filterCondition = "AND temp = true";
     }
 
     // This recursive CTE query:
-    // 1. Starts with root activities (parent_id IS NULL) that match the filter
+    // 1. Starts with root nodes (parent_id IS NULL) that match the filter
     // 2. Recursively joins to find children up to depth 3
     // 3. Orders results so parents come before children
     const result = await client.query(`
       WITH RECURSIVE node_tree AS (
-        -- Base case: select root activities (no parent) with filter applied
+        -- Base case: select root nodes (no parent) with filter applied
         SELECT 
           nodeid, 
           orgid, 
@@ -555,7 +555,7 @@ export async function nodeTree(
           temp,
           0 AS depth,
           ARRAY[nodeid] AS path
-        FROM activities
+        FROM nodes
         WHERE parent_id IS NULL ${filterCondition}
         
         UNION ALL
@@ -573,7 +573,7 @@ export async function nodeTree(
           a.temp,
           at.depth + 1 AS depth,
           at.path || a.nodeid AS path
-        FROM activities a
+        FROM nodes a
         JOIN node_tree at ON a.parent_id = at.nodeid
         WHERE at.depth < 3  -- Limit recursion to depth 3
         ${filter === NodeTreeFilter.TEMP ? "AND a.temp = true" : ""}
@@ -592,7 +592,7 @@ export async function nodeTree(
         depth
       FROM node_tree
       ORDER BY 
-        CASE WHEN parent_id IS NULL THEN 0 ELSE 1 END,  -- Root activities first
+        CASE WHEN parent_id IS NULL THEN 0 ELSE 1 END,  -- Root nodes first
         CASE WHEN parent_id IS NULL THEN lastaccessed END DESC,  -- Sort roots by lastaccessed
         path;  -- Then ensure parents come before children
     `);

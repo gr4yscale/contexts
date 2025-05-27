@@ -12,10 +12,10 @@ async function importNodes() {
     // Read and parse the YAML file
     const file = fs.readFileSync("./state.yml", "utf8");
     const parsed = parse(file, { maxAliasCount: -1 }) as YamlDoc;
-    console.log(`Found ${parsed.activities.length} activities in YAML file`);
+    console.log(`Found ${parsed.nodes.length} nodes in YAML file`);
 
     // Convert and import each node
-    for (const node of parsed.activities) {
+    for (const node of parsed.nodes) {
       try {
         const nodeDTO: Node = {
           nodeId: node.nodeId,

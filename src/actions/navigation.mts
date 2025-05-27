@@ -19,7 +19,7 @@ import { viewWorkspaceForNode } from "../workspaces.mts";
 
 import { buildMenu } from "../menus.mts";
 
-// actions that navigate to workspaces (dwm tag) of activities
+// actions that navigate to workspaces (dwm tag) of nodes
 interface NavigationAction extends Action {
   type: ActionType.NAVIGATION;
   handler: (nodeId?: string) => Promise<void> | void;
@@ -68,14 +68,14 @@ export const swapNode = async () => {
 // so this commmand needs to be handled via socket, not TUI
 
 export const sendWindowToAnotherNode = async () => {
-  const activities = await getAllNodes();
-  const sorted = activities.sort(
+  const nodes = await getAllNodes();
+  const sorted = nodes.sort(
     (l, r) => r.lastAccessed.getTime() - l.lastAccessed.getTime(),
   );
   //TOFIX: hack; selection state needs to be removed from `formatActivitityWithHierarchy`
   const unselected = sorted.map((a) => ({ ...a, selected: false }));
 
-  // Format activities with hierarchy paths (TOFIX: cache)
+  // Format nodes with hierarchy paths (TOFIX: cache)
   const formattedNodes = await Promise.all(
     unselected.map(async (node) => {
       const hierarchyPath = await formatNodeWithHierarchy(

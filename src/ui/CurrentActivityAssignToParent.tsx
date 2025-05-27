@@ -15,7 +15,7 @@ import * as logger from "../logger.mts";
 const CurrentNodeAssignToParent: React.FC = () => {
   const { currentNode, loading: currentNodeLoading } =
     useCurrentNode();
-  const [activities, setNodes] = useState<ListItem[]>([]);
+  const [nodes, setNodes] = useState<ListItem[]>([]);
   const [loadingNodes, setLoadingNodes] = useState(true);
 
   useEffect(() => {
@@ -32,7 +32,7 @@ const CurrentNodeAssignToParent: React.FC = () => {
         );
         setNodes(formattedNodes);
       } catch (error) {
-        logger.error("Error fetching activities for parent assignment:", error);
+        logger.error("Error fetching nodes for parent assignment:", error);
         setNodes([]);
       } finally {
         setLoadingNodes(false);
@@ -80,9 +80,9 @@ const CurrentNodeAssignToParent: React.FC = () => {
         <>
           <Box flexDirection="column">
             <Text>Assign parent for: {currentNode?.name}</Text>
-            {activities.length > 0 ? (
+            {nodes.length > 0 ? (
               <CoreList
-                items={activities.filter(
+                items={nodes.filter(
                   (act) => act.id !== currentNode?.nodeId,
                 )} // Prevent selecting self
                 onSelected={handleParentSelection}
@@ -90,7 +90,7 @@ const CurrentNodeAssignToParent: React.FC = () => {
                 initialMode="select"
               />
             ) : (
-              <Text>No activities available to select as parent.</Text>
+              <Text>No nodes available to select as parent.</Text>
             )}
           </Box>
         </>

@@ -40,7 +40,7 @@ export const saveEmacsWindowBookmark = async (node: Node) => {
   await $`xdotool key "Control_L+F10"`;
   await sleep(500);
 
-  const bookmarkTitle = `activities.${node.name}.${nanoid()}`;
+  const bookmarkTitle = `nodes.${node.name}.${nanoid()}`;
   await $`xdotool type "${bookmarkTitle}"`;
   await $`xdotool key Return`;
 
@@ -143,6 +143,6 @@ export const viewEmacsSession = (id: string) => {
 
 // we should call easysession-save-as on the current window
 
-// we need a save func to persist activities automatically
+// we need a save func to persist nodes automatically
 
-// for persisting activities automation, we would iterate through activities's workspaces, and if emacs windows in this workspace === 1, save session
+// for persisting nodes automation, we would iterate through nodes's workspaces, and if emacs windows in this workspace === 1, save session

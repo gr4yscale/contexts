@@ -23,10 +23,10 @@ const ContextNodeSelection: React.FC = () => {
   const fetchNodes = async () => {
     setLoading(true);
     try {
-      const activities = await filteredNodeTree(NodeTreeFilter.ALL);
-      //console.log(activities);
+      const nodes = await filteredNodeTree(NodeTreeFilter.ALL);
+      //console.log(nodes);
 
-      const newItems: ListItem[] = activities.map((node) => ({
+      const newItems: ListItem[] = nodes.map((node) => ({
         id: node.nodeId,
         display:
           "  ".repeat(node.depth || 0) +
@@ -44,7 +44,7 @@ const ContextNodeSelection: React.FC = () => {
         },
       ]);
     } catch (error) {
-      console.error("Error fetching activities:", error);
+      console.error("Error fetching nodes:", error);
     } finally {
       setLoading(false);
     }
@@ -57,17 +57,17 @@ const ContextNodeSelection: React.FC = () => {
   return (
     <Box borderStyle="single" borderColor="gray">
       {loading ? (
-        <Text>Loading activities...</Text>
+        <Text>Loading nodes...</Text>
       ) : (
         <CoreList
           items={lists[0].items}
           multiple={true}
           initialMode="select"
           onSelected={async (selectedItems: ListItem[]) => {
-            const activities = selectedItems.map(
+            const nodes = selectedItems.map(
               (item) => item.data as Node,
             );
-            const nodeIds = activities.map(
+            const nodeIds = nodes.map(
               (node) => node.nodeId,
             );
 

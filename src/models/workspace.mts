@@ -16,7 +16,7 @@ export async function getAllWorkspaces(): Promise<WorkspaceDTO[]> {
       w.name,
       a.name as nodeName
     FROM workspaces w
-    LEFT JOIN activities a ON w.nodeId = a.nodeId
+    LEFT JOIN nodes a ON w.nodeId = a.nodeId
     ORDER BY w.id ASC;
   `);
 
@@ -161,7 +161,7 @@ export async function getWorkspacesForNode(
       w.name,
       a.name as nodeName
     FROM workspaces w
-    LEFT JOIN activities a ON w.nodeId = a.nodeId
+    LEFT JOIN nodes a ON w.nodeId = a.nodeId
     WHERE w.nodeId = $1
     ORDER BY w.id ASC;
   `,
@@ -190,7 +190,7 @@ export async function getWorkspaceById(id: number): Promise<WorkspaceDTO> {
       w.name,
       a.name as nodeName
     FROM workspaces w
-    LEFT JOIN activities a ON w.nodeId = a.nodeId
+    LEFT JOIN nodes a ON w.nodeId = a.nodeId
     WHERE w.id = $1
   `,
     [id],

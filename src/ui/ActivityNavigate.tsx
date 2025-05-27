@@ -31,15 +31,15 @@ const NodeNavigate: React.FC = () => {
   const fetchNodes = async () => {
     try {
       // here we will use a different fetcher; use a generic?
-      const activities = await filteredNodeTree(NodeTreeFilter.CONTEXT);
+      const nodes = await filteredNodeTree(NodeTreeFilter.CONTEXT);
 
-      const sortedNodes = [...activities].sort((a, b) => {
+      const sortedNodes = [...nodes].sort((a, b) => {
         const dateA = a.lastAccessed ? new Date(a.lastAccessed).getTime() : 0;
         const dateB = b.lastAccessed ? new Date(b.lastAccessed).getTime() : 0;
         return dateB - dateA;
       });
 
-      // Format activities with hierarchy paths
+      // Format nodes with hierarchy paths
       const formattedNodes = await Promise.all(
         sortedNodes.map(async (node) => {
           const hierarchyPath = await formatNodeWithHierarchy(node, sortedNodes);
@@ -55,13 +55,13 @@ const NodeNavigate: React.FC = () => {
 
       setLists([
         {
-          id: "activities",
+          id: "nodes",
           display: "Nodes",
           items: newItems,
         },
       ]);
     } catch (error) {
-      console.error("Error fetching activities:", error);
+      console.error("Error fetching nodes:", error);
     } finally {
       setLoading(false);
     }
@@ -116,7 +116,7 @@ const NodeNavigate: React.FC = () => {
   return (
     <Box borderStyle="single" borderColor="gray">
       {loading ? (
-        <Text>Loading activities...</Text>
+        <Text>Loading nodes...</Text>
       ) : mode === "items" ? (
         <CoreList
           items={currentListItems}

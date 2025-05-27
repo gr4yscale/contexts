@@ -5,9 +5,9 @@ import { activateNode } from "./commands/navigation.mts";
 import { retryAsync, RetryStatus } from "./retry-async.mts";
 import { getActiveNodes } from "./db.mts";
 
-// make action for storing browser snapshots to all activities
+// make action for storing browser snapshots to all nodes
 // ui for executing global actions can be copied from linkgroups
-// ui for executing actions on activities can be copied from linkgroups
+// ui for executing actions on nodes can be copied from linkgroups
 
 // dont forget hotkey: end, end (current node actions)
 
@@ -151,7 +151,7 @@ const findIt = async (firstTabTitle: string) => {
 };
 
 // make a per-node action for this
-// make a global action for all activities restore
+// make a global action for all nodes restore
 
 export const loadLastBrowserStateForActiveNodes = async () => {
   const openWindows = await mapWindowsToNodes();

@@ -12,7 +12,7 @@ const Testbed: React.FC = () => {
 
   const fetchNodes = async () => {
     try {
-      const activities = await filteredNodeTree(NodeTreeFilter.ALL);
+      const nodes = await filteredNodeTree(NodeTreeFilter.ALL);
 
       const items = tree.map((node) => ({
         id: node.nodeId,
@@ -25,7 +25,7 @@ const Testbed: React.FC = () => {
       }));
       setLists([{ items, id: "default", display: "default" }]);
     } catch (error) {
-      console.error("Error fetching activities:", error);
+      console.error("Error fetching nodes:", error);
     }
   };
 

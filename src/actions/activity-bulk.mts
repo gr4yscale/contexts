@@ -16,10 +16,10 @@ interface NodeBulkAction extends Action {
 }
 
 /**
- * Bulk delete activities
+ * Bulk delete nodes
  */
-export const activitiesPrune: NodeBulkAction = {
-  id: "activitiesPrune",
+export const nodesPrune: NodeBulkAction = {
+  id: "nodesPrune",
   name: "Prune Nodes",
   type: ActionType.ACTIVITY_BULK,
   handler: async () => {
@@ -30,12 +30,12 @@ export const activitiesPrune: NodeBulkAction = {
 };
 
 /**
- * Execute the pruning of selected activities
+ * Execute the pruning of selected nodes
  */
 export async function pruneNodes(
-  activities: NodeDTO[],
+  nodes: NodeDTO[],
 ): Promise<void> {
-  for (const node of activities) {
+  for (const node of nodes) {
     try {
       // Get all workspaces for this node
       const workspaces = await getWorkspacesForNode(node.nodeId);
@@ -54,10 +54,10 @@ export async function pruneNodes(
 }
 
 /**
- * Get activities with their X11 client counts
+ * Get nodes with their X11 client counts
  */
 export async function getNodesWithX11Counts(
-  activities: Node[],
+  nodes: Node[],
 ): Promise<Node[]> {
   // First get all workspace IDs and their window counts
   const workspaceCountsMap = new Map<number, number>();
@@ -106,9 +106,9 @@ export async function getNodesWithX11Counts(
     }
   }
 
-  // Now map activities to their workspaces and assign counts
-  const activitiesWithCounts = await Promise.all(
-    activities.map(async (node) => {
+  // Now map nodes to their workspaces and assign counts
+  const nodesWithCounts = await Promise.all(
+    nodes.map(async (node) => {
       let totalCount = 0;
 
       // Get workspaces for this node
@@ -128,9 +128,9 @@ export async function getNodesWithX11Counts(
   );
 
   // Sort by X11 client count (descending)
-  return activitiesWithCounts.sort(
+  return nodesWithCounts.sort(
     (a, b) => (b.x11ClientCount || 0) - (a.x11ClientCount || 0),
   );
 }
 
-registerAction(activitiesPrune);
+registerAction(nodesPrune);

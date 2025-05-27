@@ -20,7 +20,7 @@ import {
 
 import { navigateExaSearch } from "../actions/navigation.mts";
 
-import { activitiesPrune } from "../actions/node-bulk.mts";
+import { nodesPrune } from "../actions/node-bulk.mts";
 
 import { Action, executeAction, ActionType } from "../actions.mts";
 
@@ -33,7 +33,7 @@ const ActionExecute: React.FC<Props> = ({ keys = "asdfghjkl;" }) => {
 
   const [actions, setActions] = useState<Action[]>([
     navigateExaSearch,
-    activitiesPrune,
+    nodesPrune,
     runFirefoxAction,
     runEmacsAction,
     runRangerAction,
