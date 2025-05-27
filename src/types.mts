@@ -106,14 +106,3 @@ export type EmacsBookmark = {
   accessed: Date;
   sticky: boolean;
 };
-
-export type YamlDoc = {
-  activities: Activity[];
-  currentActivityId: ActivityId;
-  previousActivityId: ActivityId;
-};
-
-export type State = {
-  activities: Activity[];
-  dwmTags: Array<ActivityId>;
-};
