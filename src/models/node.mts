@@ -18,7 +18,6 @@ export enum NodeTreeFilter {
 
 // Define NodeCreate type as a partial of Node with required fields
 export type NodeCreate = {
-  activityId?: string;
   name: string;
   orgId?: string;
   orgText?: string;
@@ -38,7 +37,7 @@ export async function createNode(
 
   // Use provided values or defaults
   const active = node.active ?? true;
-  const nodeId = node.nodeId || nanoid();
+  const nodeId = nanoid();
 
   try {
     // If parentNodeId is provided, check if it exists
