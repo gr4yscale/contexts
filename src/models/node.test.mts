@@ -64,9 +64,18 @@ testSuite("Node Model Integration Tests", () => {
   beforeEach(async () => {
     const client = await getConnection();
 
-    // Clear existing data
-    await client.query("DELETE FROM nodes");
-    await client.query("DELETE FROM node_history");
+    // Clear existing data - only if tables exist
+    try {
+      await client.query("DELETE FROM nodes");
+    } catch (error) {
+      // Table might not exist yet, ignore the error
+    }
+    
+    try {
+      await client.query("DELETE FROM node_history");
+    } catch (error) {
+      // Table might not exist yet, ignore the error
+    }
   });
 
   // Clean up after all tests
