@@ -1,19 +1,10 @@
 -- up
 
--- Rename activityId column to nodeId in workspaces table
-ALTER TABLE workspaces RENAME COLUMN activityId TO nodeId;
+-- This migration is now redundant as the renaming was already done in migration 008
+-- Keeping this as a no-op to maintain migration sequence integrity
 
--- Update foreign key constraint
-ALTER TABLE workspaces DROP CONSTRAINT IF EXISTS workspaces_activityid_fkey;
-ALTER TABLE workspaces ADD CONSTRAINT workspaces_nodeid_fkey
-    FOREIGN KEY (nodeId) REFERENCES nodes(nodeId) ON DELETE CASCADE;
+-- No operations needed - the activityId column was already renamed to nodeId in migration 008
 
 -- down
 
--- Restore foreign key constraint
-ALTER TABLE workspaces DROP CONSTRAINT IF EXISTS workspaces_nodeid_fkey;
-ALTER TABLE workspaces ADD CONSTRAINT workspaces_activityid_fkey
-    FOREIGN KEY (activityId) REFERENCES activities(activityId) ON DELETE CASCADE;
-
--- Rename back to original name
-ALTER TABLE workspaces RENAME COLUMN nodeId TO activityId;
+-- No operations needed - this migration doesn't perform any changes
