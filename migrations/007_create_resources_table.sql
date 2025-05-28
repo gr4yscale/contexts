@@ -28,3 +28,5 @@ COMMENT ON COLUMN resources.url IS 'The primary Uniform Resource Locator or iden
 COMMENT ON COLUMN resources.type IS 'Type of the resource (e.g., web_link, org_note, llm_convo). Corresponds to ResourceType enum in code.';
 COMMENT ON COLUMN resources.created IS 'Timestamp of when the resource was created.';
 COMMENT ON COLUMN resources.last_accessed IS 'Timestamp of when the resource was last accessed or used.';
+
+-- down
