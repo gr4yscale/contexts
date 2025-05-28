@@ -10,6 +10,7 @@ import {
 
 import { getCurrentNode } from "./models/node.mts";
 import { Node } from "./types.mts";
+import * as logger from "./logger.mts";
 
 $.verbose = false; // suppress stdout from zx subprocess calls
 

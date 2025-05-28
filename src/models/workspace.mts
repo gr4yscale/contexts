@@ -34,7 +34,7 @@ export async function getAllWorkspaces(): Promise<WorkspaceDTO[]> {
 
 /**
  * Creates a new workspace for the given node with a unique ID.
- * Tries to find any available ID in the range 1-32 that isn't currently used.
+ * Tries to find any available ID in the range 1-29 that isn't currently used.
  * If all IDs are in use, it will throw an error.
  *
  * @param nodeId - The ID of the node to create a workspace for
