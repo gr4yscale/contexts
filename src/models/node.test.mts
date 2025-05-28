@@ -8,7 +8,7 @@ import {
   updateNode,
   deleteNode,
   getActiveNodes,
-  activityTree,
+  nodeTree,
   updateNodeHistory,
   getCurrentNode,
   getPreviousNode,
@@ -19,7 +19,6 @@ import {
 } from "./node.mts";
 import { Node } from "../types.mts";
 
-import { filteredNodeTree, NodeTreeFilter } from "./node.mts";
 import { createContext, updateContext } from "./context.mts";
 
 const isIntegrationTest = process.env.RUN_INTEGRATION_TESTS === "true";
@@ -157,20 +156,20 @@ testSuite("Node Model Integration Tests", () => {
 
   it("should update an node", async () => {
     // Create an node
-    await createNode(testNode1);
+    const nodeId = await createNode(testNode1);
 
     // Update the node
     const updatedName = "Updated Node Name";
     const updatedOrgText = "* Updated Org Text";
     await updateNode({
-      nodeId: testNode1.nodeId,
+      nodeId: nodeId,
       name: updatedName,
       orgText: updatedOrgText,
       active: false,
     });
 
     // Get the updated node
-    const node = await getNodeById(testNode1.nodeId);
+    const node = await getNodeById(nodeId);
 
     // Verify the node was updated
     expect(node).toBeDefined();
