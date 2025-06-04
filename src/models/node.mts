@@ -579,6 +579,46 @@ export async function getParentNodes(
 }
 
 /**
+ * Checks if adding a relationship between two nodes would create a cycle
+ * @param parentNodeId The ID of the parent node
+ * @param childNodeId The ID of the child node
+ * @returns Promise<boolean> True if a cycle would be created, false otherwise
+ */
+async function detectCycle(
+  parentNodeId: string,
+  childNodeId: string,
+): Promise<boolean> {
+  try {
+    const client = await getConnection();
+    
+    // Check if there's already a path from childNodeId to parentNodeId
+    const result = await client.query(`
+      WITH RECURSIVE path_check AS (
+        -- Base case: start from the child node
+        SELECT child_node_id AS current_node, ARRAY[child_node_id] AS path
+        FROM node_relationships 
+        WHERE parent_node_id = $1
+        
+        UNION ALL
+        
+        -- Recursive case: follow the path down
+        SELECT nr.child_node_id AS current_node, pc.path || nr.child_node_id AS path
+        FROM node_relationships nr
+        JOIN path_check pc ON nr.parent_node_id = pc.current_node
+        WHERE NOT (nr.child_node_id = ANY(pc.path))  -- Prevent infinite loops
+        AND array_length(pc.path, 1) < 100  -- Safety limit
+      )
+      SELECT 1 FROM path_check WHERE current_node = $2
+    `, [childNodeId, parentNodeId]);
+
+    return result.rows.length > 0;
+  } catch (error) {
+    logger.error("Error checking for cycle:", error);
+    throw error;
+  }
+}
+
+/**
  * Adds a parent-child relationship between two nodes
  * @param parentNodeId The ID of the parent node
  * @param childNodeId The ID of the child node
@@ -607,7 +647,6 @@ export async function addNodeRelationship(
       throw new Error(`Child node with ID ${childNodeId} does not exist`);
     }
 
-    // Check if relationship already exists
     const relationshipExists = await client.query(
       "SELECT 1 FROM node_relationships WHERE parent_node_id = $1 AND child_node_id = $2",
       [parentNodeId, childNodeId],
@@ -617,7 +656,9 @@ export async function addNodeRelationship(
       throw new Error(`Relationship already exists between ${parentNodeId} and ${childNodeId}`);
     }
 
-    // TODO: Add cycle detection to ensure DAG property is maintained
+    if (await detectCycle(parentNodeId, childNodeId)) {
+      throw new Error(`Cannot add relationship: would create a cycle between ${parentNodeId} and ${childNodeId}`);
+    }
     
     await client.query(
       `INSERT INTO node_relationships (parent_node_id, child_node_id) 
