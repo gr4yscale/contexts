@@ -284,6 +284,14 @@ export async function deleteNode(
         // Recursively delete with cascade to handle nested hierarchies
         await deleteNode(child.nodeId, true);
       }
+    } else {
+      // If not cascading, check if node has children and prevent deletion
+      const childNodes = await getChildNodes(nodeId);
+      if (childNodes.length > 0) {
+        throw new Error(
+          `Cannot delete node ${nodeId}: node has ${childNodes.length} child node(s). Use cascade=true to delete children as well.`
+        );
+      }
     }
 
     // Now delete the node itself

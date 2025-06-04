@@ -300,7 +300,15 @@ testSuite("Node Model Integration Tests", () => {
     expect(parentBefore).not.toBeNull();
     expect(childBefore).not.toBeNull();
 
-    // Try to delete the parent (should fail due to foreign key constraint)
+    // Verify the relationship exists
+    const client = await getConnection();
+    const relationshipsBefore = await client.query(
+      "SELECT * FROM node_relationships WHERE parent_node_id = $1",
+      [parentId]
+    );
+    expect(relationshipsBefore.rows.length).toBe(1);
+
+    // Try to delete the parent (should fail due to foreign key constraint on node_relationships)
     let error: any;
     try {
       await deleteNode(parentId);
@@ -310,15 +318,23 @@ testSuite("Node Model Integration Tests", () => {
       error = e;
     }
 
-    // Verify the error occurred due to foreign key constraint
+    // Verify the error occurred due to having children
     expect(error).toBeDefined();
-    expect(error.message).toContain("foreign key constraint");
+    expect(error.message).toContain("Cannot delete node");
+    expect(error.message).toContain("child node(s)");
 
     // Verify both nodes still exist
     const parentAfter = await getNodeById(parentId);
     const childAfter = await getNodeById(childId);
     expect(parentAfter).not.toBeNull();
     expect(childAfter).not.toBeNull();
+
+    // Verify relationship still exists
+    const relationshipsAfter = await client.query(
+      "SELECT * FROM node_relationships WHERE parent_node_id = $1",
+      [parentId]
+    );
+    expect(relationshipsAfter.rows.length).toBe(1);
   });
 
   it("should delete parent and children when cascade parameter is true", async () => {
