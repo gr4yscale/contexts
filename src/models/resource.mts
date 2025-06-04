@@ -1,14 +1,94 @@
 import { getConnection } from "../db.mts";
-import { Resource, ResourceId, ResourceType } from "../types.mts";
 import * as logger from "../logger.mts";
+
+/** Unique identifier for a Resource */
+export type ResourceId = number;
+
+/**
+ * Enum for different types of Resources.
+ */
+export enum ResourceType {
+  LINK = "link",
+  WORKSPACE = "workspace",
+  ORG_DOC = "orgDoc",
+  TEXT = "text",
+  LLM_CONVO = "llmConvo",
+  SCREENSHOT = "screenshot",
+  REPO = "repo",
+  PDF = "pdf",
+  VIDEO = "video",
+}
+
+// Resource data interfaces for each type
+export interface LinkResourceData {
+  url: string;
+}
+
+export interface WorkspaceResourceData {
+  workspaceId: string;
+  name: string;
+}
+
+export interface OrgDocResourceData {
+  orgHeadlineId: string;
+}
+
+export interface TextResourceData {
+  path: string;
+}
+
+export interface LlmConvoResourceData {
+  path: string;
+}
+
+export interface ScreenshotResourceData {
+  path: string;
+}
+
+export interface RepoResourceData {
+  path: string;
+}
+
+export interface PdfResourceData {
+  path: string;
+}
+
+export interface VideoResourceData {
+  localPath: string;
+  url: string;
+}
+
+export type ResourceData = 
+  | LinkResourceData
+  | WorkspaceResourceData
+  | OrgDocResourceData
+  | TextResourceData
+  | LlmConvoResourceData
+  | ScreenshotResourceData
+  | RepoResourceData
+  | PdfResourceData
+  | VideoResourceData;
+
+/**
+ * A Resource represents an entity that can be acted upon.
+ * Examples include web links, documents, contacts, etc.
+ */
+export interface Resource {
+  id: ResourceId;
+  name: string;
+  data: ResourceData; // JSON data specific to the resource type
+  type: ResourceType;
+  created: Date;
+  lastAccessed: Date;
+}
 
 /**
  * Data required to create a new Resource.
- * 'name', 'url', and 'type' are mandatory.
+ * 'name', 'data', and 'type' are mandatory.
  */
 export type ResourceCreate = {
   name: string;
-  url: string;
+  data: ResourceData;
   type: ResourceType;
 };
 
@@ -21,16 +101,16 @@ export async function createResource(
   resourceData: ResourceCreate,
 ): Promise<ResourceId> {
   const client = await getConnection();
-  const { name, url, type } = resourceData;
+  const { name, data, type } = resourceData;
 
   try {
     const result = await client.query(
       `
-      INSERT INTO resources (name, url, type, created, last_accessed)
+      INSERT INTO resources (name, data, type, created, last_accessed)
       VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       RETURNING id;
       `,
-      [name, url, type],
+      [name, JSON.stringify(data), type],
     );
     logger.debug(`Resource created with ID: ${result.rows[0].id}`);
     return result.rows[0].id as ResourceId;
@@ -60,7 +140,7 @@ export async function getResourceById(
     return {
       id: row.id as ResourceId,
       name: row.name,
-      url: row.url,
+      data: JSON.parse(row.data),
       type: row.type as ResourceType,
       created: new Date(row.created),
       lastAccessed: new Date(row.last_accessed),
@@ -82,7 +162,7 @@ export async function getAllResources(): Promise<Resource[]> {
     return result.rows.map((row: any) => ({
       id: row.id as ResourceId,
       name: row.name,
-      url: row.url,
+      data: JSON.parse(row.data),
       type: row.type as ResourceType,
       created: new Date(row.created),
       lastAccessed: new Date(row.last_accessed),
@@ -110,7 +190,7 @@ export async function updateResource(
 
   const updatableFields: (keyof typeof resourceUpdate)[] = [
     "name",
-    "url",
+    "data",
     "type",
     "lastAccessed",
   ];
@@ -118,10 +198,14 @@ export async function updateResource(
   updatableFields.forEach((key) => {
     if (resourceUpdate[key] !== undefined) {
       const dbKey = key === "lastAccessed" ? "last_accessed" : key;
-      const value =
-        key === "lastAccessed" && resourceUpdate[key] instanceof Date
-          ? (resourceUpdate[key] as Date).toISOString()
-          : resourceUpdate[key];
+      let value = resourceUpdate[key];
+      
+      if (key === "lastAccessed" && value instanceof Date) {
+        value = value.toISOString();
+      } else if (key === "data") {
+        value = JSON.stringify(value);
+      }
+      
       fields.push(`${dbKey} = $${paramIndex}`);
       values.push(value);
       paramIndex++;
@@ -152,7 +236,7 @@ export async function updateResource(
     return {
       id: row.id as ResourceId,
       name: row.name,
-      url: row.url,
+      data: JSON.parse(row.data),
       type: row.type as ResourceType,
       created: new Date(row.created),
       lastAccessed: new Date(row.last_accessed),
@@ -202,7 +286,7 @@ export async function getResourcesByType(
     return result.rows.map((row: any) => ({
       id: row.id as ResourceId,
       name: row.name,
-      url: row.url,
+      data: JSON.parse(row.data),
       type: row.type as ResourceType,
       created: new Date(row.created),
       lastAccessed: new Date(row.last_accessed),
