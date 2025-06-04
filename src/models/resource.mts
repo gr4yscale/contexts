@@ -111,7 +111,7 @@ export async function createResource(
       VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       RETURNING id;
       `,
-      [name, JSON.stringify(data), type],
+      [name, data, type],
     );
     logger.debug(`Resource created with ID: ${result.rows[0].id}`);
     return result.rows[0].id as ResourceId;
@@ -141,7 +141,7 @@ export async function getResourceById(
     return {
       id: row.id as ResourceId,
       name: row.name,
-      data: JSON.parse(row.data),
+      data: row.data,
       type: row.type as ResourceType,
       created: new Date(row.created),
       lastAccessed: new Date(row.last_accessed),
@@ -163,7 +163,7 @@ export async function getAllResources(): Promise<Resource[]> {
     return result.rows.map((row: any) => ({
       id: row.id as ResourceId,
       name: row.name,
-      data: JSON.parse(row.data),
+      data: row.data,
       type: row.type as ResourceType,
       created: new Date(row.created),
       lastAccessed: new Date(row.last_accessed),
@@ -207,8 +207,6 @@ export async function updateResource(
       
       if (key === "lastAccessed" && value instanceof Date) {
         value = value.toISOString();
-      } else if (key === "data") {
-        value = JSON.stringify(value);
       }
       
       fields.push(`${dbKey} = $${paramIndex}`);
@@ -241,7 +239,7 @@ export async function updateResource(
     return {
       id: row.id as ResourceId,
       name: row.name,
-      data: JSON.parse(row.data),
+      data: row.data,
       type: row.type as ResourceType,
       created: new Date(row.created),
       lastAccessed: new Date(row.last_accessed),
@@ -291,7 +289,7 @@ export async function getResourcesByType(
     return result.rows.map((row: any) => ({
       id: row.id as ResourceId,
       name: row.name,
-      data: JSON.parse(row.data),
+      data: row.data,
       type: row.type as ResourceType,
       created: new Date(row.created),
       lastAccessed: new Date(row.last_accessed),
@@ -402,7 +400,7 @@ export async function getNodeResources(
     return result.rows.map((row: any) => ({
       id: row.id as ResourceId,
       name: row.name,
-      data: JSON.parse(row.data),
+      data: row.data,
       type: row.type as ResourceType,
       created: new Date(row.created),
       lastAccessed: new Date(row.last_accessed),
