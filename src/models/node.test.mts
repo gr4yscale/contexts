@@ -13,6 +13,9 @@ import {
   getCurrentNode,
   getPreviousNode,
   getChildNodes,
+  getParentNodes,
+  addNodeRelationship,
+  removeNodeRelationship,
   NodeCreate,
   filteredNodeTree,
   NodeTreeFilter,
@@ -64,6 +67,12 @@ testSuite("Node Model Integration Tests", () => {
     const client = await getConnection();
 
     // Clear existing data - only if tables exist
+    try {
+      await client.query("DELETE FROM node_relationships");
+    } catch (error) {
+      // Table might not exist yet, ignore the error
+    }
+    
     try {
       await client.query("DELETE FROM nodes");
     } catch (error) {
@@ -222,10 +231,9 @@ testSuite("Node Model Integration Tests", () => {
 
     // Create child node with parent reference
     const childNode: NodeCreate = {
-      nodeId: "child-node-1",
       name: "Child Node 1",
       active: true,
-      parentNodeId: parentId,
+      parentNodeIds: [parentId],
     };
 
     const childId = await createNode(childNode);
@@ -233,7 +241,14 @@ testSuite("Node Model Integration Tests", () => {
     // Verify the child node was created with correct parent reference
     const retrievedChild = await getNodeById(childId);
     expect(retrievedChild).toBeDefined();
-    expect(retrievedChild?.parentNodeId).toBe(parentId);
+    
+    // Verify the relationship exists in the database
+    const client = await getConnection();
+    const relationshipResult = await client.query(
+      "SELECT * FROM node_relationships WHERE parent_node_id = $1 AND child_node_id = $2",
+      [parentId, childId]
+    );
+    expect(relationshipResult.rows.length).toBe(1);
   });
 
   it("should get child nodes of a parent", async () => {
@@ -242,17 +257,15 @@ testSuite("Node Model Integration Tests", () => {
 
     // Create multiple child nodes
     const childNode1: NodeCreate = {
-      nodeId: "child-node-1",
       name: "Child Node 1",
       active: true,
-      parentNodeId: parentId,
+      parentNodeIds: [parentId],
     };
 
     const childNode2: NodeCreate = {
-      nodeId: "child-node-2",
       name: "Child Node 2",
       active: false,
-      parentNodeId: parentId,
+      parentNodeIds: [parentId],
     };
 
     const childId1 = await createNode(childNode1);
@@ -266,11 +279,6 @@ testSuite("Node Model Integration Tests", () => {
     expect(children.map((c) => c.nodeId).sort()).toEqual(
       [childId1, childId2].sort(),
     );
-
-    // All children should have the correct parent ID
-    children.forEach((child) => {
-      expect(child.parentNodeId).toBe(parentId);
-    });
   });
 
   it("should fail deleting a parent node which has children", async () => {
@@ -279,10 +287,9 @@ testSuite("Node Model Integration Tests", () => {
 
     // Create child node
     const childNode: NodeCreate = {
-      nodeId: "child-node-1",
       name: "Child Node 1",
       active: true,
-      parentNodeId: parentId,
+      parentNodeIds: [parentId],
     };
 
     const childId = await createNode(childNode);
@@ -320,20 +327,18 @@ testSuite("Node Model Integration Tests", () => {
 
     // Create child node
     const childNode: NodeCreate = {
-      nodeId: "child-node-1",
       name: "Child Node 1",
       active: true,
-      parentNodeId: parentId,
+      parentNodeIds: [parentId],
     };
 
     const childId = await createNode(childNode);
 
     // Create grandchild node
     const grandchildNode: NodeCreate = {
-      nodeId: "grandchild-node-1",
       name: "Grandchild Node 1",
       active: true,
-      parentNodeId: childId,
+      parentNodeIds: [childId],
     };
 
     const grandchildId = await createNode(grandchildNode);
@@ -361,33 +366,29 @@ testSuite("Node Model Integration Tests", () => {
 
     // Create root node
     const rootId = await createNode({
-      nodeId: "root-node",
       name: "Root Node",
       active: true,
     });
 
     // Create first child node
     const child1Id = await createNode({
-      nodeId: "child-node-1",
       name: "Child Node 1",
       active: true,
-      parentNodeId: rootId,
+      parentNodeIds: [rootId],
     });
 
     // Create second child node
     const child2Id = await createNode({
-      nodeId: "child-node-2",
       name: "Child Node 2",
       active: true,
-      parentNodeId: rootId,
+      parentNodeIds: [rootId],
     });
 
     // Create grandchild node
     const grandchildId = await createNode({
-      nodeId: "grandchild-node",
       name: "Grandchild Node",
       active: true,
-      parentNodeId: child1Id,
+      parentNodeIds: [child1Id],
     });
 
     // Get the node tree
@@ -414,11 +415,39 @@ testSuite("Node Model Integration Tests", () => {
     expect(child2InTree?.depth).toBe(1);
     expect(grandchildInTree?.depth).toBe(2);
 
-    // Verify parent-child relationships
-    expect(rootInTree?.parentNodeId).toBeNull();
-    expect(child1InTree?.parentNodeId).toBe(rootId);
-    expect(child2InTree?.parentNodeId).toBe(rootId);
-    expect(grandchildInTree?.parentNodeId).toBe(child1Id);
+    // Verify parent-child relationships exist in database
+    const client = await getConnection();
+    
+    // Root should have no parents
+    const rootParents = await client.query(
+      "SELECT * FROM node_relationships WHERE child_node_id = $1",
+      [rootId]
+    );
+    expect(rootParents.rows.length).toBe(0);
+
+    // Child1 should have root as parent
+    const child1Parents = await client.query(
+      "SELECT * FROM node_relationships WHERE child_node_id = $1",
+      [child1Id]
+    );
+    expect(child1Parents.rows.length).toBe(1);
+    expect(child1Parents.rows[0].parent_node_id).toBe(rootId);
+
+    // Child2 should have root as parent
+    const child2Parents = await client.query(
+      "SELECT * FROM node_relationships WHERE child_node_id = $1",
+      [child2Id]
+    );
+    expect(child2Parents.rows.length).toBe(1);
+    expect(child2Parents.rows[0].parent_node_id).toBe(rootId);
+
+    // Grandchild should have child1 as parent
+    const grandchildParents = await client.query(
+      "SELECT * FROM node_relationships WHERE child_node_id = $1",
+      [grandchildId]
+    );
+    expect(grandchildParents.rows.length).toBe(1);
+    expect(grandchildParents.rows[0].parent_node_id).toBe(child1Id);
 
     // Verify ordering (parents should come before their children)
     const rootIndex = tree.findIndex((a) => a.nodeId === rootId);
@@ -566,7 +595,6 @@ testSuite("Node Model Integration Tests", () => {
 
     // Create root node (level 0)
     const rootId = await createNode({
-      nodeId: "depth-root",
       name: "Depth Root",
       active: true,
     });
@@ -577,10 +605,9 @@ testSuite("Node Model Integration Tests", () => {
 
     for (let i = 1; i <= 4; i++) {
       const nodeId = await createNode({
-        nodeId: `depth-level-${i}`,
         name: `Depth Level ${i}`,
         active: true,
-        parentNodeId: parentId,
+        parentNodeIds: [parentId],
       });
       levelIds.push(nodeId);
       parentId = nodeId;
@@ -593,19 +620,19 @@ testSuite("Node Model Integration Tests", () => {
     const treeNodeIds = tree.map((a) => a.nodeId);
 
     // Verify levels 0-3 are included
-    expect(treeNodeIds).toContain("depth-root");
-    expect(treeNodeIds).toContain("depth-level-1");
-    expect(treeNodeIds).toContain("depth-level-2");
-    expect(treeNodeIds).toContain("depth-level-3");
+    expect(treeNodeIds).toContain(rootId);
+    expect(treeNodeIds).toContain(levelIds[1]);
+    expect(treeNodeIds).toContain(levelIds[2]);
+    expect(treeNodeIds).toContain(levelIds[3]);
 
     // Verify level 4 is NOT included (due to depth limit of 3)
-    expect(treeNodeIds).not.toContain("depth-level-4");
+    expect(treeNodeIds).not.toContain(levelIds[4]);
 
     // Verify correct depth values for included nodes
-    const level0 = tree.find((a) => a.nodeId === "depth-root");
-    const level1 = tree.find((a) => a.nodeId === "depth-level-1");
-    const level2 = tree.find((a) => a.nodeId === "depth-level-2");
-    const level3 = tree.find((a) => a.nodeId === "depth-level-3");
+    const level0 = tree.find((a) => a.nodeId === rootId);
+    const level1 = tree.find((a) => a.nodeId === levelIds[1]);
+    const level2 = tree.find((a) => a.nodeId === levelIds[2]);
+    const level3 = tree.find((a) => a.nodeId === levelIds[3]);
 
     expect(level0?.depth).toBe(0);
     expect(level1?.depth).toBe(1);
@@ -791,6 +818,148 @@ testSuite("Node Model Integration Tests", () => {
 
       // All should have selected = false
       expect(contextNodes.every((a) => a.selected === false)).toBe(true);
+    });
+
+    it("should support multiple parents in DAG structure", async () => {
+      // Create nodes for DAG structure:
+      // Parent1   Parent2
+      //    \       /
+      //     Child
+      
+      const parent1Id = await createNode({
+        name: "Parent 1",
+        active: true,
+      });
+
+      const parent2Id = await createNode({
+        name: "Parent 2", 
+        active: true,
+      });
+
+      // Create child with multiple parents
+      const childId = await createNode({
+        name: "Child Node",
+        active: true,
+        parentNodeIds: [parent1Id, parent2Id],
+      });
+
+      // Verify relationships exist
+      const client = await getConnection();
+      const relationships = await client.query(
+        "SELECT * FROM node_relationships WHERE child_node_id = $1",
+        [childId]
+      );
+
+      expect(relationships.rows.length).toBe(2);
+      const parentIds = relationships.rows.map(r => r.parent_node_id);
+      expect(parentIds).toContain(parent1Id);
+      expect(parentIds).toContain(parent2Id);
+
+      // Verify getParentNodes returns both parents
+      const parents = await getParentNodes(childId);
+      expect(parents.length).toBe(2);
+      expect(parents.map(p => p.nodeId)).toContain(parent1Id);
+      expect(parents.map(p => p.nodeId)).toContain(parent2Id);
+
+      // Verify getChildNodes works for both parents
+      const children1 = await getChildNodes(parent1Id);
+      const children2 = await getChildNodes(parent2Id);
+      expect(children1.length).toBe(1);
+      expect(children2.length).toBe(1);
+      expect(children1[0].nodeId).toBe(childId);
+      expect(children2[0].nodeId).toBe(childId);
+    });
+
+    it("should add and remove node relationships", async () => {
+      // Create nodes
+      const parentId = await createNode({
+        name: "Parent Node",
+        active: true,
+      });
+
+      const childId = await createNode({
+        name: "Child Node",
+        active: true,
+      });
+
+      // Add relationship
+      await addNodeRelationship(parentId, childId);
+
+      // Verify relationship exists
+      const client = await getConnection();
+      const relationships = await client.query(
+        "SELECT * FROM node_relationships WHERE parent_node_id = $1 AND child_node_id = $2",
+        [parentId, childId]
+      );
+      expect(relationships.rows.length).toBe(1);
+
+      // Remove relationship
+      await removeNodeRelationship(parentId, childId);
+
+      // Verify relationship is removed
+      const relationshipsAfter = await client.query(
+        "SELECT * FROM node_relationships WHERE parent_node_id = $1 AND child_node_id = $2",
+        [parentId, childId]
+      );
+      expect(relationshipsAfter.rows.length).toBe(0);
+    });
+
+    it("should prevent duplicate relationships", async () => {
+      // Create nodes
+      const parentId = await createNode({
+        name: "Parent Node",
+        active: true,
+      });
+
+      const childId = await createNode({
+        name: "Child Node",
+        active: true,
+      });
+
+      // Add relationship
+      await addNodeRelationship(parentId, childId);
+
+      // Try to add the same relationship again
+      let error: any;
+      try {
+        await addNodeRelationship(parentId, childId);
+        expect(true).toBe(false); // Should not reach here
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error).toBeDefined();
+      expect(error.message).toContain("Relationship already exists");
+    });
+
+    it("should validate node existence when adding relationships", async () => {
+      const realNodeId = await createNode({
+        name: "Real Node",
+        active: true,
+      });
+
+      // Try to add relationship with non-existent parent
+      let error: any;
+      try {
+        await addNodeRelationship("non-existent-parent", realNodeId);
+        expect(true).toBe(false); // Should not reach here
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error).toBeDefined();
+      expect(error.message).toContain("Parent node with ID non-existent-parent does not exist");
+
+      // Try to add relationship with non-existent child
+      try {
+        await addNodeRelationship(realNodeId, "non-existent-child");
+        expect(true).toBe(false); // Should not reach here
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error).toBeDefined();
+      expect(error.message).toContain("Child node with ID non-existent-child does not exist");
     });
   });
 });
