@@ -79,7 +79,6 @@ export interface Resource {
   name: string;
   data: ResourceData; // JSON data specific to the resource type
   type: ResourceType;
-  nodeIds: string[]; // Array of node IDs associated with this resource
   created: Date;
   lastAccessed: Date;
 }
@@ -144,7 +143,6 @@ export async function getResourceById(
       name: row.name,
       data: JSON.parse(row.data),
       type: row.type as ResourceType,
-      nodeIds: row.node_ids ? JSON.parse(row.node_ids) : [],
       created: new Date(row.created),
       lastAccessed: new Date(row.last_accessed),
     };
@@ -167,7 +165,6 @@ export async function getAllResources(): Promise<Resource[]> {
       name: row.name,
       data: JSON.parse(row.data),
       type: row.type as ResourceType,
-      nodeIds: row.node_ids ? JSON.parse(row.node_ids) : [],
       created: new Date(row.created),
       lastAccessed: new Date(row.last_accessed),
     }));
@@ -196,7 +193,6 @@ export async function updateResource(
     "name",
     "data",
     "type",
-    "nodeIds",
     "lastAccessed",
   ];
 
@@ -205,15 +201,13 @@ export async function updateResource(
       let dbKey = key;
       if (key === "lastAccessed") {
         dbKey = "last_accessed";
-      } else if (key === "nodeIds") {
-        dbKey = "node_ids";
       }
       
       let value = resourceUpdate[key];
       
       if (key === "lastAccessed" && value instanceof Date) {
         value = value.toISOString();
-      } else if (key === "data" || key === "nodeIds") {
+      } else if (key === "data") {
         value = JSON.stringify(value);
       }
       
@@ -249,7 +243,6 @@ export async function updateResource(
       name: row.name,
       data: JSON.parse(row.data),
       type: row.type as ResourceType,
-      nodeIds: row.node_ids ? JSON.parse(row.node_ids) : [],
       created: new Date(row.created),
       lastAccessed: new Date(row.last_accessed),
     };
@@ -300,7 +293,6 @@ export async function getResourcesByType(
       name: row.name,
       data: JSON.parse(row.data),
       type: row.type as ResourceType,
-      nodeIds: row.node_ids ? JSON.parse(row.node_ids) : [],
       created: new Date(row.created),
       lastAccessed: new Date(row.last_accessed),
     }));
@@ -322,10 +314,10 @@ export async function addResourceNode(
   const client = await getConnection();
   try {
     await client.query(
-      `INSERT INTO resource_nodes (resource_id, node_id, data)
-       VALUES ($1, $2, $3)
-       ON CONFLICT (resource_id, node_id) DO UPDATE SET data = $3`,
-      [resourceId, nodeId, data ? JSON.stringify(data) : null]
+      `INSERT INTO resource_nodes (resource_id, node_id)
+       VALUES ($1, $2)
+       ON CONFLICT (resource_id, node_id) DO NOTHING`,
+      [resourceId, nodeId]
     );
     logger.debug(`Added node ${nodeId} to resource ${resourceId}`);
   } catch (error) {
@@ -412,7 +404,6 @@ export async function getNodeResources(
       name: row.name,
       data: JSON.parse(row.data),
       type: row.type as ResourceType,
-      nodeIds: [], // Will be populated by separate query if needed
       created: new Date(row.created),
       lastAccessed: new Date(row.last_accessed),
     }));
