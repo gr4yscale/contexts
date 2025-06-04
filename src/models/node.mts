@@ -7,6 +7,7 @@ import * as logger from "../logger.mts";
 export type NodeTreeItem = Node & {
   depth?: number;
   selected: boolean;
+  parentNodeIds?: string[];
 };
 
 export enum NodeTreeFilter {
@@ -24,7 +25,7 @@ export type NodeCreate = {
   created?: Date;
   lastAccessed?: Date;
   active?: boolean;
-  parentNodeId?: string;
+  parentNodeIds?: string[];
   temp?: boolean;
   workspaceId?: string;
 };
@@ -33,24 +34,26 @@ export async function createNode(
   node: NodeCreate,
 ): Promise<string> {
   const client = await getConnection();
-  const { orgId, orgText, name, parentNodeId } = node;
+  const { orgId, orgText, name, parentNodeIds } = node;
 
   // Use provided values or defaults
   const active = node.active ?? true;
   const nodeId = nanoid();
 
   try {
-    // If parentNodeId is provided, check if it exists
-    if (parentNodeId) {
-      const parentExists = await client.query(
-        "SELECT 1 FROM nodes WHERE nodeId = $1",
-        [parentNodeId],
-      );
-
-      if (parentExists.rows.length === 0) {
-        throw new Error(
-          `Parent node with ID ${parentNodeId} does not exist`,
+    // If parentNodeIds are provided, check if they exist
+    if (parentNodeIds && parentNodeIds.length > 0) {
+      for (const parentId of parentNodeIds) {
+        const parentExists = await client.query(
+          "SELECT 1 FROM nodes WHERE nodeId = $1",
+          [parentId],
         );
+
+        if (parentExists.rows.length === 0) {
+          throw new Error(
+            `Parent node with ID ${parentId} does not exist`,
+          );
+        }
       }
     }
 
@@ -61,9 +64,9 @@ export async function createNode(
       `
               INSERT INTO nodes (
                   nodeId, orgId, orgText, name, created, lastAccessed,
-                  active, parent_id, temp
+                  active, temp
               ) VALUES 
-              ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, $5, $6, $7);
+              ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, $5, $6);
           `,
       [
         nodeId,
@@ -71,10 +74,20 @@ export async function createNode(
         orgText ?? "",
         name,
         active,
-        parentNodeId || null,
         temp,
       ],
     );
+
+    // Insert parent-child relationships if parentNodeIds are provided
+    if (parentNodeIds && parentNodeIds.length > 0) {
+      for (const parentId of parentNodeIds) {
+        await client.query(
+          `INSERT INTO node_relationships (parent_node_id, child_node_id) 
+           VALUES ($1, $2)`,
+          [parentId, nodeId],
+        );
+      }
+    }
 
     return nodeId;
   } catch (error) {
@@ -415,7 +428,9 @@ export async function getChildNodes(
   try {
     const client = await getConnection();
     const result = await client.query(
-      "SELECT * FROM nodes WHERE parent_id = $1;",
+      `SELECT n.* FROM nodes n
+       INNER JOIN node_relationships nr ON n.nodeId = nr.child_node_id
+       WHERE nr.parent_node_id = $1;`,
       [parentNodeId],
     );
 
@@ -440,19 +455,19 @@ export async function getChildNodes(
 }
 
 /**
- * Creates a new node as a child of the specified parent node
+ * Creates a new node as a child of the specified parent node(s)
  * @param node The node to create
- * @param parentNodeId The ID of the parent node
+ * @param parentNodeIds The IDs of the parent nodes
  * @returns The ID of the created node
  */
 export async function createChildNode(
   node: NodeCreate,
-  parentNodeId: string,
+  parentNodeIds: string[],
 ): Promise<string> {
-  // Create a new node with the parent ID
+  // Create a new node with the parent IDs
   return await createNode({
     ...node,
-    parentNodeId,
+    parentNodeIds,
   });
 }
 
@@ -518,6 +533,118 @@ export async function formatNodeWithHierarchy(
   return path.join(" → ");
 }
 
+/**
+ * Gets all parent nodes for a given child node
+ * @param childNodeId The ID of the child node
+ * @returns Array of parent nodes
+ */
+export async function getParentNodes(
+  childNodeId: string,
+): Promise<Node[]> {
+  try {
+    const client = await getConnection();
+    const result = await client.query(
+      `SELECT n.* FROM nodes n
+       INNER JOIN node_relationships nr ON n.nodeId = nr.parent_node_id
+       WHERE nr.child_node_id = $1;`,
+      [childNodeId],
+    );
+
+    if (result.rows.length === 0) {
+      return [];
+    }
+
+    return result.rows.map((row: any) => ({
+      nodeId: row.nodeid,
+      orgId: row.orgid,
+      orgText: row.orgtext,
+      name: row.name,
+      created: new Date(row.created),
+      lastAccessed: new Date(row.lastaccessed),
+      active: row.active,
+      parentNodeId: row.parent_id,
+    }));
+  } catch (error) {
+    logger.error("Error getting parent nodes:", error);
+    throw error;
+  }
+}
+
+/**
+ * Adds a parent-child relationship between two nodes
+ * @param parentNodeId The ID of the parent node
+ * @param childNodeId The ID of the child node
+ */
+export async function addNodeRelationship(
+  parentNodeId: string,
+  childNodeId: string,
+): Promise<void> {
+  try {
+    const client = await getConnection();
+    
+    // Check if both nodes exist
+    const parentExists = await client.query(
+      "SELECT 1 FROM nodes WHERE nodeId = $1",
+      [parentNodeId],
+    );
+    const childExists = await client.query(
+      "SELECT 1 FROM nodes WHERE nodeId = $1",
+      [childNodeId],
+    );
+
+    if (parentExists.rows.length === 0) {
+      throw new Error(`Parent node with ID ${parentNodeId} does not exist`);
+    }
+    if (childExists.rows.length === 0) {
+      throw new Error(`Child node with ID ${childNodeId} does not exist`);
+    }
+
+    // Check if relationship already exists
+    const relationshipExists = await client.query(
+      "SELECT 1 FROM node_relationships WHERE parent_node_id = $1 AND child_node_id = $2",
+      [parentNodeId, childNodeId],
+    );
+
+    if (relationshipExists.rows.length > 0) {
+      throw new Error(`Relationship already exists between ${parentNodeId} and ${childNodeId}`);
+    }
+
+    // TODO: Add cycle detection to ensure DAG property is maintained
+    
+    await client.query(
+      `INSERT INTO node_relationships (parent_node_id, child_node_id) 
+       VALUES ($1, $2)`,
+      [parentNodeId, childNodeId],
+    );
+  } catch (error) {
+    logger.error("Error adding node relationship:", error);
+    throw error;
+  }
+}
+
+/**
+ * Removes a parent-child relationship between two nodes
+ * @param parentNodeId The ID of the parent node
+ * @param childNodeId The ID of the child node
+ */
+export async function removeNodeRelationship(
+  parentNodeId: string,
+  childNodeId: string,
+): Promise<void> {
+  try {
+    const client = await getConnection();
+    
+    await client.query(
+      `DELETE FROM node_relationships 
+       WHERE parent_node_id = $1 AND child_node_id = $2`,
+      [parentNodeId, childNodeId],
+    );
+  } catch (error) {
+    logger.error("Error removing node relationship:", error);
+    throw error;
+  }
+}
+
 export async function nodeTree(
   filter: NodeTreeFilter = NodeTreeFilter.ALL,
 ): Promise<NodeTreeItem[]> {
@@ -535,50 +662,54 @@ export async function nodeTree(
       filterCondition = "AND temp = true";
     }
 
-    // This recursive CTE query:
-    // 1. Starts with root nodes (parent_id IS NULL) that match the filter
+    // This recursive CTE query for DAG:
+    // 1. Starts with root nodes (no parents in node_relationships) that match the filter
     // 2. Recursively joins to find children up to depth 3
     // 3. Orders results so parents come before children
     const result = await client.query(`
       WITH RECURSIVE node_tree AS (
-        -- Base case: select root nodes (no parent) with filter applied
+        -- Base case: select root nodes (no parents in relationships table) with filter applied
         SELECT 
-          nodeid, 
-          orgid, 
-          orgtext, 
-          name, 
-          created, 
-          lastaccessed, 
-          active, 
-          parent_id,
-          temp,
+          n.nodeid, 
+          n.orgid, 
+          n.orgtext, 
+          n.name, 
+          n.created, 
+          n.lastaccessed, 
+          n.active, 
+          n.parent_id,
+          n.temp,
           0 AS depth,
-          ARRAY[nodeid] AS path
-        FROM nodes
-        WHERE parent_id IS NULL ${filterCondition}
+          ARRAY[n.nodeid] AS path
+        FROM nodes n
+        WHERE NOT EXISTS (
+          SELECT 1 FROM node_relationships nr WHERE nr.child_node_id = n.nodeid
+        ) ${filterCondition}
         
         UNION ALL
         
         -- Recursive case: select children and increment depth
         SELECT 
-          a.nodeid, 
-          a.orgid, 
-          a.orgtext, 
-          a.name, 
-          a.created, 
-          a.lastaccessed, 
-          a.active, 
-          a.parent_id,
-          a.temp,
-          at.depth + 1 AS depth,
-          at.path || a.nodeid AS path
-        FROM nodes a
-        JOIN node_tree at ON a.parent_id = at.nodeid
-        WHERE at.depth < 3  -- Limit recursion to depth 3
-        ${filter === NodeTreeFilter.TEMP ? "AND a.temp = true" : ""}
+          n.nodeid, 
+          n.orgid, 
+          n.orgtext, 
+          n.name, 
+          n.created, 
+          n.lastaccessed, 
+          n.active, 
+          n.parent_id,
+          n.temp,
+          nt.depth + 1 AS depth,
+          nt.path || n.nodeid AS path
+        FROM nodes n
+        JOIN node_relationships nr ON n.nodeid = nr.child_node_id
+        JOIN node_tree nt ON nr.parent_node_id = nt.nodeid
+        WHERE nt.depth < 3  -- Limit recursion to depth 3
+        AND NOT (n.nodeid = ANY(nt.path))  -- Prevent cycles
+        ${filter === NodeTreeFilter.TEMP ? "AND n.temp = true" : ""}
       )
       
-      SELECT 
+      SELECT DISTINCT
         nodeid, 
         orgid, 
         orgtext, 
@@ -588,12 +719,12 @@ export async function nodeTree(
         active, 
         parent_id,
         temp,
-        depth
+        MIN(depth) as depth  -- Use minimum depth if node appears multiple times
       FROM node_tree
+      GROUP BY nodeid, orgid, orgtext, name, created, lastaccessed, active, parent_id, temp
       ORDER BY 
-        CASE WHEN parent_id IS NULL THEN 0 ELSE 1 END,  -- Root nodes first
-        CASE WHEN parent_id IS NULL THEN lastaccessed END DESC,  -- Sort roots by lastaccessed
-        path;  -- Then ensure parents come before children
+        depth,  -- Order by depth first
+        lastaccessed DESC;  -- Then by last accessed
     `);
 
     if (result.rows.length === 0) {
