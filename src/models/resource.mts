@@ -1,5 +1,6 @@
 import { getConnection } from "../db.mts";
 import * as logger from "../logger.mts";
+import { Node } from "./node.mts";
 
 /** Unique identifier for a Resource */
 export type ResourceId = number;
@@ -78,6 +79,7 @@ export interface Resource {
   name: string;
   data: ResourceData; // JSON data specific to the resource type
   type: ResourceType;
+  nodeIds: string[]; // Array of node IDs associated with this resource
   created: Date;
   lastAccessed: Date;
 }
@@ -142,6 +144,7 @@ export async function getResourceById(
       name: row.name,
       data: JSON.parse(row.data),
       type: row.type as ResourceType,
+      nodeIds: row.node_ids ? JSON.parse(row.node_ids) : [],
       created: new Date(row.created),
       lastAccessed: new Date(row.last_accessed),
     };
@@ -164,6 +167,7 @@ export async function getAllResources(): Promise<Resource[]> {
       name: row.name,
       data: JSON.parse(row.data),
       type: row.type as ResourceType,
+      nodeIds: row.node_ids ? JSON.parse(row.node_ids) : [],
       created: new Date(row.created),
       lastAccessed: new Date(row.last_accessed),
     }));
@@ -192,17 +196,24 @@ export async function updateResource(
     "name",
     "data",
     "type",
+    "nodeIds",
     "lastAccessed",
   ];
 
   updatableFields.forEach((key) => {
     if (resourceUpdate[key] !== undefined) {
-      const dbKey = key === "lastAccessed" ? "last_accessed" : key;
+      let dbKey = key;
+      if (key === "lastAccessed") {
+        dbKey = "last_accessed";
+      } else if (key === "nodeIds") {
+        dbKey = "node_ids";
+      }
+      
       let value = resourceUpdate[key];
       
       if (key === "lastAccessed" && value instanceof Date) {
         value = value.toISOString();
-      } else if (key === "data") {
+      } else if (key === "data" || key === "nodeIds") {
         value = JSON.stringify(value);
       }
       
@@ -238,6 +249,7 @@ export async function updateResource(
       name: row.name,
       data: JSON.parse(row.data),
       type: row.type as ResourceType,
+      nodeIds: row.node_ids ? JSON.parse(row.node_ids) : [],
       created: new Date(row.created),
       lastAccessed: new Date(row.last_accessed),
     };
@@ -288,11 +300,124 @@ export async function getResourcesByType(
       name: row.name,
       data: JSON.parse(row.data),
       type: row.type as ResourceType,
+      nodeIds: row.node_ids ? JSON.parse(row.node_ids) : [],
       created: new Date(row.created),
       lastAccessed: new Date(row.last_accessed),
     }));
   } catch (error) {
     logger.error(`Error getting resources by type ${type}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Associates a node with a resource
+ * @param resourceId The ID of the resource
+ * @param nodeId The ID of the node
+ */
+export async function addResourceNode(
+  resourceId: ResourceId,
+  nodeId: string,
+): Promise<void> {
+  const client = await getConnection();
+  try {
+    await client.query(
+      `INSERT INTO resource_nodes (resource_id, node_id, data)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (resource_id, node_id) DO UPDATE SET data = $3`,
+      [resourceId, nodeId, data ? JSON.stringify(data) : null]
+    );
+    logger.debug(`Added node ${nodeId} to resource ${resourceId}`);
+  } catch (error) {
+    logger.error(`Error adding node ${nodeId} to resource ${resourceId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Removes the association between a resource and a node
+ * @param resourceId The ID of the resource
+ * @param nodeId The ID of the node
+ */
+export async function removeResourceNode(
+  resourceId: ResourceId,
+  nodeId: string,
+): Promise<void> {
+  const client = await getConnection();
+  try {
+    await client.query(
+      `DELETE FROM resource_nodes 
+       WHERE resource_id = $1 AND node_id = $2`,
+      [resourceId, nodeId]
+    );
+    logger.debug(`Removed node ${nodeId} from resource ${resourceId}`);
+  } catch (error) {
+    logger.error(`Error removing node ${nodeId} from resource ${resourceId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Gets all nodes associated with a resource
+ * @param resourceId The ID of the resource
+ * @returns Array of nodes associated with the resource
+ */
+export async function getResourceNodes(
+  resourceId: ResourceId,
+): Promise<Node[]> {
+  const client = await getConnection();
+  try {
+    const result = await client.query(
+      `SELECT n.* FROM nodes n
+       JOIN resource_nodes rn ON n.nodeid = rn.node_id
+       WHERE rn.resource_id = $1`,
+      [resourceId]
+    );
+    
+    return result.rows.map((row: any) => ({
+      nodeId: row.nodeid,
+      name: row.name,
+      parentIds: row.parent_ids ? JSON.parse(row.parent_ids) : [],
+      childIds: row.child_ids ? JSON.parse(row.child_ids) : [],
+      temp: row.temp || false,
+      created: new Date(row.created),
+      lastAccessed: new Date(row.last_accessed),
+    }));
+  } catch (error) {
+    logger.error(`Error getting nodes for resource ${resourceId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Gets all resources associated with a node
+ * @param nodeId The ID of the node
+ * @returns Array of resources associated with the node
+ */
+export async function getNodeResources(
+  nodeId: string,
+): Promise<Resource[]> {
+  const client = await getConnection();
+  try {
+    const result = await client.query(
+      `SELECT r.* FROM resources r
+       JOIN resource_nodes rn ON r.id = rn.resource_id
+       WHERE rn.node_id = $1
+       ORDER BY r.name`,
+      [nodeId]
+    );
+    
+    return result.rows.map((row: any) => ({
+      id: row.id as ResourceId,
+      name: row.name,
+      data: JSON.parse(row.data),
+      type: row.type as ResourceType,
+      nodeIds: [], // Will be populated by separate query if needed
+      created: new Date(row.created),
+      lastAccessed: new Date(row.last_accessed),
+    }));
+  } catch (error) {
+    logger.error(`Error getting resources for node ${nodeId}:`, error);
     throw error;
   }
 }
