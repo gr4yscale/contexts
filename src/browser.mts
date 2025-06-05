@@ -6,8 +6,6 @@ import { getAllNodes } from "./models/node.mts";
 import { getWorkspaceById } from "./models/workspace.mts";
 
 // make action for storing browser snapshots to all nodes
-// ui for executing global actions can be copied from linkgroups
-// ui for executing actions on nodes can be copied from linkgroups
 
 // dont forget hotkey: end, end (current node actions)
 
@@ -42,7 +40,6 @@ const getWorkspaceIdsAndTitles = async () => {
     const title = l.slice(21);
     return { workspaceId, title };
   });
-  //console.log(meta)
   return meta;
 };
 
@@ -88,6 +85,7 @@ const mapWindowsToNodes = async (): Promise<Window[]> => {
 };
 
 export const storeBrowserStates = async () => {
+  const browserStates = []
   const windows = await mapWindowsToNodes();
 
   const allNodes = await getAllNodes();
@@ -96,17 +94,16 @@ export const storeBrowserStates = async () => {
       (w) => w.nodeId === node.nodeId,
     );
     const browserState: BrowserState = {
-      windows: windowsForNode,
+      windows: windowsForNode, // windows and tabs
       created: new Date(),
       accessed: new Date(),
     };
-    node.browserStates.push(browserState);
+    browserStates.push(browserState);
     // TOFIX: prune oldest browserState if > 10 stored
   }
 
-  console.log("********************************************");
-  console.log("******** browser states stored *************");
-  console.log("********************************************");
+  console.log('****** browser states: ******')
+  console.log(browserStates) 
 };
 
 const windowAlreadyOpen = (
