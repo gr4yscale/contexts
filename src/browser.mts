@@ -1,9 +1,9 @@
 import { $, fs } from "zx";
-import { nodeByDwmTag } from "./state.mts";
 import { NodeId } from "./types.mts";
 import { activateNode } from "./commands/navigation.mts";
 import { retryAsync, RetryStatus } from "./retry-async.mts";
-import { getActiveNodes } from "./db.mts";
+import { getAllNodes } from "./models/node.mts";
+import { getWorkspaceById } from "./models/workspace.mts";
 
 // make action for storing browser snapshots to all nodes
 // ui for executing global actions can be copied from linkgroups
@@ -33,14 +33,14 @@ export type BrowserState = {
   accessed: Date;
 };
 
-const getDwmTagsAndTitles = async () => {
+const getWorkspaceIdsAndTitles = async () => {
   const result = await $`wmctrl -l | grep 'Firefox'`;
   const stdout = result.stdout;
   const lines = stdout.split("\n");
   const meta = lines.map((l) => {
-    const dwmTag = l.slice(11, 14);
+    const workspaceId = parseInt(l.slice(11, 14).trim(), 10);
     const title = l.slice(21);
-    return { dwmTag, title };
+    return { workspaceId, title };
   });
   //console.log(meta)
   return meta;
@@ -50,7 +50,7 @@ const getWindowsAndTabs = () => {
   const filepath = `/home/gr4yscale/TabFS/fs/mnt/windows_with_tabs.json`;
   const contents = fs.readFileSync(filepath).toString("utf8");
   const details = JSON.parse(contents) as TabFSResponse;
-  // tofix use zod for validation here
+  // TOFIX use zod for validation here?
 
   return details.map((window) => {
     // sort the tabs by their index
@@ -60,16 +60,25 @@ const getWindowsAndTabs = () => {
   });
 };
 
+const nodeByWorkspaceId = async (workspaceId: number) => {
+  const workspace = await getWorkspaceById(workspaceId);
+  if (workspace && workspace.nodeId) {
+    const allNodes = await getAllNodes();
+    return allNodes.find(node => node.nodeId === workspace.nodeId);
+  }
+  return null;
+};
+
 const mapWindowsToNodes = async (): Promise<Window[]> => {
-  const dwmTagsAndTitles = await getDwmTagsAndTitles();
+  const workspaceIdsAndTitles = await getWorkspaceIdsAndTitles();
   const windows = getWindowsAndTabs();
 
   for (const window of windows) {
-    const dwmTag = dwmTagsAndTitles.find((t) => t.title === window.title)
-      ?.dwmTag;
-    if (dwmTag) {
+    const workspaceId = workspaceIdsAndTitles.find((t) => t.title === window.title)
+      ?.workspaceId;
+    if (workspaceId) {
       //console.log(window);
-      const node = nodeByDwmTag(Number(dwmTag));
+      const node = await nodeByWorkspaceId(workspaceId);
       if (node) {
         window.nodeId = node.nodeId;
       }
@@ -81,8 +90,8 @@ const mapWindowsToNodes = async (): Promise<Window[]> => {
 export const storeBrowserStates = async () => {
   const windows = await mapWindowsToNodes();
 
-  const activeNodes = await getActiveNodes();
-  for (const node of activeNodes) {
+  const allNodes = await getAllNodes();
+  for (const node of allNodes) {
     const windowsForNode = windows.filter(
       (w) => w.nodeId === node.nodeId,
     );
@@ -130,7 +139,7 @@ const openBrowserWindowForUrls = async (urls: string[]) => {
 
 const findIt = async (firstTabTitle: string) => {
   return new Promise(async (resolve, reject) => {
-    const res = await getDwmTagsAndTitles();
+    const res = await getWorkspaceIdsAndTitles();
     if (res) {
       console.log(res);
       console.log(`trying to find ${firstTabTitle}`);
@@ -162,8 +171,8 @@ export const loadLastBrowserStateForActiveNodes = async () => {
   //   timeout: 5 * 1000,
   // });
 
-  const activeNodes = await getActiveNodes();
-  for (const node of activeNodes) {
+  const allNodes = await getAllNodes();
+  for (const node of allNodes) {
     const [lastBrowserState] = node.browserStates.slice(-1);
     // open windows which haven't already been opened in this node
     for (const window of lastBrowserState.windows) {
@@ -224,14 +233,14 @@ export const loadLastBrowserStateForActiveNodes = async () => {
 
 // Window { idTabFs, title, links[] }
 
-// store dict: dwmTags[] to Titles for firefox windows: wmctrl -l | g Firefox
+// store dict: workspaceIds[] to Titles for firefox windows: wmctrl -l | g Firefox
 // store Windows[].Links[] with TabFS $
 // foreach Window
-//   - find dwmTag where dwmTagsToTitles.contains(w.title)
-//  store dwmTag : Links[]
+//   - find workspaceId where workspaceIdsToTitles.contains(w.title)
+//  store workspaceId : Links[]
 
-// map Windows[].Links[] to dwmTags[]
+// map Windows[].Links[] to workspaceIds[]
 
-// foreach dwmTag
+// foreach workspaceId
 //   - find the Node associated with it
 //   - store lists of Links in browserState
