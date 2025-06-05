@@ -1,8 +1,8 @@
 import { $, fs } from "zx";
 import { NodeId } from "./types.mts";
-import { activateNode } from "./commands/navigation.mts";
+import { activateNode } from "./actions/navigation.mts";
 import { retryAsync, RetryStatus } from "./retry-async.mts";
-import { getAllNodes } from "./models/node.mts";
+import { getAllNodes, getCurrentNode } from "./models/node.mts";
 import { getWorkspaceById } from "./models/workspace.mts";
 
 // make action for storing browser snapshots to all nodes
@@ -84,7 +84,7 @@ const mapWindowsToNodes = async (): Promise<Window[]> => {
   return windows;
 };
 
-export const storeBrowserStates = async () => {
+export const getBrowserStates = async () => {
   const browserStates = []
   const windows = await mapWindowsToNodes();
 
@@ -103,8 +103,33 @@ export const storeBrowserStates = async () => {
   }
 
   console.log('****** browser states: ******')
-  console.log(browserStates) 
+  console.log(browserStates)
+
+  return browserStates
 };
+
+
+export const getBrowserStateForCurrentNode = async (): Promise<BrowserState | null> => {
+  const currentNode = await getCurrentNode();
+  if (!currentNode) {
+    return null;
+  }
+
+  const windows = await mapWindowsToNodes();
+  const windowsForNode = windows.filter(
+    (w) => w.nodeId === currentNode.nodeId,
+  );
+
+  const browserState: BrowserState = {
+    windows: windowsForNode,
+    created: new Date(),
+    accessed: new Date(),
+  };
+
+  return browserState;
+};
+
+
 
 const windowAlreadyOpen = (
   browserStateWindow: Window,
