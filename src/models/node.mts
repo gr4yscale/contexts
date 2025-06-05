@@ -20,11 +20,8 @@ export enum NodeTreeFilter {
 // Define NodeCreate type as a partial of Node with required fields
 export type NodeCreate = {
   name: string;
-  orgId?: string;
-  orgText?: string;
   created?: Date;
   lastAccessed?: Date;
-  active?: boolean;
   parentNodeIds?: string[];
   temp?: boolean;
   workspaceId?: string;
@@ -34,10 +31,8 @@ export async function createNode(
   node: NodeCreate,
 ): Promise<string> {
   const client = await getConnection();
-  const { orgId, orgText, name, parentNodeIds } = node;
+  const { name, parentNodeIds } = node;
 
-  // Use provided values or defaults
-  const active = node.active ?? true;
   const nodeId = nanoid();
 
   try {
@@ -63,17 +58,13 @@ export async function createNode(
     await client.query(
       `
               INSERT INTO nodes (
-                  nodeId, orgId, orgText, name, created, lastAccessed,
-                  active, temp
+                  nodeId, name, created, lastAccessed, temp
               ) VALUES 
-              ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, $5, $6);
+              ($1, $2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, $3);
           `,
       [
         nodeId,
-        orgId ?? "",
-        orgText ?? "",
         name,
-        active,
         temp,
       ],
     );
@@ -170,12 +161,9 @@ export async function getNodeById(
     const row = result.rows[0];
     return {
       nodeId: row.nodeid,
-      orgId: row.orgid,
-      orgText: row.orgtext,
       name: row.name,
       created: new Date(row.created),
       lastAccessed: new Date(row.lastaccessed),
-      active: row.active,
       parentNodeId: row.parent_id,
       temp: row.temp,
     };
@@ -196,13 +184,11 @@ export async function getAllNodes(): Promise<Node[]> {
 
     return result.rows.map((row: any) => ({
       nodeId: row.nodeid,
-      orgId: row.orgid,
-      orgText: row.orgtext,
       name: row.name,
       created: new Date(row.created),
       lastAccessed: new Date(row.lastaccessed),
-      active: row.active,
       parentNodeId: row.parent_id,
+      temp: row.temp,
     }));
   } catch (error) {
     logger.error("Error getting all nodes:", error);
@@ -219,11 +205,8 @@ export async function updateNode(
     const values: any[] = [];
 
     const {
-      orgId,
-      orgText,
       name,
       lastAccessed,
-      active,
       nodeId,
       parentNodeId,
       temp,
@@ -232,11 +215,8 @@ export async function updateNode(
 
     const fieldMappings: [string, any][] = [
       ["parent_id", parentNodeId],
-      ["orgid", orgId],
-      ["orgtext", orgText],
       ["name", name],
       ["lastaccessed", lastAccessed?.toISOString()],
-      ["active", active],
       ["temp", temp],
       ["workspace_id", workspaceId],
     ];
@@ -304,32 +284,6 @@ export async function deleteNode(
   }
 }
 
-export async function getActiveNodes(): Promise<Node[]> {
-  try {
-    const client = await getConnection();
-    const result = await client.query(
-      "SELECT * FROM nodes WHERE active = true;",
-    );
-
-    if (result.rows.length === 0) {
-      return [];
-    }
-
-    return result.rows.map((row: any) => ({
-      nodeId: row.nodeid,
-      orgId: row.orgid,
-      orgText: row.orgtext,
-      name: row.name,
-      created: new Date(row.created),
-      lastAccessed: new Date(row.lastaccessed),
-      active: row.active,
-      parentNodeId: row.parent_id,
-    }));
-  } catch (error) {
-    logger.error("Error getting active nodes:", error);
-    throw error;
-  }
-}
 
 export async function updateNodeHistory(
   currentNodeId: string,
@@ -448,13 +402,11 @@ export async function getChildNodes(
 
     return result.rows.map((row: any) => ({
       nodeId: row.nodeid,
-      orgId: row.orgid,
-      orgText: row.orgtext,
       name: row.name,
       created: new Date(row.created),
       lastAccessed: new Date(row.lastaccessed),
-      active: row.active,
       parentNodeId: row.parent_id,
+      temp: row.temp,
     }));
   } catch (error) {
     logger.error("Error getting child nodes:", error);
@@ -564,13 +516,11 @@ export async function getParentNodes(
 
     return result.rows.map((row: any) => ({
       nodeId: row.nodeid,
-      orgId: row.orgid,
-      orgText: row.orgtext,
       name: row.name,
       created: new Date(row.created),
       lastAccessed: new Date(row.lastaccessed),
-      active: row.active,
       parentNodeId: row.parent_id,
+      temp: row.temp,
     }));
   } catch (error) {
     logger.error("Error getting parent nodes:", error);
@@ -720,12 +670,9 @@ export async function nodeTree(
         -- Base case: select root nodes (no parents in relationships table) with filter applied
         SELECT 
           n.nodeid, 
-          n.orgid, 
-          n.orgtext, 
           n.name, 
           n.created, 
           n.lastaccessed, 
-          n.active, 
           n.parent_id,
           n.temp,
           0 AS depth,
@@ -740,12 +687,9 @@ export async function nodeTree(
         -- Recursive case: select children and increment depth
         SELECT 
           n.nodeid, 
-          n.orgid, 
-          n.orgtext, 
           n.name, 
           n.created, 
           n.lastaccessed, 
-          n.active, 
           n.parent_id,
           n.temp,
           nt.depth + 1 AS depth,
@@ -760,17 +704,14 @@ export async function nodeTree(
       
       SELECT DISTINCT
         nodeid, 
-        orgid, 
-        orgtext, 
         name, 
         created, 
         lastaccessed, 
-        active, 
         parent_id,
         temp,
         MIN(depth) as depth  -- Use minimum depth if node appears multiple times
       FROM node_tree
-      GROUP BY nodeid, orgid, orgtext, name, created, lastaccessed, active, parent_id, temp
+      GROUP BY nodeid, name, created, lastaccessed, parent_id, temp
       ORDER BY 
         depth,  -- Order by depth first
         lastaccessed DESC;  -- Then by last accessed
@@ -782,12 +723,9 @@ export async function nodeTree(
 
     const mappedResults = result.rows.map((row: any) => ({
       nodeId: row.nodeid,
-      orgId: row.orgid,
-      orgText: row.orgtext,
       name: row.name,
       created: new Date(row.created),
       lastAccessed: new Date(row.lastaccessed),
-      active: row.active,
       parentNodeId: row.parent_id,
       temp: row.temp,
       depth: row.depth,
