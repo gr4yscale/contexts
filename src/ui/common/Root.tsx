@@ -20,6 +20,7 @@ import CurrentNodeAssignToParent from "../CurrentNodeAssignToParent.tsx";
 import CurrentNodeCreateChild from "../CurrentNodeCreateChild.tsx";
 import CurrentNodeRename from "../CurrentNodeRename.tsx";
 import CurrentNodeDelete from "../CurrentNodeDelete.tsx";
+import CurrentNodeBrowserState from "../CurrentNodeBrowserState.tsx";
 import NodesPrune from "../NodesPrune.tsx";
 import Testbed from "../Testbed.tsx";
 import ResourceNavigate from "../ResourceNavigate.tsx";
@@ -46,6 +47,7 @@ const routes = [
   },
   { path: "/currentNodeRename", component: CurrentNodeRename },
   { path: "/currentNodeDelete", component: CurrentNodeDelete },
+  { path: "/currentNodeBrowserState", component: CurrentNodeBrowserState },
   { path: "/nodesPrune", component: NodesPrune },
   { path: "/testbed", component: Testbed },
   { path: "/exaSearch", component: ExaSearch }, // New route
@@ -107,6 +109,9 @@ const Root: React.FC = () => {
           break;
         case "currentNodeDelete":
           setRoutePath("/currentNodeDelete");
+          break;
+        case "currentNodeBrowserState":
+          setRoutePath("/currentNodeBrowserState");
           break;
         case "nodesPrune":
           setRoutePath("/nodesPrune");

@@ -198,6 +198,15 @@ export const navigateExaSearch: NavigationAction = {
   },
 };
 
+export const navigateCurrentNodeBrowserState: NavigationAction = {
+  id: "currentNodeBrowserState",
+  name: "Current Node Browser State",
+  type: ActionType.NAVIGATION,
+  handler: async () => {
+    await showTUI();
+  },
+};
+
 registerAction(navigateGlobalLeader);
 registerAction(navigateTestbed);
 registerAction(navigateNodeNavigate);
@@ -208,3 +217,4 @@ registerAction(navigateSendWindowToAnotherNodeAction);
 registerAction(navigateActivateNodeAction);
 registerAction(navigateResourceNavigate);
 registerAction(navigateExaSearch);
+registerAction(navigateCurrentNodeBrowserState);

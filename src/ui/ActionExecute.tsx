@@ -18,7 +18,7 @@ import {
   currentNodeDestroyAction,
 } from "../actions/currentNode.mts";
 
-import { navigateExaSearch } from "../actions/navigation.mts";
+import { navigateExaSearch, navigateCurrentNodeBrowserState } from "../actions/navigation.mts";
 
 import { nodesPrune } from "../actions/node-bulk.mts";
 
@@ -33,6 +33,7 @@ const ActionExecute: React.FC<Props> = ({ keys = "asdfghjkl;" }) => {
 
   const [actions, setActions] = useState<Action[]>([
     navigateExaSearch,
+    navigateCurrentNodeBrowserState,
     nodesPrune,
     runFirefoxAction,
     runEmacsAction,
