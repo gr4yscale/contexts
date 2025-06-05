@@ -29,7 +29,6 @@ export type Node = {
   name: string;
   created: Date;
   lastAccessed: Date;
-  parentNodeId?: string;
   temp?: boolean;
 };
 
