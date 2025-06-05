@@ -46,16 +46,10 @@ testSuite("Resource Model Integration Tests", () => {
   // Test node data
   const testNode1: NodeCreate = {
     name: "Test Node 1",
-    active: true,
-    orgId: "org-id-1",
-    orgText: "* Test Org Text 1",
   };
 
   const testNode2: NodeCreate = {
     name: "Test Node 2",
-    active: true,
-    orgId: "org-id-2",
-    orgText: "* Test Org Text 2",
   };
 
   // Setup database and test environment

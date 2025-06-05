@@ -36,9 +36,6 @@ testSuite("Node Model Integration Tests", () => {
     name: "Test Node 1",
     created: new Date(),
     lastAccessed: new Date(),
-    active: true,
-    orgId: "org-id-1",
-    orgText: "* Test Org Text 1",
   };
 
   const testNode2: Node = {
@@ -46,9 +43,6 @@ testSuite("Node Model Integration Tests", () => {
     name: "Test Node 2",
     created: new Date(),
     lastAccessed: new Date(),
-    active: false,
-    orgId: "org-id-2",
-    orgText: "* Test Org Text 2",
   };
 
   // Setup database and test environment
@@ -110,9 +104,6 @@ testSuite("Node Model Integration Tests", () => {
     expect(node).toBeDefined();
     expect(node?.nodeId).toBe(nodeId);
     expect(node?.name).toBe(testNode1.name);
-    expect(node?.orgId).toBe(testNode1.orgId);
-    expect(node?.orgText).toBe(testNode1.orgText);
-    expect(node?.active).toBe(testNode1.active);
   });
 
   it("should get an node by ID", async () => {
@@ -126,9 +117,6 @@ testSuite("Node Model Integration Tests", () => {
     expect(node).toBeDefined();
     expect(node?.nodeId).toBe(nodeId);
     expect(node?.name).toBe(testNode1.name);
-    expect(node?.orgId).toBe(testNode1.orgId);
-    expect(node?.orgText).toBe(testNode1.orgText);
-    expect(node?.active).toBe(testNode1.active);
   });
 
   it("should return null when getting a non-existent node", async () => {
@@ -173,8 +161,6 @@ testSuite("Node Model Integration Tests", () => {
     await updateNode({
       nodeId: nodeId,
       name: updatedName,
-      orgText: updatedOrgText,
-      active: false,
     });
 
     // Get the updated node
@@ -183,10 +169,6 @@ testSuite("Node Model Integration Tests", () => {
     // Verify the node was updated
     expect(node).toBeDefined();
     expect(node?.name).toBe(updatedName);
-    expect(node?.orgText).toBe(updatedOrgText);
-    expect(node?.active).toBe(false);
-    // Verify other fields weren't changed
-    expect(node?.orgId).toBe(testNode1.orgId);
   });
 
   it("should delete an node", async () => {
@@ -535,9 +517,6 @@ testSuite("Node Model Integration Tests", () => {
     const testNode3: NodeCreate = {
       nodeId: "test-node-3",
       name: "Test Node 3",
-      active: true,
-      orgId: "org-id-3",
-      orgText: "* Test Org Text 3",
     };
     const nodeId3 = await createNode(testNode3);
 

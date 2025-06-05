@@ -39,9 +39,6 @@ testSuite("Context Model Integration Tests", () => {
     name: "Test Node 1",
     created: new Date(),
     lastAccessed: new Date(),
-    active: true,
-    orgId: "org-id-1",
-    orgText: "* Test Org Text 1",
   };
 
   const testNode2: Node = {
@@ -49,9 +46,6 @@ testSuite("Context Model Integration Tests", () => {
     name: "Test Node 2",
     created: new Date(),
     lastAccessed: new Date(),
-    active: false,
-    orgId: "org-id-2",
-    orgText: "* Test Org Text 2",
   };
 
   // Setup database and test environment
@@ -321,11 +315,9 @@ testSuite("Context Model Integration Tests", () => {
 
     expect(node1).toBeDefined();
     expect(node1?.name).toBe(testNode1.name);
-    expect(node1?.active).toBe(testNode1.active);
 
     expect(node2).toBeDefined();
     expect(node2?.name).toBe(testNode2.name);
-    expect(node2?.active).toBe(testNode2.active);
   });
 
   it("should handle empty results when getting context nodes", async () => {

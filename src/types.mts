@@ -26,12 +26,9 @@ export interface Context {
 
 export type Node = {
   nodeId: string;
-  orgId?: string;
-  orgText?: string;
   name: string;
   created: Date;
   lastAccessed: Date;
-  active: boolean;
   parentNodeId?: string;
   temp?: boolean;
 };
