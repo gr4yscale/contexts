@@ -13,6 +13,7 @@ type Tab = {
   url: string;
   title: string;
   index: number;
+  active?: boolean;
 };
 
 type Window = {
@@ -260,6 +261,17 @@ export const loadLastBrowserStateForActiveNodes = async () => {
 // foreach Window
 //   - find workspaceId where workspaceIdsToTitles.contains(w.title)
 //  store workspaceId : Links[]
+
+export const isTabActive = async (tab: Tab): Promise<boolean> => {
+  try {
+    const filepath = `/home/gr4yscale/TabFS/fs/mnt/tabs/last-focused/url.txt`;
+    const contents = await fs.readFile(filepath, 'utf8');
+    return contents.trim() === tab.url;
+  } catch (error) {
+    // If file doesn't exist or can't be read, assume tab is not active
+    return false;
+  }
+};
 
 // map Windows[].Links[] to workspaceIds[]
 

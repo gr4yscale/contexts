@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Box, Text } from "ink";
 import CoreList, { ListItem } from "./common/CoreList.tsx";
 import { getBrowserStateForCurrentNode } from "../browser.mts";
+import { isTabActive } from "../browser.mts";
 import { executeAction } from "../actions.mts";
 
 const CurrentNodeBrowserState: React.FC = () => {
@@ -23,7 +24,7 @@ const CurrentNodeBrowserState: React.FC = () => {
       // Create items for each window and its tabs
       const newItems: ListItem[] = [];
       
-      browserState.windows.forEach((window, windowIndex) => {
+      for (const [windowIndex, window] of browserState.windows.entries()) {
         // Add window header
         newItems.push({
           id: `window-${windowIndex}`,
@@ -32,16 +33,18 @@ const CurrentNodeBrowserState: React.FC = () => {
         });
 
         // Add tabs for this window
-        window.tabs.forEach((tab, tabIndex) => {
+        for (const [tabIndex, tab] of window.tabs.entries()) {
+          const isActive = await isTabActive(tab);
+          const activePrefix = isActive ? "*** " : "";
           const truncatedTitle = tab.title.length > 80 ? tab.title.substring(0, 77) + '...' : tab.title;
           const truncatedUrl = tab.url.length > 80 ? tab.url.substring(0, 77) + '...' : tab.url;
           newItems.push({
             id: `window-${windowIndex}-tab-${tabIndex}`,
-            display: `  └─ ${truncatedTitle} - ${truncatedUrl}`,
+            display: `  └─ ${activePrefix}${truncatedTitle} - ${truncatedUrl}`,
             data: { type: 'tab', tab, window },
           });
-        });
-      });
+        }
+      }
 
       setItems(newItems);
       setNodeName("Current Node");
