@@ -207,6 +207,15 @@ export const navigateCurrentNodeBrowserState: NavigationAction = {
   },
 };
 
+export const navigateResourceCreateLink: NavigationAction = {
+  id: "resourceCreateLink",
+  name: "Resource Create Link",
+  type: ActionType.NAVIGATION,
+  handler: async () => {
+    await showTUI();
+  },
+};
+
 registerAction(navigateGlobalLeader);
 registerAction(navigateTestbed);
 registerAction(navigateNodeNavigate);
@@ -218,3 +227,4 @@ registerAction(navigateActivateNodeAction);
 registerAction(navigateResourceNavigate);
 registerAction(navigateExaSearch);
 registerAction(navigateCurrentNodeBrowserState);
+registerAction(navigateResourceCreateLink);

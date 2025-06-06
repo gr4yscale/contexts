@@ -24,6 +24,7 @@ import CurrentNodeBrowserState from "../CurrentNodeBrowserState.tsx";
 import NodesPrune from "../NodesPrune.tsx";
 import Testbed from "../Testbed.tsx";
 import ResourceNavigate from "../ResourceNavigate.tsx";
+import ResourceCreateLink from "../ResourceCreateLink.tsx";
 import ExaSearch from "../ExaSearch.tsx"; // New import
 
 // consider adding props here that would set initial state of NodeRoot
@@ -50,6 +51,7 @@ const routes = [
   { path: "/currentNodeBrowserState", component: CurrentNodeBrowserState },
   { path: "/nodesPrune", component: NodesPrune },
   { path: "/testbed", component: Testbed },
+  { path: "/resourceCreateLink", component: ResourceCreateLink },
   { path: "/exaSearch", component: ExaSearch }, // New route
 ];
 
@@ -118,6 +120,9 @@ const Root: React.FC = () => {
           break;
         case "testbed":
           setRoutePath("/testbed");
+          break;
+        case "resourceCreateLink":
+          setRoutePath("/resourceCreateLink");
           break;
         case "exaSearchNavigate": // Action to navigate to the Exa search UI
           setRoutePath("/exaSearch");
