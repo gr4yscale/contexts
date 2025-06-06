@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Box, Text } from "ink";
-import { KeymapInstance } from "../ui/common/Keymapping.mts";
+import { KeymapConfig, key } from "./common/Keymapping.mts";
+import { KeysContext } from "./common/Context.mts";
 import { getActiveTabDetails, ActiveTabDetails } from "../browser.mts";
 import { createResource, ResourceType } from "../models/resource.mts";
 
@@ -13,6 +14,8 @@ const ResourceCreateLink: React.FC<ResourceCreateLinkProps> = ({ onKeyPress }) =
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [created, setCreated] = useState(false);
+  
+  const { keymap } = useContext(KeysContext);
 
   useEffect(() => {
     const fetchTabDetails = async () => {
@@ -48,16 +51,25 @@ const ResourceCreateLink: React.FC<ResourceCreateLinkProps> = ({ onKeyPress }) =
     }
   };
 
-  const keymap = new KeymapInstance();
-  keymap.bind("`", () => {
-    handleCreateResource();
-    onKeyPress?.("`");
-  });
-
   useEffect(() => {
-    keymap.enable();
-    return () => keymap.disable();
-  }, [keymap]);
+    const keymapConfig: KeymapConfig = [
+      {
+        sequence: [key("`")],
+        name: "createResource",
+        handler: () => {
+          handleCreateResource();
+          onKeyPress?.("`");
+        },
+        description: "Create resource from current tab"
+      }
+    ];
+
+    keymap.pushKeymap(keymapConfig);
+
+    return () => {
+      keymap.popKeymap();
+    };
+  }, [keymap, onKeyPress]);
 
   if (loading) {
     return (
