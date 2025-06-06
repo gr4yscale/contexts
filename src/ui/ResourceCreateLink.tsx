@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Box, Text } from "ink";
+import * as logger from "../logger.mts";
 import { KeymapConfig, key } from "./common/Keymapping.mts";
 import { KeysContext } from "./common/Context.mts";
 import { getActiveTabDetails, ActiveTabDetails } from "../browser.mts";
 import { createResource, ResourceType } from "../models/resource.mts";
 
 interface ResourceCreateLinkProps {
-  onKeyPress?: (key: string) => void;
 }
 
-const ResourceCreateLink: React.FC<ResourceCreateLinkProps> = ({ onKeyPress }) => {
+const ResourceCreateLink: React.FC<ResourceCreateLinkProps> = ({ }) => {
   const [tabDetails, setTabDetails] = useState<ActiveTabDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -23,7 +23,7 @@ const ResourceCreateLink: React.FC<ResourceCreateLinkProps> = ({ onKeyPress }) =
         const details = await getActiveTabDetails();
         setTabDetails(details);
       } catch (error) {
-        console.error("Error fetching tab details:", error);
+        logger.error("Error fetching tab details:", error);
       } finally {
         setLoading(false);
       }
@@ -33,7 +33,9 @@ const ResourceCreateLink: React.FC<ResourceCreateLinkProps> = ({ onKeyPress }) =
   }, []);
 
   const handleCreateResource = async () => {
-    if (!tabDetails || creating) return;
+    if (!tabDetails || creating) {
+      return;
+    }
 
     setCreating(true);
     try {
@@ -42,10 +44,9 @@ const ResourceCreateLink: React.FC<ResourceCreateLinkProps> = ({ onKeyPress }) =
         data: { url: tabDetails.url },
         type: ResourceType.LINK,
       });
-      console.log(`Created resource with ID: ${resourceId}`);
       setCreated(true);
     } catch (error) {
-      console.error("Error creating resource:", error);
+      logger.error("Error creating resource:", error);
     } finally {
       setCreating(false);
     }
@@ -54,11 +55,10 @@ const ResourceCreateLink: React.FC<ResourceCreateLinkProps> = ({ onKeyPress }) =
   useEffect(() => {
     const keymapConfig: KeymapConfig = [
       {
-        sequence: [key("`")],
+        sequence: [key("\r", "return")],
         name: "createResource",
-        handler: () => {
-          handleCreateResource();
-          onKeyPress?.("`");
+        handler: async () => {
+          await handleCreateResource();
         },
         description: "Create resource from current tab"
       }
@@ -99,7 +99,7 @@ const ResourceCreateLink: React.FC<ResourceCreateLinkProps> = ({ onKeyPress }) =
       ) : creating ? (
         <Text color="yellow">Creating resource...</Text>
       ) : (
-        <Text>Press ` to create resource</Text>
+        <Text>Press return to create resource</Text>
       )}
     </Box>
   );
