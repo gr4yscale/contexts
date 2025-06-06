@@ -69,7 +69,7 @@ const ResourceCreateLink: React.FC<ResourceCreateLinkProps> = ({ }) => {
     return () => {
       keymap.popKeymap();
     };
-  }, [keymap, onKeyPress]);
+  }, [keymap, handleCreateResource]);
 
   if (loading) {
     return (
