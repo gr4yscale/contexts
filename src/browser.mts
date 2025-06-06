@@ -273,6 +273,36 @@ export const isTabActive = async (tab: Tab): Promise<boolean> => {
   }
 };
 
+export type ActiveTabDetails = {
+  url: string;
+  text: string;
+  title: string;
+  body: string;
+};
+
+export const getActiveTabDetails = async (): Promise<ActiveTabDetails | null> => {
+  try {
+    const basePath = `/home/gr4yscale/TabFS/fs/mnt/tabs/last-focused`;
+    
+    const [url, text, title, body] = await Promise.all([
+      fs.readFile(`${basePath}/url.txt`, 'utf8'),
+      fs.readFile(`${basePath}/text.txt`, 'utf8'),
+      fs.readFile(`${basePath}/title.txt`, 'utf8'),
+      fs.readFile(`${basePath}/body.html`, 'utf8'),
+    ]);
+
+    return {
+      url: url.trim(),
+      text: text.trim(),
+      title: title.trim(),
+      body: body.trim(),
+    };
+  } catch (error) {
+    // If any file doesn't exist or can't be read, return null
+    return null;
+  }
+};
+
 // map Windows[].Links[] to workspaceIds[]
 
 // foreach workspaceId

@@ -66,7 +66,6 @@ const CurrentNodeBrowserState: React.FC = () => {
         <Text>Loading browser state...</Text>
       ) : (
         <Box flexDirection="column">
-          <Text bold>Browser State for {nodeName}</Text>
           {items.length === 0 ? (
             <Text>No browser windows found for current node</Text>
           ) : (
