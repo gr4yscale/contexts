@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import { Box, Text } from "ink";
 
-import { Resource, ResourceType } from "../types.mts";
+import { Resource, ResourceType } from "../models/resource.mts";
 import { getResourcesByType } from "../models/resource.mts";
 import { executeAction } from "../actions.mts";
 import * as logger from "../logger.mts";

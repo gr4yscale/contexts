@@ -1,5 +1,5 @@
 import { Action, ActionType, registerAction as baseRegisterAction, executeAction as baseExecuteAction } from "../actions.mts";
-import { Resource, ResourceType, ResourceId } from "../types.mts";
+import { Resource, ResourceType, ResourceId } from "../models/resource.mts";
 import * as logger from "../logger.mts";
 // Import model functions if actions need to fetch resource details, e.g.:
 // import { getResourceById } from '../models/resource.mts';
