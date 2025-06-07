@@ -26,13 +26,13 @@ const ResourceNavigate: React.FC = () => {
 
   const fetchResources = async () => {
     try {
-      const resources = await getResourcesByType(ResourceType.WEB);
+      const resources = await getResourcesByType(ResourceType.LINK);
 
       const sortedResources = [...resources].sort((a, b) =>
         a.name.localeCompare(b.name)
       );
 
-      logger.debug("Fetched web resources:", sortedResources);
+      logger.debug("Fetched link resources:", sortedResources);
 
       const formattedResources = sortedResources.map((resource) => ({
         id: resource.id,
@@ -43,12 +43,12 @@ const ResourceNavigate: React.FC = () => {
       setLists([
         {
           id: "resources",
-          display: "Web Resources",
+          display: "Link Resources",
           items: formattedResources,
         },
       ]);
     } catch (error) {
-      console.error("Error fetching web resources:", error);
+      console.error("Error fetching link resources:", error);
     } finally {
       setLoading(false);
     }
@@ -103,7 +103,7 @@ const ResourceNavigate: React.FC = () => {
   return (
     <Box borderStyle="single" borderColor="gray">
       {loading ? (
-        <Text>Loading web resources...</Text>
+        <Text>Loading link resources...</Text>
       ) : mode === "items" ? (
         <CoreList
           items={currentListItems}
@@ -127,18 +127,6 @@ const ResourceNavigate: React.FC = () => {
       ) : (
         <CoreList
           items={lists}
-          onSelected={(selectedItems: ListItem[]) => {
-            if (selectedItems.length > 0) {
-              const selectedItem = selectedItems[0];
-              const resource = selectedItem.data as Resource;
-              if (resource && resource.id) {
-                executeAction("activateResource", resource.id);
-              } else {
-                console.error(
-                  "Selected item data is not a valid Resource:",
-                  selectedItem
-                );
-              }
             }
           }}
           multiple={false}
