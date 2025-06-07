@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import { Box, Text } from "ink";
 
 import { Resource, ResourceType } from "../models/resource.mts";
-import { getResourcesByType } from "../models/resource.mts";
+import { getNodeResources } from "../models/resource.mts";
 import { executeAction } from "../actions.mts";
 import * as logger from "../logger.mts";
 
@@ -11,6 +11,7 @@ import { KeysContext } from "./common/Context.mts";
 
 import CoreList, { List, ListItem } from "./common/CoreList.tsx";
 import useListSwitching from "./common/useListSwitching.mts";
+import { useCurrentNode } from "./common/useCurrentNode.mts";
 
 export type Modes = "lists" | "items";
 
@@ -23,11 +24,19 @@ const ResourceNavigate: React.FC = () => {
     useListSwitching(lists);
 
   const [loading, setLoading] = useState(true);
+  const { currentNode } = useCurrentNode();
 
   const fetchResources = async () => {
+    if (!currentNode) {
+      setLoading(false);
+      return;
+    }
+
     try {
-      const linkResources = await getResourcesByType(ResourceType.LINK);
-      const pdfResources = await getResourcesByType(ResourceType.PDF);
+      const resources = await getNodeResources(currentNode.nodeId);
+
+      const linkResources = resources.filter(r => r.type === ResourceType.LINK);
+      const pdfResources = resources.filter(r => r.type === ResourceType.PDF);
 
       const sortedLinkResources = [...linkResources].sort((a, b) =>
         a.name.localeCompare(b.name)
@@ -36,9 +45,6 @@ const ResourceNavigate: React.FC = () => {
       const sortedPdfResources = [...pdfResources].sort((a, b) =>
         a.name.localeCompare(b.name)
       );
-
-      logger.debug("Fetched link resources:", sortedLinkResources);
-      logger.debug("Fetched PDF resources:", sortedPdfResources);
 
       const formattedLinkResources = sortedLinkResources.map((resource) => ({
         id: resource.id,
@@ -65,7 +71,7 @@ const ResourceNavigate: React.FC = () => {
         },
       ]);
     } catch (error) {
-      console.error("Error fetching resources:", error);
+      logger.error("Error fetching resources:", error);
     } finally {
       setLoading(false);
     }
@@ -73,7 +79,7 @@ const ResourceNavigate: React.FC = () => {
 
   useEffect(() => {
     fetchResources();
-  }, []);
+  }, [currentNode]);
 
   // keymapping
   const { keymap } = useContext(KeysContext);
