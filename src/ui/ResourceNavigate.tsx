@@ -19,22 +19,34 @@ const ResourceNavigate: React.FC = () => {
 
   const [lists, setLists] = useState<Array<List>>([]);
 
-  const { currentListItems, currentListIndex, switchList } =
+  const { currentListItems, currentListIndex, switchListByIndex, switchListById } =
     useListSwitching(lists);
 
   const [loading, setLoading] = useState(true);
 
   const fetchResources = async () => {
     try {
-      const resources = await getResourcesByType(ResourceType.LINK);
+      const linkResources = await getResourcesByType(ResourceType.LINK);
+      const pdfResources = await getResourcesByType(ResourceType.PDF);
 
-      const sortedResources = [...resources].sort((a, b) =>
+      const sortedLinkResources = [...linkResources].sort((a, b) =>
         a.name.localeCompare(b.name)
       );
 
-      logger.debug("Fetched link resources:", sortedResources);
+      const sortedPdfResources = [...pdfResources].sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
 
-      const formattedResources = sortedResources.map((resource) => ({
+      logger.debug("Fetched link resources:", sortedLinkResources);
+      logger.debug("Fetched PDF resources:", sortedPdfResources);
+
+      const formattedLinkResources = sortedLinkResources.map((resource) => ({
+        id: resource.id,
+        display: resource.name,
+        data: resource,
+      }));
+
+      const formattedPdfResources = sortedPdfResources.map((resource) => ({
         id: resource.id,
         display: resource.name,
         data: resource,
@@ -42,13 +54,18 @@ const ResourceNavigate: React.FC = () => {
 
       setLists([
         {
-          id: "resources",
+          id: "links",
           display: "Link Resources",
-          items: formattedResources,
+          items: formattedLinkResources,
+        },
+        {
+          id: "pdfs",
+          display: "PDF Resources",
+          items: formattedPdfResources,
         },
       ]);
     } catch (error) {
-      console.error("Error fetching link resources:", error);
+      console.error("Error fetching resources:", error);
     } finally {
       setLoading(false);
     }
@@ -82,7 +99,7 @@ const ResourceNavigate: React.FC = () => {
         description: "Previous list",
         name: "prevList",
         handler: () => {
-          switchList(currentListIndex - 1);
+          switchListByIndex(currentListIndex - 1);
         },
       },
       {
@@ -90,7 +107,7 @@ const ResourceNavigate: React.FC = () => {
         description: "Next list",
         name: "nextList",
         handler: () => {
-          switchList(currentListIndex + 1);
+          switchListByIndex(currentListIndex + 1);
         },
       },
     ]);
@@ -103,7 +120,7 @@ const ResourceNavigate: React.FC = () => {
   return (
     <Box borderStyle="single" borderColor="gray">
       {loading ? (
-        <Text>Loading link resources...</Text>
+        <Text>Loading resources...</Text>
       ) : mode === "items" ? (
         <CoreList
           items={currentListItems}
@@ -127,6 +144,11 @@ const ResourceNavigate: React.FC = () => {
       ) : (
         <CoreList
           items={lists}
+          onSelected={(selectedLists: List[]) => {
+            if (selectedLists.length > 0) {
+              const selectedList = selectedLists[0];
+              switchListById(selectedList.id);
+              setMode("items");
             }
           }}
           multiple={false}

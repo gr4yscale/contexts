@@ -4,13 +4,23 @@ import { ListItem, List } from "./CoreList";
 const useListSwitching = (lists: Array<List>) => {
   const [currentListIndex, setCurrentListIndex] = useState(0);
 
-  const switchList = useCallback(
+  const switchListByIndex = useCallback(
     (index: number) => {
       if (index >= 0 && index < lists.length) {
         setCurrentListIndex(index);
       }
     },
     [lists.length],
+  );
+
+  const switchListById = useCallback(
+    (id: string) => {
+      const index = lists.findIndex(list => list.id === id);
+      if (index !== -1) {
+        setCurrentListIndex(index);
+      }
+    },
+    [lists],
   );
 
   const resetList = useCallback(() => {
@@ -20,7 +30,8 @@ const useListSwitching = (lists: Array<List>) => {
   return {
     currentListIndex,
     currentListItems: lists[currentListIndex]?.items || [],
-    switchList,
+    switchListByIndex,
+    switchListById,
     resetList,
   };
 };
