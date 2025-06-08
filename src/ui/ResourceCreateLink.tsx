@@ -4,7 +4,8 @@ import * as logger from "../logger.mts";
 import { KeymapConfig, key } from "./common/Keymapping.mts";
 import { KeysContext } from "./common/Context.mts";
 import { getActiveTabDetails, ActiveTabDetails } from "../browser.mts";
-import { createResource, ResourceType } from "../models/resource.mts";
+import { createResource, ResourceType, addResourceNode } from "../models/resource.mts";
+import { getCurrentNode } from "../models/node.mts";
 
 interface ResourceCreateLinkProps {
 }
@@ -44,6 +45,12 @@ const ResourceCreateLink: React.FC<ResourceCreateLinkProps> = ({ }) => {
         data: { url: tabDetails.url },
         type: ResourceType.LINK,
       });
+
+      const currentNode = await getCurrentNode();
+      if (currentNode) {
+        await addResourceNode(resourceId, currentNode.nodeId);
+      }
+
       setCreated(true);
     } catch (error) {
       logger.error("Error creating resource:", error);
