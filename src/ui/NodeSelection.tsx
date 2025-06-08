@@ -16,11 +16,13 @@ export type Modes = "lists" | "items";
 interface NodeSelectionProps {
   onSelected: (nodeIds: string[]) => void;
   multiple?: boolean;
+  initialSelection?: string[];
 }
 
 const NodeSelection: React.FC<NodeSelectionProps> = ({ 
   onSelected, 
-  multiple = false 
+  multiple = false,
+  initialSelection = []
 }) => {
   const [mode, setMode] = useState<Modes>("items");
   const [lists, setLists] = useState<Array<List>>([]);
@@ -52,7 +54,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
               id: node.nodeId,
               display: hierarchyPath,
               data: node,
-              selected: false,
+              selected: initialSelection.includes(node.nodeId),
             };
           })
         );

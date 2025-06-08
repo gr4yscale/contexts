@@ -17,6 +17,7 @@ const ResourceCreateLink: React.FC<ResourceCreateLinkProps> = ({ }) => {
   const [creating, setCreating] = useState(false);
   const [created, setCreated] = useState(false);
   const [showNodeSelection, setShowNodeSelection] = useState(false);
+  const [relatedNodeIds, setRelatedNodeIds] = useState<string[]>([]);
   
   const { keymap } = useContext(KeysContext);
 
@@ -57,6 +58,10 @@ const ResourceCreateLink: React.FC<ResourceCreateLinkProps> = ({ }) => {
         await addResourceNode(resourceId, currentNode.nodeId);
       }
 
+      for (const nodeId of relatedNodeIds) {
+        await addResourceNode(resourceId, nodeId);
+      }
+
       setCreated(true);
     } catch (error) {
       logger.error("Error creating resource:", error);
@@ -66,23 +71,33 @@ const ResourceCreateLink: React.FC<ResourceCreateLinkProps> = ({ }) => {
   };
 
   useEffect(() => {
-    const keymapConfig: KeymapConfig = [
-      {
-        sequence: [key("\r", "return")],
-        name: "createResource",
-        handler: async () => {
-          await handleCreateResource();
+    if (!showNodeSelection) {
+      const keymapConfig: KeymapConfig = [
+        {
+          sequence: [key("\r", "return")],
+          name: "createResource",
+          handler: async () => {
+            await handleCreateResource();
+          },
+          description: "Create resource from current tab"
         },
-        description: "Create resource from current tab"
-      }
-    ];
+        {
+          sequence: [key("+")],
+          name: "selectRelatedNodes",
+          handler: () => {
+            setShowNodeSelection(true);
+          },
+          description: "Select related nodes"
+        }
+      ];
 
-    keymap.pushKeymap(keymapConfig);
+      keymap.pushKeymap(keymapConfig);
 
-    return () => {
-      keymap.popKeymap();
-    };
-  }, [keymap, handleCreateResource]);
+      return () => {
+        keymap.popKeymap();
+      };
+    }
+  }, [keymap, handleCreateResource, showNodeSelection]);
 
   if (loading) {
     return (
@@ -97,6 +112,20 @@ const ResourceCreateLink: React.FC<ResourceCreateLinkProps> = ({ }) => {
       <Box flexDirection="column">
         <Text color="red">No active tab found</Text>
       </Box>
+    );
+  }
+
+  if (showNodeSelection) {
+    return (
+      <NodeSelection
+        onSelected={(nodeIds: string[]) => {
+          logger.debug("ResourceCreateLink received selected nodeIds", { nodeIds });
+          setRelatedNodeIds(nodeIds);
+          setShowNodeSelection(false);
+        }}
+        multiple={true}
+        initialSelection={relatedNodeIds}
+      />
     );
   }
 
