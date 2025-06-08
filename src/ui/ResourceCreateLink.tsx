@@ -6,6 +6,7 @@ import { KeysContext } from "./common/Context.mts";
 import { getActiveTabDetails, ActiveTabDetails } from "../browser.mts";
 import { createResource, ResourceType, addResourceNode } from "../models/resource.mts";
 import { getCurrentNode } from "../models/node.mts";
+import NodeSelection from "./NodeSelection.tsx";
 
 interface ResourceCreateLinkProps {
 }
@@ -15,6 +16,7 @@ const ResourceCreateLink: React.FC<ResourceCreateLinkProps> = ({ }) => {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [created, setCreated] = useState(false);
+  const [showNodeSelection, setShowNodeSelection] = useState(false);
   
   const { keymap } = useContext(KeysContext);
 
@@ -23,6 +25,10 @@ const ResourceCreateLink: React.FC<ResourceCreateLinkProps> = ({ }) => {
       try {
         const details = await getActiveTabDetails();
         setTabDetails(details);
+        const currentNode = await getCurrentNode();
+        if (currentNode) {
+          setRelatedNodeIds([currentNode.nodeId]);
+        }
       } catch (error) {
         logger.error("Error fetching tab details:", error);
       } finally {
