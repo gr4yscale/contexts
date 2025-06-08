@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import { Box, Text } from "ink";
 
 import { Node } from "../types.mts";
-import { filteredNodeTree, NodeTreeFilter } from "../models/node.mts";
+import { filteredNodeTree, NodeTreeFilter, formatNodeWithHierarchy } from "../models/node.mts";
 import * as logger from "../logger.mts";
 
 import { KeymapConfig, key } from "./common/Keymapping.mts";
@@ -44,27 +44,33 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
         return lastAccessed >= twoWeeksAgo;
       });
 
-      const formatNodes = (nodeList: Node[]) => 
-        nodeList.map((node) => ({
-          id: node.nodeId,
-          display:
-            "  ".repeat(node.depth || 0) +
-            (node.depth && node.depth > 0 ? "└─ " : "") +
-            node.name,
-          data: node,
-          selected: node.selected,
-        }));
+      const formatNodes = async (nodeList: Node[]) => {
+        return await Promise.all(
+          nodeList.map(async (node) => {
+            const hierarchyPath = await formatNodeWithHierarchy(node, nodes);
+            return {
+              id: node.nodeId,
+              display: hierarchyPath,
+              data: node,
+              selected: false,
+            };
+          })
+        );
+      };
+
+      const formattedRecentNodes = await formatNodes(recentNodes);
+      const formattedAllNodes = await formatNodes(nodes);
 
       setLists([
         {
           id: "recent",
           display: "Recent Nodes",
-          items: formatNodes(recentNodes),
+          items: formattedRecentNodes,
         },
         {
           id: "all",
           display: "All Nodes",
-          items: formatNodes(nodes),
+          items: formattedAllNodes,
         },
       ]);
     } catch (error) {
