@@ -27,6 +27,7 @@ interface CoreListProps {
   multiple?: boolean;
   onSelected?: (selectedItems: any[]) => void;
   initialMode?: Modes;
+  reservedKeys?: string[];
 }
 
 const ITEMS_PER_PAGE = 20;
@@ -37,6 +38,7 @@ const CoreList: React.FC<CoreListProps> = ({
   multiple = false,
   onSelected,
   initialMode = "search",
+  reservedKeys = [],
 }) => {
   const [mode, setMode] = useState<Modes>(initialMode);
 
@@ -202,7 +204,7 @@ const CoreList: React.FC<CoreListProps> = ({
   // handle character input in search mode
   useInput(
     (input, key) => {
-      if (!key.return && input !== "" && !specialKeys.includes(input)) {
+      if (!key.return && input !== "" && !specialKeys.includes(input) && !reservedKeys.includes(input)) {
         appendToSearch(input);
       }
     },
@@ -212,7 +214,7 @@ const CoreList: React.FC<CoreListProps> = ({
   // handle hotkey input in select mode
   useInput(
     (input, key) => {
-      if (!key.return && input !== "" && !specialKeys.includes(input)) {
+      if (!key.return && input !== "" && !specialKeys.includes(input) && !reservedKeys.includes(input)) {
         handleKeyPress(input);
       }
     },

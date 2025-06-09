@@ -226,13 +226,13 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
       // dag mode keybindings
       keymapConfig.push(
         {
-          sequence: [key("h")],
+          sequence: [key("u")],
           description: "Navigate up",
           name: "navigate-up",
           handler: navigateUp,
         },
         {
-          sequence: [key("t")],
+          sequence: [key("'")],
           description: "Toggle navigate/select mode",
           name: "toggle-dag-mode",
           handler: () => {
@@ -258,6 +258,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
           items={currentListItems}
           multiple={multiple}
           initialMode="select"
+          reservedKeys={["'"]}
           onSelected={async (selectedItems: ListItem[]) => {
             if (!initialParentsSelected) {
               // Initial selection of parent nodes - navigate to their children
