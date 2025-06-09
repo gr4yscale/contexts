@@ -32,7 +32,7 @@ interface CoreListProps {
 }
 
 const ITEMS_PER_PAGE = 20;
-const specialKeys = ["\\", "[", "]", "{", "}"];
+const specialKeys = ["\\", "[", "]", "{", "}", "'"];
 
 const CoreList: React.FC<CoreListProps> = ({
   items = [],

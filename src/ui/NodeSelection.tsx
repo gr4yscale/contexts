@@ -256,9 +256,9 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
       ) : viewMode === "dag" ? (
         <CoreList
           items={currentListItems}
-          multiple={multiple}
+          multiple={dagMode === "select" ? multiple : false}
           initialMode="select"
-          reservedKeys={["'"]}
+          reservedKeys={[":"]}
           statusText={dagMode === "navigate" ? "#N" : "#S"}
           onSelected={async (selectedItems: ListItem[]) => {
             if (!initialParentsSelected) {
@@ -267,22 +267,19 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
                 (item) => (item.data as Node).nodeId,
               );
               await navigateToChildren(parentNodeIds);
-            } else if (dagMode === "select" || multiple) {
-              const nodeIds = selectedItems.map(
-                (item) => (item.data as Node).nodeId,
-              );
-              onSelected(nodeIds);
+              return; // Exit early to prevent further processing
+            }
+            
+            if (dagMode === "select") {
+              // In selection mode, update selection state only
+              // onSelected will be called when return key is pressed in CoreList
+              return;
             } else {
-              // In navigate mode, navigate to children if they exist
               const selectedNode = selectedItems[0]?.data as Node;
               if (selectedNode) {
                 const children = await getChildrenNodes([selectedNode.nodeId]);
                 if (children.length > 0) {
-                  // Navigate to children
                   await navigateToChildren([selectedNode.nodeId]);
-                } else {
-                  // No children, select this node
-                  onSelected([selectedNode.nodeId]);
                 }
               }
             }
