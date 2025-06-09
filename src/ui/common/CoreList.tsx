@@ -28,6 +28,7 @@ interface CoreListProps {
   onSelected?: (selectedItems: any[]) => void;
   initialMode?: Modes;
   reservedKeys?: string[];
+  statusText?: string;
 }
 
 const ITEMS_PER_PAGE = 20;
@@ -39,6 +40,7 @@ const CoreList: React.FC<CoreListProps> = ({
   onSelected,
   initialMode = "search",
   reservedKeys = [],
+  statusText,
 }) => {
   const [mode, setMode] = useState<Modes>(initialMode);
 
@@ -269,6 +271,12 @@ const CoreList: React.FC<CoreListProps> = ({
           <>
             <Text> | </Text>
             <Text color="blue">{`(filtered: "${searchString}")`}</Text>
+          </>
+        )}
+        {statusText && (
+          <>
+            <Text> | </Text>
+            <Text color="green">{statusText}</Text>
           </>
         )}
       </Box>

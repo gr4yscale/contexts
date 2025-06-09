@@ -259,6 +259,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
           multiple={multiple}
           initialMode="select"
           reservedKeys={["'"]}
+          statusText={dagMode === "navigate" ? "#N" : "#S"}
           onSelected={async (selectedItems: ListItem[]) => {
             if (!initialParentsSelected) {
               // Initial selection of parent nodes - navigate to their children
