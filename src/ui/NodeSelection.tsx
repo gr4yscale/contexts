@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import { Box, Text } from "ink";
 
 import { Node } from "../types.mts";
-import { filteredNodeTree, NodeTreeFilter, formatNodeWithHierarchy } from "../models/node.mts";
+import { filteredNodeTree, NodeTreeFilter, formatNodeWithHierarchy, getChildNodes } from "../models/node.mts";
 import * as logger from "../logger.mts";
 
 import { KeymapConfig, key } from "./common/Keymapping.mts";
@@ -12,7 +12,8 @@ import CoreList, { List, ListItem } from "./common/CoreList.tsx";
 import useListSwitching from "./common/useListSwitching.mts";
 
 export type Modes = "lists" | "items";
-export type ViewModes = "list" | "ranger";
+export type ViewModes = "list" | "dag";
+export type DagModes = "navigate" | "select";
 
 interface NodeSelectionProps {
   onSelected: (nodeIds: string[]) => void;
@@ -25,13 +26,15 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
   onSelected, 
   multiple = false,
   initialSelection = [],
-  viewMode = "list"
+  viewMode = "dag"
 }) => {
   const [mode, setMode] = useState<Modes>("items");
   const [lists, setLists] = useState<Array<List>>([]);
   const [loading, setLoading] = useState(true);
   const [allNodes, setAllNodes] = useState<Node[]>([]);
   const [currentParentIds, setCurrentParentIds] = useState<string[]>([]);
+  const [dagMode, setDagMode] = useState<DagModes>("navigate");
+  const [initialParentsSelected, setInitialParentsSelected] = useState(false);
 
   const { currentListItems, currentListIndex, switchListByIndex, switchListById } =
     useListSwitching(lists);
@@ -83,14 +86,15 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
           },
         ]);
       } else {
-        // ranger mode - start with root nodes (nodes with no parents)
-        const rootNodes = nodes.filter(node => !node.parentIds || node.parentIds.length === 0);
+        // dag mode - start with root nodes for initial selection
+        const rootNodes = nodes.filter(node => !node.parentNodeId);
         setCurrentParentIds([]);
+        setInitialParentsSelected(false);
         
         setLists([
           {
-            id: "ranger",
-            display: "Nodes",
+            id: "dag",
+            display: "Select Initial Parent Nodes",
             items: rootNodes.map(node => ({
               id: node.nodeId,
               display: node.name,
@@ -107,25 +111,35 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     }
   };
 
-  const getChildrenNodes = (parentIds: string[]) => {
+  const getChildrenNodes = async (parentIds: string[]) => {
     if (parentIds.length === 0) {
       // Return root nodes
-      return allNodes.filter(node => !node.parentIds || node.parentIds.length === 0);
+      return allNodes.filter(node => !node.parentNodeId);
     }
     
-    // Return nodes that have any of the parentIds as their parent
-    return allNodes.filter(node => 
-      node.parentIds && node.parentIds.some(parentId => parentIds.includes(parentId))
+    // Get children from database for each parent
+    const allChildren: Node[] = [];
+    for (const parentId of parentIds) {
+      const children = await getChildNodes(parentId);
+      allChildren.push(...children);
+    }
+    
+    // Remove duplicates
+    const uniqueChildren = allChildren.filter((node, index, self) => 
+      index === self.findIndex(n => n.nodeId === node.nodeId)
     );
+    
+    return uniqueChildren;
   };
 
-  const navigateToChildren = (selectedParentIds: string[]) => {
-    const children = getChildrenNodes(selectedParentIds);
+  const navigateToChildren = async (selectedParentIds: string[]) => {
+    const children = await getChildrenNodes(selectedParentIds);
     setCurrentParentIds(selectedParentIds);
+    setInitialParentsSelected(true);
     
     setLists([
       {
-        id: "ranger",
+        id: "dag",
         display: "Nodes",
         items: children.map(node => ({
           id: node.nodeId,
@@ -137,7 +151,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     ]);
   };
 
-  const navigateUp = () => {
+  const navigateUp = async () => {
     if (currentParentIds.length === 0) return;
     
     // Find the parents of current parent nodes
@@ -147,8 +161,8 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     
     // Get their parent IDs
     const grandParentIds = parentNodes.reduce((acc: string[], node) => {
-      if (node.parentIds) {
-        acc.push(...node.parentIds);
+      if (node.parentNodeId) {
+        acc.push(node.parentNodeId);
       }
       return acc;
     }, []);
@@ -158,9 +172,9 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     
     if (uniqueGrandParentIds.length === 0) {
       // Go back to root
-      navigateToChildren([]);
+      await navigateToChildren([]);
     } else {
-      navigateToChildren(uniqueGrandParentIds);
+      await navigateToChildren(uniqueGrandParentIds);
     }
   };
 
@@ -209,13 +223,21 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
         }
       );
     } else {
-      // ranger mode keybindings
+      // dag mode keybindings
       keymapConfig.push(
         {
           sequence: [key("h")],
           description: "Navigate up",
           name: "navigate-up",
           handler: navigateUp,
+        },
+        {
+          sequence: [key("t")],
+          description: "Toggle navigate/select mode",
+          name: "toggle-dag-mode",
+          handler: () => {
+            setDagMode(dagMode === "navigate" ? "select" : "navigate");
+          },
         }
       );
     }
@@ -225,32 +247,37 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     return () => {
       keymap.popKeymap();
     };
-  }, [viewMode, currentParentIds]);
+  }, [viewMode, currentParentIds, dagMode, currentListIndex, initialParentsSelected]);
 
   return (
     <Box borderStyle="single" borderColor="gray">
       {loading ? (
         <Text>Loading nodes...</Text>
-      ) : viewMode === "ranger" ? (
+      ) : viewMode === "dag" ? (
         <CoreList
           items={currentListItems}
           multiple={multiple}
           initialMode="select"
           onSelected={async (selectedItems: ListItem[]) => {
-            if (multiple) {
-              // In multiple selection mode, just select the items
+            if (!initialParentsSelected) {
+              // Initial selection of parent nodes - navigate to their children
+              const parentNodeIds = selectedItems.map(
+                (item) => (item.data as Node).nodeId,
+              );
+              await navigateToChildren(parentNodeIds);
+            } else if (dagMode === "select" || multiple) {
               const nodeIds = selectedItems.map(
                 (item) => (item.data as Node).nodeId,
               );
               onSelected(nodeIds);
             } else {
-              // In single selection mode, navigate to children if they exist
+              // In navigate mode, navigate to children if they exist
               const selectedNode = selectedItems[0]?.data as Node;
               if (selectedNode) {
-                const children = getChildrenNodes([selectedNode.nodeId]);
+                const children = await getChildrenNodes([selectedNode.nodeId]);
                 if (children.length > 0) {
                   // Navigate to children
-                  navigateToChildren([selectedNode.nodeId]);
+                  await navigateToChildren([selectedNode.nodeId]);
                 } else {
                   // No children, select this node
                   onSelected([selectedNode.nodeId]);
