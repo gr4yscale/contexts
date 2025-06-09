@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useCallback } from "react";
 import { Box, Text } from "ink";
 
 import { Node } from "../types.mts";
@@ -111,7 +111,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     }
   };
 
-  const getChildrenNodes = async (parentIds: string[]) => {
+  const getChildrenNodes = useCallback(async (parentIds: string[]) => {
     if (parentIds.length === 0) {
       // Return root nodes
       return allNodes.filter(node => !node.parentNodeId);
@@ -130,9 +130,9 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     );
     
     return uniqueChildren;
-  };
+  }, [allNodes]);
 
-  const navigateToChildren = async (selectedParentIds: string[]) => {
+  const navigateToChildren = useCallback(async (selectedParentIds: string[]) => {
     const children = await getChildrenNodes(selectedParentIds);
     setCurrentParentIds(selectedParentIds);
     setInitialParentsSelected(true);
@@ -149,9 +149,9 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
         })),
       },
     ]);
-  };
+  }, [getChildrenNodes, initialSelection]);
 
-  const navigateUp = async () => {
+  const navigateUp = useCallback(async () => {
     if (currentParentIds.length === 0) return;
     
     // Find the parents of current parent nodes
@@ -176,7 +176,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     } else {
       await navigateToChildren(uniqueGrandParentIds);
     }
-  };
+  }, [currentParentIds, allNodes, navigateToChildren]);
 
   useEffect(() => {
     fetchNodes();
@@ -247,7 +247,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     return () => {
       keymap.popKeymap();
     };
-  }, [viewMode, currentParentIds, dagMode, currentListIndex, initialParentsSelected]);
+  }, [viewMode, currentParentIds, dagMode, currentListIndex, initialParentsSelected, mode, navigateUp, switchListByIndex]);
 
   return (
     <Box borderStyle="single" borderColor="gray">
