@@ -11,7 +11,7 @@ import { KeysContext } from "./common/Context.mts";
 import CoreList, { List, ListItem } from "./common/CoreList.tsx";
 import useListSwitching from "./common/useListSwitching.mts";
 
-export type Modes = "lists" | "items" | "confirm";
+export type Modes = "lists" | "items";
 export type ViewModes = "list" | "dag";
 export type DagModes = "navigate" | "select";
 
@@ -35,7 +35,6 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
   const [currentParentIds, setCurrentParentIds] = useState<string[]>([]);
   const [dagMode, setDagMode] = useState<DagModes>("navigate");
   const [initialParentsSelected, setInitialParentsSelected] = useState(false);
-  const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
 
   const { currentListItems, currentListIndex, switchListByIndex, switchListById } =
     useListSwitching(lists);
@@ -265,44 +264,9 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
             setDagMode(dagMode === "navigate" ? "select" : "navigate");
           },
         },
-        {
-          sequence: [key(" ")],
-          description: "Enter confirmation mode",
-          name: "enter-confirmation",
-          handler: () => {
-            // Get currently selected items from the CoreList
-            const selectedItems = currentListItems.filter(item => item.selected);
-            const nodeIds = selectedItems.map(item => (item.data as Node).nodeId);
-            setSelectedNodeIds(nodeIds);
-            setMode("confirm");
-          },
-        }
       );
     }
 
-    // Add confirm mode keybindings
-    if (mode === "confirm") {
-      keymapConfig.push(
-        {
-          sequence: [key("y")],
-          description: "Confirm selection",
-          name: "confirm-selection",
-          handler: () => {
-            onSelected(selectedNodeIds);
-          },
-        },
-        {
-          sequence: [key("n")],
-          description: "Cancel selection",
-          name: "cancel-selection",
-          handler: () => {
-            setMode("items");
-            setSelectedNodeIds([]);
-            setDagMode("navigate");
-          },
-        }
-      );
-    }
 
     keymap.pushKeymap(keymapConfig);
 
@@ -315,17 +279,6 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     <Box borderStyle="single" borderColor="gray">
       {loading ? (
         <Text>Loading nodes...</Text>
-      ) : mode === "confirm" ? (
-        <Box flexDirection="column">
-          <Text>Selected nodes:</Text>
-          {selectedNodeIds.map(nodeId => {
-            const node = allNodes.find(n => n.nodeId === nodeId);
-            return (
-              <Text key={nodeId}>• {node?.name || nodeId}</Text>
-            );
-          })}
-          <Text>Confirm selection? (y/n)</Text>
-        </Box>
       ) : viewMode === "dag" ? (
         <CoreList
           items={currentListItems}
@@ -333,13 +286,14 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
           initialMode="select"
           reservedKeys={[":"]}
           statusText={dagMode === "navigate" ? "#N" : "#S"}
+          confirm={dagMode === "select"}
           onSelected={async (selectedItems: ListItem[]) => {
             if (dagMode === "select") {
-              // In selection mode, store selected items and switch to confirm mode
+              // In selection mode, call the parent onSelected callback
               const nodeIds = selectedItems.map(
                 (item) => (item.data as Node).nodeId,
               );
-              setSelectedNodeIds(nodeIds);
+              onSelected(nodeIds);
             } else {
               const selectedNode = selectedItems[0]?.data as Node;
               if (selectedNode) {
