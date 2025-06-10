@@ -305,7 +305,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     return () => {
       keymap.popKeymap();
     };
-  }, [viewMode, currentParentIds, dagMode, currentListIndex, initialParentsSelected, mode, navigateUp, switchListByIndex, selectedNodeIds, onSelected]);
+  }, [viewMode, currentParentIds, dagMode, currentListIndex, mode, navigateUp, switchListByIndex, selectedNodeIds, onSelected]);
 
   return (
     <Box borderStyle="single" borderColor="gray">
