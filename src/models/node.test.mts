@@ -144,11 +144,8 @@ testSuite("Node Model Integration Tests", () => {
 
     expect(node1).toBeDefined();
     expect(node1?.name).toBe(testNode1.name);
-    expect(node1?.active).toBe(testNode1.active);
-
     expect(node2).toBeDefined();
     expect(node2?.name).toBe(testNode2.name);
-    expect(node2?.active).toBe(testNode2.active);
   });
 
   it("should update an node", async () => {
@@ -185,19 +182,6 @@ testSuite("Node Model Integration Tests", () => {
     expect(node).toBeNull();
   });
 
-  it("should get active nodes", async () => {
-    // Create test nodes (one active, one inactive)
-    await createNode(testNode1); // active: true
-    await createNode(testNode2); // active: false
-
-    // Get active nodes
-    const nodes = await getActiveNodes();
-
-    // Verify only active nodes were retrieved
-    expect(nodes).toHaveLength(1);
-    expect(nodes[0].nodeId).toBe(testNode1.nodeId);
-    expect(nodes[0].active).toBe(true);
-  });
 
   it("should handle empty results", async () => {
     // Get all nodes from empty table
@@ -214,7 +198,6 @@ testSuite("Node Model Integration Tests", () => {
     // Create child node with parent reference
     const childNode: NodeCreate = {
       name: "Child Node 1",
-      active: true,
       parentNodeIds: [parentId],
     };
 
@@ -335,7 +318,6 @@ testSuite("Node Model Integration Tests", () => {
     // Create grandchild node
     const grandchildNode: NodeCreate = {
       name: "Grandchild Node 1",
-      active: true,
       parentNodeIds: [childId],
     };
 
@@ -365,27 +347,23 @@ testSuite("Node Model Integration Tests", () => {
     // Create root node
     const rootId = await createNode({
       name: "Root Node",
-      active: true,
     });
 
     // Create first child node
     const child1Id = await createNode({
       name: "Child Node 1",
-      active: true,
       parentNodeIds: [rootId],
     });
 
     // Create second child node
     const child2Id = await createNode({
       name: "Child Node 2",
-      active: true,
       parentNodeIds: [rootId],
     });
 
     // Create grandchild node
     const grandchildId = await createNode({
       name: "Grandchild Node",
-      active: true,
       parentNodeIds: [child1Id],
     });
 
@@ -591,7 +569,6 @@ testSuite("Node Model Integration Tests", () => {
     // Create root node (level 0)
     const rootId = await createNode({
       name: "Depth Root",
-      active: true,
     });
 
     // Create child nodes for levels 1-4
@@ -601,7 +578,6 @@ testSuite("Node Model Integration Tests", () => {
     for (let i = 1; i <= 4; i++) {
       const nodeId = await createNode({
         name: `Depth Level ${i}`,
-        active: true,
         parentNodeIds: [parentId],
       });
       levelIds.push(nodeId);
@@ -640,17 +616,14 @@ testSuite("Node Model Integration Tests", () => {
       // Create several nodes
       const node1 = await createNode({
         name: "Regular Node 1",
-        active: true,
       });
 
       const node2 = await createNode({
         name: "Regular Node 2",
-        active: true,
       });
 
       const node3 = await createNode({
         name: "Temp Node",
-        active: true,
         temp: true,
       });
 
@@ -671,19 +644,16 @@ testSuite("Node Model Integration Tests", () => {
       // Create regular and temp nodes
       const regularNode = await createNode({
         name: "Regular Node",
-        active: true,
         temp: false,
       });
 
       const tempNode1 = await createNode({
         name: "Temp Node 1",
-        active: true,
         temp: true,
       });
 
       const tempNode2 = await createNode({
         name: "Temp Node 2",
-        active: true,
         temp: true,
       });
 
@@ -706,7 +676,6 @@ testSuite("Node Model Integration Tests", () => {
       // Create an node and update its lastAccessed to be older
       const oldNode = await createNode({
         name: "Old Node",
-        active: true,
       });
 
       // Manually update the lastAccessed date to be older than 7 days
@@ -719,7 +688,6 @@ testSuite("Node Model Integration Tests", () => {
       // Create a new node (which will have current timestamp)
       const recentNode = await createNode({
         name: "Recent Node",
-        active: true,
       });
 
       // Get filtered nodes with RECENT filter
@@ -737,17 +705,14 @@ testSuite("Node Model Integration Tests", () => {
       // Create nodes
       const node1 = await createNode({
         name: "Node 1",
-        active: true,
       });
 
       const node2 = await createNode({
         name: "Node 2",
-        active: true,
       });
 
       const node3 = await createNode({
         name: "Node 3",
-        active: true,
       });
 
       // Create a context with node1 and node3
@@ -787,12 +752,10 @@ testSuite("Node Model Integration Tests", () => {
       // Create nodes
       const node1 = await createNode({
         name: "Node 1",
-        active: true,
       });
 
       const node2 = await createNode({
         name: "Node 2",
-        active: true,
       });
 
       // Create a context with no nodes
@@ -823,18 +786,15 @@ testSuite("Node Model Integration Tests", () => {
       
       const parent1Id = await createNode({
         name: "Parent 1",
-        active: true,
       });
 
       const parent2Id = await createNode({
         name: "Parent 2", 
-        active: true,
       });
 
       // Create child with multiple parents
       const childId = await createNode({
         name: "Child Node",
-        active: true,
         parentNodeIds: [parent1Id, parent2Id],
       });
 
@@ -869,12 +829,10 @@ testSuite("Node Model Integration Tests", () => {
       // Create nodes
       const parentId = await createNode({
         name: "Parent Node",
-        active: true,
       });
 
       const childId = await createNode({
         name: "Child Node",
-        active: true,
       });
 
       // Add relationship
@@ -930,7 +888,6 @@ testSuite("Node Model Integration Tests", () => {
     it("should validate node existence when adding relationships", async () => {
       const realNodeId = await createNode({
         name: "Real Node",
-        active: true,
       });
 
       // Try to add relationship with non-existent parent
