@@ -270,6 +270,10 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
           description: "Enter confirmation mode",
           name: "enter-confirmation",
           handler: () => {
+            // Get currently selected items from the CoreList
+            const selectedItems = currentListItems.filter(item => item.selected);
+            const nodeIds = selectedItems.map(item => (item.data as Node).nodeId);
+            setSelectedNodeIds(nodeIds);
             setMode("confirm");
           },
         }
@@ -336,7 +340,6 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
                 (item) => (item.data as Node).nodeId,
               );
               setSelectedNodeIds(nodeIds);
-              setMode("confirm");
             } else {
               const selectedNode = selectedItems[0]?.data as Node;
               if (selectedNode) {
