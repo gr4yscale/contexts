@@ -441,51 +441,36 @@ export async function formatNodeWithHierarchy(
   node: NodeTreeItem,
   nodes: NodeTreeItem[],
 ): Promise<string> {
-  // If it's a root node (no parent), just return the name
-  if (!node.parentNodeId) {
+  // Get the parent nodes for this node
+  const parentNodes = await getParentNodes(node.nodeId);
+  
+  // If it's a root node (no parents), just return the name
+  if (parentNodes.length === 0) {
     return node.name;
   }
 
-  // Build the hierarchy path
-  const path: string[] = [node.name];
-  let currentId = node.parentNodeId;
-  let isDirectParentRoot = false;
-
-  // Traverse up the hierarchy to build the path
-  while (currentId) {
-    // First try to find the parent in the provided nodes array
-    let parent = nodes.find((a) => a.nodeId === currentId);
-
-    // If not found in the array, fetch it directly from the database
-    if (!parent) {
-      const fetchedParent = await getNodeById(currentId);
-      if (fetchedParent) {
-        parent = {
-          ...fetchedParent,
-          selected: false,
-          depth: 0, // Default depth
-        };
-      } else {
-        logger.debug(
-          `Parent not found for ID: ${currentId}, node: ${node.name}`,
-        );
-        break;
-      }
+  // For simplicity, use the first parent to build hierarchy path
+  // In a DAG, a node could have multiple parents, but we'll show one path
+  const firstParent = parentNodes[0];
+  
+  // Build the hierarchy path by recursively getting parent names
+  const buildPath = async (nodeId: string): Promise<string[]> => {
+    const parents = await getParentNodes(nodeId);
+    if (parents.length === 0) {
+      const currentNode = await getNodeById(nodeId);
+      return currentNode ? [currentNode.name] : [];
     }
+    
+    // Use first parent for path building
+    const parentPath = await buildPath(parents[0].nodeId);
+    const currentNode = await getNodeById(nodeId);
+    return currentNode ? [...parentPath, currentNode.name] : parentPath;
+  };
 
-    // If this is a root parent (no parent of its own), mark it
-    if (!parent.parentNodeId) {
-      isDirectParentRoot = true;
-    } else {
-      // Only add non-root parents to the path
-      path.unshift(parent.name);
-    }
-
-    currentId = parent.parentNodeId;
-  }
-
+  const fullPath = await buildPath(node.nodeId);
+  
   // Join the path with "→"
-  return path.join(" → ");
+  return fullPath.join(" → ");
 }
 
 /**
