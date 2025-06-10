@@ -652,7 +652,6 @@ export async function nodeTree(
           n.name, 
           n.created, 
           n.lastaccessed, 
-          n.parent_id,
           n.temp,
           0 AS depth,
           ARRAY[n.nodeid] AS path
@@ -668,8 +667,7 @@ export async function nodeTree(
           n.nodeid, 
           n.name, 
           n.created, 
-          n.lastaccessed, 
-          n.parent_id,
+          n.lastaccessed,
           n.temp,
           nt.depth + 1 AS depth,
           nt.path || n.nodeid AS path
@@ -685,12 +683,11 @@ export async function nodeTree(
         nodeid, 
         name, 
         created, 
-        lastaccessed, 
-        parent_id,
+        lastaccessed,
         temp,
         MIN(depth) as depth  -- Use minimum depth if node appears multiple times
       FROM node_tree
-      GROUP BY nodeid, name, created, lastaccessed, parent_id, temp
+      GROUP BY nodeid, name, created, lastaccessed, temp
       ORDER BY 
         depth,  -- Order by depth first
         lastaccessed DESC;  -- Then by last accessed
