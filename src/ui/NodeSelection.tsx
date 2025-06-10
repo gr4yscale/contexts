@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext, useCallback } from "react";
 import { Box, Text } from "ink";
 
 import { Node } from "../types.mts";
-import { filteredNodeTree, NodeTreeFilter, formatNodeWithHierarchy, getChildNodes } from "../models/node.mts";
+import { filteredNodeTree, NodeTreeFilter, formatNodeWithHierarchy, getChildNodes, getParentNodes } from "../models/node.mts";
 import * as logger from "../logger.mts";
 
 import { KeymapConfig, key } from "./common/Keymapping.mts";
@@ -87,7 +87,13 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
         ]);
       } else {
         // dag mode - start with children of root nodes
-        const rootNodes = nodes.filter(node => !node.parentNodeId);
+        const rootNodes: Node[] = [];
+        for (const node of nodes) {
+          const parents = await getParentNodes(node.nodeId);
+          if (parents.length === 0) {
+            rootNodes.push(node);
+          }
+        }
         const rootNodeIds = rootNodes.map(node => node.nodeId);
         
         // Get all children of root nodes
@@ -123,7 +129,14 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
   const getChildrenNodes = useCallback(async (parentIds: string[]) => {
     if (parentIds.length === 0) {
       // Return root nodes
-      return allNodes.filter(node => !node.parentNodeId);
+      const rootNodes: Node[] = [];
+      for (const node of allNodes) {
+        const parents = await getParentNodes(node.nodeId);
+        if (parents.length === 0) {
+          rootNodes.push(node);
+        }
+      }
+      return rootNodes;
     }
     
     // Get children from database for each parent
@@ -159,24 +172,24 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     if (currentParentIds.length === 0) return;
     
     // Find the parents of current parent nodes
-    const parentNodes = allNodes.filter(node => 
-      currentParentIds.includes(node.nodeId)
-    );
-    
-    // Get their parent IDs
-    const grandParentIds = parentNodes.reduce((acc: string[], node) => {
-      if (node.parentNodeId) {
-        acc.push(node.parentNodeId);
-      }
-      return acc;
-    }, []);
+    const grandParentIds: string[] = [];
+    for (const parentId of currentParentIds) {
+      const parents = await getParentNodes(parentId);
+      grandParentIds.push(...parents.map(p => p.nodeId));
+    }
     
     // Remove duplicates
     const uniqueGrandParentIds = [...new Set(grandParentIds)];
     
     if (uniqueGrandParentIds.length === 0) {
       // Go back to children of root nodes (don't show root nodes themselves)
-      const rootNodes = allNodes.filter(node => !node.parentNodeId);
+      const rootNodes: Node[] = [];
+      for (const node of allNodes) {
+        const parents = await getParentNodes(node.nodeId);
+        if (parents.length === 0) {
+          rootNodes.push(node);
+        }
+      }
       const rootNodeIds = rootNodes.map(node => node.nodeId);
       await navigateToChildren(rootNodeIds);
     } else {
