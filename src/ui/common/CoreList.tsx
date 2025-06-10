@@ -148,7 +148,9 @@ const CoreList: React.FC<CoreListProps> = ({
             description: "Toggle mode",
             name: "toggleMode",
             handler: () => {
-              setMode("select");
+              setMode((prevMode) => {
+                return prevMode === "search" ? "select" : "search";
+              });
             },
           },
         ];
@@ -189,7 +191,9 @@ const CoreList: React.FC<CoreListProps> = ({
             description: "Toggle mode",
             name: "toggleMode",
             handler: () => {
-              setMode("search");
+              setMode((prevMode) => {
+                return prevMode === "search" ? "select" : "search";
+              });
             },
           },
         ];
