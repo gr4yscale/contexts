@@ -72,7 +72,7 @@ const CoreList: React.FC<CoreListProps> = ({
   } = useSelectionState({
     items,
     multiple,
-    onSelected,
+    onSelected: confirm ? undefined : onSelected,
   });
 
   // hotkey selection
@@ -173,8 +173,15 @@ const CoreList: React.FC<CoreListProps> = ({
             sequence: [key("\r", "return")],
             description: "commit / select",
             name: "commit/select",
-            handler: completeSelection,
+            handler: confirm ? () => setMode("confirm") : completeSelection,
             hidden: true,
+          },
+          {
+            sequence: [key(" ")],
+            description: "Enter confirmation mode",
+            name: "enter-confirmation",
+            handler: confirm ? () => setMode("confirm") : completeSelection,
+            hidden: !confirm,
           },
           {
             sequence: [key("[")],
@@ -208,7 +215,9 @@ const CoreList: React.FC<CoreListProps> = ({
             description: "Confirm selection",
             name: "confirm-selection",
             handler: () => {
-              completeSelection();
+              if (onSelected) {
+                onSelected(selectedItems);
+              }
               setMode("select");
             },
           },
@@ -230,7 +239,7 @@ const CoreList: React.FC<CoreListProps> = ({
     return () => {
       keymap.popKeymap();
     };
-  }, [mode]);
+  }, [mode, completeSelection, clearSelection, setMode]);
 
   // handle character input in search mode
   useInput(
