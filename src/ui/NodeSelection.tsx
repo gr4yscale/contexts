@@ -86,7 +86,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
           },
         ]);
       } else {
-        // dag mode - start with children of root nodes
+        // dag mode - start with root nodes
         const rootNodes: Node[] = [];
         for (const node of nodes) {
           const parents = await getParentNodes(node.nodeId);
@@ -94,23 +94,15 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
             rootNodes.push(node);
           }
         }
-        const rootNodeIds = rootNodes.map(node => node.nodeId);
         
-        // Get all children of root nodes
-        const allChildren: Node[] = [];
-        for (const rootId of rootNodeIds) {
-          const children = await getChildNodes(rootId);
-          allChildren.push(...children);
-        }
-        
-        setCurrentParentIds(rootNodeIds);
-        setInitialParentsSelected(true);
+        setCurrentParentIds([]);
+        setInitialParentsSelected(false);
         
         setLists([
           {
             id: "dag",
             display: "Nodes",
-            items: allChildren.map(node => ({
+            items: rootNodes.map(node => ({
               id: node.nodeId,
               display: node.name,
               data: node,
@@ -182,7 +174,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     const uniqueGrandParentIds = [...new Set(grandParentIds)];
     
     if (uniqueGrandParentIds.length === 0) {
-      // Go back to children of root nodes (don't show root nodes themselves)
+      // Go back to root nodes
       const rootNodes: Node[] = [];
       for (const node of allNodes) {
         const parents = await getParentNodes(node.nodeId);
@@ -190,12 +182,26 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
           rootNodes.push(node);
         }
       }
-      const rootNodeIds = rootNodes.map(node => node.nodeId);
-      await navigateToChildren(rootNodeIds);
+      
+      setCurrentParentIds([]);
+      setInitialParentsSelected(false);
+      
+      setLists([
+        {
+          id: "dag",
+          display: "Nodes",
+          items: rootNodes.map(node => ({
+            id: node.nodeId,
+            display: node.name,
+            data: node,
+            selected: initialSelection.includes(node.nodeId),
+          })),
+        },
+      ]);
     } else {
       await navigateToChildren(uniqueGrandParentIds);
     }
-  }, [currentParentIds, allNodes, navigateToChildren]);
+  }, [currentParentIds, allNodes, navigateToChildren, initialSelection]);
 
   useEffect(() => {
     fetchNodes();
@@ -280,15 +286,6 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
           reservedKeys={[":"]}
           statusText={dagMode === "navigate" ? "#N" : "#S"}
           onSelected={async (selectedItems: ListItem[]) => {
-            if (!initialParentsSelected) {
-              // Initial selection of parent nodes - navigate to their children
-              const parentNodeIds = selectedItems.map(
-                (item) => (item.data as Node).nodeId,
-              );
-              await navigateToChildren(parentNodeIds);
-              return; // Exit early to prevent further processing
-            }
-            
             if (dagMode === "select") {
               // In selection mode, update selection state only
               // onSelected will be called when return key is pressed in CoreList
