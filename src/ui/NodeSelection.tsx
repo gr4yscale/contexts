@@ -86,16 +86,25 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
           },
         ]);
       } else {
-        // dag mode - start with root nodes for initial selection
+        // dag mode - start with children of root nodes
         const rootNodes = nodes.filter(node => !node.parentNodeId);
-        setCurrentParentIds([]);
-        setInitialParentsSelected(false);
+        const rootNodeIds = rootNodes.map(node => node.nodeId);
+        
+        // Get all children of root nodes
+        const allChildren: Node[] = [];
+        for (const rootId of rootNodeIds) {
+          const children = await getChildNodes(rootId);
+          allChildren.push(...children);
+        }
+        
+        setCurrentParentIds(rootNodeIds);
+        setInitialParentsSelected(true);
         
         setLists([
           {
             id: "dag",
-            display: "Select Initial Parent Nodes",
-            items: rootNodes.map(node => ({
+            display: "Nodes",
+            items: allChildren.map(node => ({
               id: node.nodeId,
               display: node.name,
               data: node,
@@ -124,12 +133,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
       allChildren.push(...children);
     }
     
-    // Remove duplicates
-    const uniqueChildren = allChildren.filter((node, index, self) => 
-      index === self.findIndex(n => n.nodeId === node.nodeId)
-    );
-    
-    return uniqueChildren;
+    return allChildren;
   }, [allNodes]);
 
   const navigateToChildren = useCallback(async (selectedParentIds: string[]) => {
@@ -171,8 +175,10 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     const uniqueGrandParentIds = [...new Set(grandParentIds)];
     
     if (uniqueGrandParentIds.length === 0) {
-      // Go back to root
-      await navigateToChildren([]);
+      // Go back to children of root nodes (don't show root nodes themselves)
+      const rootNodes = allNodes.filter(node => !node.parentNodeId);
+      const rootNodeIds = rootNodes.map(node => node.nodeId);
+      await navigateToChildren(rootNodeIds);
     } else {
       await navigateToChildren(uniqueGrandParentIds);
     }
