@@ -164,7 +164,6 @@ export async function getNodeById(
       name: row.name,
       created: new Date(row.created),
       lastAccessed: new Date(row.lastaccessed),
-      parentNodeId: row.parent_id,
       temp: row.temp,
     };
   } catch (error) {
@@ -187,7 +186,6 @@ export async function getAllNodes(): Promise<Node[]> {
       name: row.name,
       created: new Date(row.created),
       lastAccessed: new Date(row.lastaccessed),
-      parentNodeId: row.parent_id,
       temp: row.temp,
     }));
   } catch (error) {
@@ -208,13 +206,11 @@ export async function updateNode(
       name,
       lastAccessed,
       nodeId,
-      parentNodeId,
       temp,
       workspaceId,
     } = node;
 
     const fieldMappings: [string, any][] = [
-      ["parent_id", parentNodeId],
       ["name", name],
       ["lastaccessed", lastAccessed?.toISOString()],
       ["temp", temp],
@@ -405,7 +401,6 @@ export async function getChildNodes(
       name: row.name,
       created: new Date(row.created),
       lastAccessed: new Date(row.lastaccessed),
-      parentNodeId: row.parent_id,
       temp: row.temp,
     }));
   } catch (error) {
@@ -519,7 +514,6 @@ export async function getParentNodes(
       name: row.name,
       created: new Date(row.created),
       lastAccessed: new Date(row.lastaccessed),
-      parentNodeId: row.parent_id,
       temp: row.temp,
     }));
   } catch (error) {
@@ -726,7 +720,6 @@ export async function nodeTree(
       name: row.name,
       created: new Date(row.created),
       lastAccessed: new Date(row.lastaccessed),
-      parentNodeId: row.parent_id,
       temp: row.temp,
       depth: row.depth,
       selected: false,
