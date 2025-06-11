@@ -4,6 +4,7 @@ interface UseSelectionStateOptions<T> {
   items: T[];
   multiple?: boolean;
   onSelected?: (selectedItems: T[]) => void;
+  initialSelection?: string[];
 }
 
 interface UseSelectionStateReturn<T> {
@@ -25,12 +26,17 @@ export default function useSelectionState<
   items,
   multiple = false,
   onSelected,
+  initialSelection = [],
 }: UseSelectionStateOptions<T>): UseSelectionStateReturn<T> {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  // Initialize selection state based on items' selected property
+  // Initialize selection state based on initialSelection prop or items' selected property
   useEffect(() => {
-    if (multiple) {
+    if (initialSelection.length > 0) {
+      // Use the provided initialSelection
+      setSelectedIds(initialSelection);
+    } else if (multiple) {
+      // Fall back to items' selected property
       const initialSelectedIds = items
         .filter((item) => item.selected)
         .map((item) => item.id);
@@ -39,7 +45,7 @@ export default function useSelectionState<
         setSelectedIds(initialSelectedIds);
       }
     }
-  }, [items, multiple]);
+  }, [items, multiple, initialSelection]);
 
   // Toggle selection of an item
   const toggleSelection = useCallback(
