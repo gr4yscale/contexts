@@ -31,7 +31,6 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
   const [allNodes, setAllNodes] = useState<Node[]>([]);
   const [currentParentIds, setCurrentParentIds] = useState<string[]>([]);
   const [dagMode, setDagMode] = useState<DagModes>("navigate");
-  const [initialParentsSelected, setInitialParentsSelected] = useState(false);
   const [childItems, setChildItems] = useState<ListItem[]>([]);
   const navigateUpRef = useRef<() => Promise<void>>();
 
@@ -65,7 +64,6 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
       }
 
       setCurrentParentIds([]);
-      setInitialParentsSelected(false);
 
       setChildItems(
         rootNodes.map((node) => ({
@@ -116,7 +114,6 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
   const navigateToChildren = useCallback(async (selectedParentIds: string[]) => {
     const children = await getChildrenNodes(selectedParentIds);
     setCurrentParentIds(selectedParentIds);
-    setInitialParentsSelected(true);
     
     setChildItems(children.map(node => ({
       id: node.nodeId,
@@ -150,7 +147,6 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
       }
       
       setCurrentParentIds([]);
-      setInitialParentsSelected(false);
       
       setChildItems(rootNodes.map(node => ({
         id: node.nodeId,
