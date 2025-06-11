@@ -37,6 +37,18 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
   const [initialParentsSelected, setInitialParentsSelected] = useState(false);
   const [childItems, setChildItems] = useState<ListItem[]>([]);
 
+  // Debug logging for state changes
+  useEffect(() => {
+    logger.debug("NodeSelection state changed", {
+      mode,
+      viewMode,
+      dagMode,
+      currentParentIds,
+      childItemsCount: childItems.length,
+      listsCount: lists.length
+    });
+  }, [mode, viewMode, dagMode, currentParentIds, childItems.length, lists.length]);
+
   const { currentListItems, currentListIndex, switchListByIndex, switchListById } =
     useListSwitching(lists);
 
@@ -252,7 +264,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
           description: "Toggle navigate/select mode",
           name: "toggle-dag-mode",
           handler: () => {
-            setDagMode(dagMode === "navigate" ? "select" : "navigate");
+            setDagMode(prev => prev === "navigate" ? "select" : "navigate");
           },
         },
       );
@@ -264,7 +276,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     return () => {
       keymap.popKeymap();
     };
-  }, [viewMode, currentParentIds, dagMode, currentListIndex, mode, navigateUp, switchListByIndex, onSelected]);
+  }, [viewMode, mode, keymap]);
 
   return (
     <Box borderStyle="single" borderColor="gray">
@@ -320,6 +332,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
           }}
           multiple={false}
           initialMode="select"
+          confirm={true}
         />
       )}
     </Box>

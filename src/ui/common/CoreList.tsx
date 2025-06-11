@@ -42,7 +42,7 @@ const CoreList: React.FC<CoreListProps> = ({
   initialMode = "search",
   reservedKeys = [],
   statusText,
-  confirm = false,
+  confirm = true,
 }) => {
   const [mode, setMode] = useState<Modes>(initialMode);
 
@@ -99,7 +99,7 @@ const CoreList: React.FC<CoreListProps> = ({
     return () => {
       keymap.popKeymap();
     };
-  }, []);
+  }, [confirm]);
 
   // mode-specific keymap
   useEffect(() => {
@@ -113,7 +113,7 @@ const CoreList: React.FC<CoreListProps> = ({
             description: "Select mode",
             name: "mode-select",
             handler: () => {
-              setMode("select");
+              setMode(prev => "select");
             },
             hidden: true,
           },
@@ -165,7 +165,7 @@ const CoreList: React.FC<CoreListProps> = ({
             description: "Back to search mode",
             name: "search mode",
             handler: () => {
-              setMode("search");
+              setMode(prev => "search");
             },
             hidden: true,
           },
@@ -173,14 +173,18 @@ const CoreList: React.FC<CoreListProps> = ({
             sequence: [key("\r", "return")],
             description: "commit / select",
             name: "commit/select",
-            handler: confirm ? () => setMode("confirm") : completeSelection,
+            handler: confirm ? () => {
+              setMode(prev => "confirm");
+            } : completeSelection,
             hidden: true,
           },
           {
             sequence: [key(" ")],
             description: "Enter confirmation mode",
             name: "enter-confirmation",
-            handler: confirm ? () => setMode("confirm") : completeSelection,
+            handler: confirm ? () => {
+              setMode(prev => "confirm");
+            } : completeSelection,
             hidden: !confirm,
           },
           {
@@ -218,7 +222,7 @@ const CoreList: React.FC<CoreListProps> = ({
               if (onSelected) {
                 onSelected(selectedItems);
               }
-              setMode("select");
+              setMode(prev => "select");
             },
           },
           {
@@ -239,7 +243,7 @@ const CoreList: React.FC<CoreListProps> = ({
     return () => {
       keymap.popKeymap();
     };
-  }, [mode, completeSelection, clearSelection, setMode]);
+  }, [mode, confirm, completeSelection, clearSelection, selectedItems, onSelected, clearSearch, trimLastCharacter, prevPage, nextPage]);
 
   // handle character input in search mode
   useInput(
