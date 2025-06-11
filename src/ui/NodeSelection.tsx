@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useCallback } from "react";
+import React, { useEffect, useState, useContext, useCallback, useRef } from "react";
 import { Box, Text } from "ink";
 
 import { Node } from "../types.mts";
@@ -33,6 +33,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
   const [dagMode, setDagMode] = useState<DagModes>("navigate");
   const [initialParentsSelected, setInitialParentsSelected] = useState(false);
   const [childItems, setChildItems] = useState<ListItem[]>([]);
+  const navigateUpRef = useRef<() => Promise<void>>();
 
   // Debug logging for state changes
   useEffect(() => {
@@ -162,6 +163,11 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     }
   }, [currentParentIds, allNodes, navigateToChildren, initialSelection]);
 
+  // Update the ref whenever navigateUp changes
+  useEffect(() => {
+    navigateUpRef.current = navigateUp;
+  }, [navigateUp]);
+
   useEffect(() => {
     fetchNodes();
   }, []);
@@ -185,7 +191,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
         sequence: [key("u")],
         description: "Navigate up",
         name: "navigate-up",
-        handler: navigateUp,
+        handler: () => navigateUpRef.current?.(),
       },
       {
         sequence: [key("'")],
@@ -202,7 +208,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     return () => {
       keymap.popKeymap();
     };
-  }, [keymap, setMode, navigateUp, setDagMode]);
+  }, [keymap, setMode, setDagMode]);
 
   return (
     <Box borderStyle="single" borderColor="gray">
