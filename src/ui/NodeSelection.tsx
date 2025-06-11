@@ -37,22 +37,11 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
   const [initialParentsSelected, setInitialParentsSelected] = useState(false);
   const [childItems, setChildItems] = useState<ListItem[]>([]);
 
-  // Debug logging for state changes
-  useEffect(() => {
-    logger.debug("NodeSelection state changed", {
-      mode,
-      viewMode,
-      dagMode,
-      currentParentIds,
-      childItemsCount: childItems.length,
-      listsCount: lists.length
-    });
-  }, [mode, viewMode, dagMode, currentParentIds, childItems.length, lists.length]);
 
   const { currentListItems, currentListIndex, switchListByIndex, switchListById } =
     useListSwitching(lists);
 
-  const fetchNodes = async () => {
+  const fetchNodes = useCallback(async (currentInitialSelection: string[] = initialSelection) => {
     setLoading(true);
     try {
       const nodes = await filteredNodeTree(NodeTreeFilter.ALL);
@@ -77,7 +66,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
                 id: node.nodeId,
                 display: hierarchyPath,
                 data: node,
-                selected: initialSelection.includes(node.nodeId),
+                selected: currentInitialSelection.includes(node.nodeId),
               };
             })
           );
@@ -111,12 +100,15 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
         setCurrentParentIds([]);
         setInitialParentsSelected(false);
         
-        setChildItems(rootNodes.map(node => ({
+        const rootItems = rootNodes.map(node => ({
           id: node.nodeId,
           display: node.name,
           data: node,
-          selected: initialSelection.includes(node.nodeId),
-        })));
+          selected: currentInitialSelection.includes(node.nodeId),
+        }));
+        
+        
+        setChildItems(rootItems);
         
         setLists([
           {
@@ -131,7 +123,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [viewMode, initialSelection]);
 
   const getChildrenNodes = useCallback(async (parentIds: string[]) => {
     if (parentIds.length === 0) {
@@ -161,12 +153,15 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     setCurrentParentIds(selectedParentIds);
     setInitialParentsSelected(true);
     
-    setChildItems(children.map(node => ({
+    const childItems = children.map(node => ({
       id: node.nodeId,
       display: node.name,
       data: node,
       selected: initialSelection.includes(node.nodeId),
-    })));
+    }));
+    
+    
+    setChildItems(childItems);
   }, [getChildrenNodes, initialSelection]);
 
   const navigateUp = useCallback(async () => {
@@ -195,12 +190,15 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
       setCurrentParentIds([]);
       setInitialParentsSelected(false);
       
-      setChildItems(rootNodes.map(node => ({
+      const rootItems = rootNodes.map(node => ({
         id: node.nodeId,
         display: node.name,
         data: node,
         selected: initialSelection.includes(node.nodeId),
-      })));
+      }));
+      
+      
+      setChildItems(rootItems);
     } else {
       await navigateToChildren(uniqueGrandParentIds);
     }
@@ -208,7 +206,26 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
 
   useEffect(() => {
     fetchNodes();
-  }, [viewMode]);
+  }, [fetchNodes]);
+
+  // Update selections when initialSelection changes
+  useEffect(() => {
+    if (viewMode === "dag" && childItems.length > 0) {
+      // Check if any selections need to be updated
+      const needsUpdate = childItems.some(item => 
+        item.selected !== initialSelection.includes(item.id)
+      );
+      
+      if (needsUpdate) {
+        const updatedItems = childItems.map(item => ({
+          ...item,
+          selected: initialSelection.includes(item.id),
+        }));
+        
+        setChildItems(updatedItems);
+      }
+    }
+  }, [initialSelection, viewMode]);
 
   // keymapping
   const { keymap } = useContext(KeysContext);
@@ -280,6 +297,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
         <Text>Loading nodes...</Text>
       ) : viewMode === "dag" && mode === "items" ? (
         <CoreList
+          key={`dag-${initialSelection.join(',')}`}
           items={childItems}
           multiple={dagMode === "select" ? multiple : false}
           initialMode="select"
@@ -320,6 +338,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
         />
       ) : mode === "items" ? (
         <CoreList
+          key={`list-${initialSelection.join(',')}`}
           items={currentListItems}
           multiple={multiple}
           initialMode="select"

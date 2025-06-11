@@ -30,14 +30,12 @@ export default function useSelectionState<
 
   // Initialize selection state based on items' selected property
   useEffect(() => {
-    if (multiple) {
-      const initialSelectedIds = items
-        .filter((item) => item.selected)
-        .map((item) => item.id);
+    const initialSelectedIds = items
+      .filter((item) => item.selected)
+      .map((item) => item.id);
 
-      if (initialSelectedIds.length > 0) {
-        setSelectedIds(initialSelectedIds);
-      }
+    if (initialSelectedIds.length > 0) {
+      setSelectedIds(initialSelectedIds);
     }
   }, [items, multiple]);
 
