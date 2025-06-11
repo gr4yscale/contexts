@@ -221,11 +221,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
         description: "Toggle List/Items",
         name: "toggle-list-or-items",
         handler: () => {
-          if (mode === "lists") {
-            setMode("items");
-          } else {
-            setMode("lists");
-          }
+          setMode(prevMode => prevMode === "lists" ? "items" : "lists");
         },
         hidden: true,
       },
@@ -276,13 +272,13 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     return () => {
       keymap.popKeymap();
     };
-  }, [viewMode, mode, keymap]);
+  }, [viewMode, keymap, setMode]);
 
   return (
     <Box borderStyle="single" borderColor="gray">
       {loading ? (
         <Text>Loading nodes...</Text>
-      ) : viewMode === "dag" ? (
+      ) : viewMode === "dag" && mode === "items" ? (
         <CoreList
           items={childItems}
           multiple={dagMode === "select" ? multiple : false}
@@ -307,6 +303,20 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
               }
             }
           }}
+        />
+      ) : viewMode === "dag" && mode === "lists" ? (
+        <CoreList
+          items={lists}
+          onSelected={(selectedLists: List[]) => {
+            if (selectedLists.length > 0) {
+              const selectedList = selectedLists[0];
+              switchListById(selectedList.id);
+              setMode("items");
+            }
+          }}
+          multiple={false}
+          initialMode="select"
+          confirm={true}
         />
       ) : mode === "items" ? (
         <CoreList
