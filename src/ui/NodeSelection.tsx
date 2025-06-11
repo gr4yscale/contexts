@@ -35,6 +35,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
   const [currentParentIds, setCurrentParentIds] = useState<string[]>([]);
   const [dagMode, setDagMode] = useState<DagModes>("navigate");
   const [initialParentsSelected, setInitialParentsSelected] = useState(false);
+  const [childItems, setChildItems] = useState<ListItem[]>([]);
 
   const { currentListItems, currentListIndex, switchListByIndex, switchListById } =
     useListSwitching(lists);
@@ -98,16 +99,18 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
         setCurrentParentIds([]);
         setInitialParentsSelected(false);
         
+        setChildItems(rootNodes.map(node => ({
+          id: node.nodeId,
+          display: node.name,
+          data: node,
+          selected: initialSelection.includes(node.nodeId),
+        })));
+        
         setLists([
           {
             id: "dag",
             display: "Nodes",
-            items: rootNodes.map(node => ({
-              id: node.nodeId,
-              display: node.name,
-              data: node,
-              selected: initialSelection.includes(node.nodeId),
-            })),
+            items: [],
           },
         ]);
       }
@@ -146,18 +149,12 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     setCurrentParentIds(selectedParentIds);
     setInitialParentsSelected(true);
     
-    setLists([
-      {
-        id: "dag",
-        display: "Nodes",
-        items: children.map(node => ({
-          id: node.nodeId,
-          display: node.name,
-          data: node,
-          selected: initialSelection.includes(node.nodeId),
-        })),
-      },
-    ]);
+    setChildItems(children.map(node => ({
+      id: node.nodeId,
+      display: node.name,
+      data: node,
+      selected: initialSelection.includes(node.nodeId),
+    })));
   }, [getChildrenNodes, initialSelection]);
 
   const navigateUp = useCallback(async () => {
@@ -186,18 +183,12 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
       setCurrentParentIds([]);
       setInitialParentsSelected(false);
       
-      setLists([
-        {
-          id: "dag",
-          display: "Nodes",
-          items: rootNodes.map(node => ({
-            id: node.nodeId,
-            display: node.name,
-            data: node,
-            selected: initialSelection.includes(node.nodeId),
-          })),
-        },
-      ]);
+      setChildItems(rootNodes.map(node => ({
+        id: node.nodeId,
+        display: node.name,
+        data: node,
+        selected: initialSelection.includes(node.nodeId),
+      })));
     } else {
       await navigateToChildren(uniqueGrandParentIds);
     }
@@ -281,7 +272,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
         <Text>Loading nodes...</Text>
       ) : viewMode === "dag" ? (
         <CoreList
-          items={currentListItems}
+          items={childItems}
           multiple={dagMode === "select" ? multiple : false}
           initialMode="select"
           reservedKeys={[":"]}
