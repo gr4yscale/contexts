@@ -30,7 +30,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
   const [loading, setLoading] = useState(true);
   const [allNodes, setAllNodes] = useState<Node[]>([]);
   const [currentParentIds, setCurrentParentIds] = useState<string[]>([]);
-  const [dagMode, setDagMode] = useState<DagModes>("navigate");
+  const [dagMode, setDagMode] = useState<DagModes>("select");
   const [childItems, setChildItems] = useState<ListItem[]>([]);
   const navigateUpRef = useRef<() => Promise<void>>();
 
@@ -70,7 +70,6 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
           id: node.nodeId,
           display: node.name,
           data: node,
-          selected: initialSelection.includes(node.nodeId),
         })),
       );
 
@@ -119,7 +118,6 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
       id: node.nodeId,
       display: node.name,
       data: node,
-      selected: initialSelection.includes(node.nodeId),
     })));
   }, [getChildrenNodes, initialSelection]);
 
@@ -152,7 +150,6 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
         id: node.nodeId,
         display: node.name,
         data: node,
-        selected: initialSelection.includes(node.nodeId),
       })));
     } else {
       await navigateToChildren(uniqueGrandParentIds);
@@ -218,9 +215,10 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
           reservedKeys={[":"]}
           statusText={dagMode === "navigate" ? "#N" : "#S"}
           confirm={dagMode === "select"}
+          initialSelection={initialSelection}
           onSelected={async (selectedItems: ListItem[]) => {
             if (dagMode === "select") {
-              // In selection mode, call the parent onSelected callback
+              // In selection mode, call the parent callback
               const nodeIds = selectedItems.map(
                 (item) => (item.data as Node).nodeId,
               );

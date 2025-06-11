@@ -30,6 +30,7 @@ interface CoreListProps {
   reservedKeys?: string[];
   statusText?: string;
   confirm?: boolean;
+  initialSelection?: string[];
 }
 
 const ITEMS_PER_PAGE = 20;
@@ -43,6 +44,7 @@ const CoreList: React.FC<CoreListProps> = ({
   reservedKeys = [],
   statusText,
   confirm = true,
+  initialSelection = [],
 }) => {
   const [mode, setMode] = useState<Modes>(initialMode);
 
@@ -73,6 +75,7 @@ const CoreList: React.FC<CoreListProps> = ({
     items,
     multiple,
     onSelected: confirm ? undefined : onSelected,
+    initialSelection,
   });
 
   // hotkey selection
