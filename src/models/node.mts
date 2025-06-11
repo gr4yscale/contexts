@@ -508,6 +508,23 @@ export async function getParentNodes(
 }
 
 /**
+ * Gets all parent node IDs for a given child node
+ * @param childNodeId The ID of the child node
+ * @returns Array of parent node IDs
+ */
+export async function getParentNodeIds(
+  childNodeId: string,
+): Promise<string[]> {
+  try {
+    const parentNodes = await getParentNodes(childNodeId);
+    return parentNodes.map(node => node.nodeId);
+  } catch (error) {
+    logger.error("Error getting parent node IDs:", error);
+    throw error;
+  }
+}
+
+/**
  * Checks if adding a relationship between two nodes would create a cycle
  * @param parentNodeId The ID of the parent node
  * @param childNodeId The ID of the child node
@@ -596,6 +613,65 @@ export async function addNodeRelationship(
     );
   } catch (error) {
     logger.error("Error adding node relationship:", error);
+    throw error;
+  }
+}
+
+/**
+ * Sets the parent relationships for a node, replacing all existing relationships
+ * @param childNodeId The ID of the child node
+ * @param parentNodeIds Array of parent node IDs to set
+ */
+export async function setNodeParents(
+  childNodeId: string,
+  parentNodeIds: string[],
+): Promise<void> {
+  try {
+    const client = await getConnection();
+    
+    // Check if child node exists
+    const childExists = await client.query(
+      "SELECT 1 FROM nodes WHERE nodeId = $1",
+      [childNodeId],
+    );
+
+    if (childExists.rows.length === 0) {
+      throw new Error(`Child node with ID ${childNodeId} does not exist`);
+    }
+
+    // Check if all parent nodes exist
+    for (const parentNodeId of parentNodeIds) {
+      const parentExists = await client.query(
+        "SELECT 1 FROM nodes WHERE nodeId = $1",
+        [parentNodeId],
+      );
+
+      if (parentExists.rows.length === 0) {
+        throw new Error(`Parent node with ID ${parentNodeId} does not exist`);
+      }
+
+      // Check for cycles
+      if (await detectCycle(parentNodeId, childNodeId)) {
+        throw new Error(`Cannot add relationship: would create a cycle between ${parentNodeId} and ${childNodeId}`);
+      }
+    }
+
+    // Remove all existing parent relationships
+    await client.query(
+      `DELETE FROM node_relationships WHERE child_node_id = $1`,
+      [childNodeId],
+    );
+
+    // Add new parent relationships
+    for (const parentNodeId of parentNodeIds) {
+      await client.query(
+        `INSERT INTO node_relationships (parent_node_id, child_node_id) 
+         VALUES ($1, $2)`,
+        [parentNodeId, childNodeId],
+      );
+    }
+  } catch (error) {
+    logger.error("Error setting node parents:", error);
     throw error;
   }
 }
