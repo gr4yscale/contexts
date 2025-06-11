@@ -44,7 +44,6 @@ const CurrentNodeAssignToParent: React.FC = () => {
       logger.warn("Removed current node from parent selection to prevent self-assignment.");
     }
 
-
     try {
       await setNodeParents(currentNode.nodeId, validParentIds);
       executeAction("nodeNavigate");
@@ -62,9 +61,7 @@ const CurrentNodeAssignToParent: React.FC = () => {
       ) : (
         <Box flexDirection="column">
           <Text>Assign parents for: {currentNode?.name}</Text>
-          <Text>Current parents: {initialParentIds.length} selected</Text>
           <NodeSelection
-            key={`parent-selection-${currentNode?.nodeId}-${initialParentIds.join(',')}`}
             onSelected={handleParentSelection}
             multiple={true}
             initialSelection={initialParentIds}

@@ -12,21 +12,18 @@ import CoreList, { List, ListItem } from "./common/CoreList.tsx";
 import useListSwitching from "./common/useListSwitching.mts";
 
 export type Modes = "lists" | "items";
-export type ViewModes = "list" | "dag";
 export type DagModes = "navigate" | "select";
 
 interface NodeSelectionProps {
   onSelected: (nodeIds: string[]) => void;
   multiple?: boolean;
   initialSelection?: string[];
-  viewMode?: ViewModes;
 }
 
-const NodeSelection: React.FC<NodeSelectionProps> = ({ 
-  onSelected, 
+const NodeSelection: React.FC<NodeSelectionProps> = ({
+  onSelected,
   multiple = false,
   initialSelection = [],
-  viewMode = "dag"
 }) => {
   const [mode, setMode] = useState<Modes>("items");
   const [lists, setLists] = useState<Array<List>>([]);
@@ -37,93 +34,60 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
   const [initialParentsSelected, setInitialParentsSelected] = useState(false);
   const [childItems, setChildItems] = useState<ListItem[]>([]);
 
+  // Debug logging for state changes
+  useEffect(() => {
+    logger.debug("NodeSelection state changed", {
+      mode,
+      dagMode,
+      currentParentIds,
+      childItemsCount: childItems.length,
+      listsCount: lists.length,
+    });
+  }, [mode, dagMode, currentParentIds, childItems.length, lists.length]);
 
   const { currentListItems, currentListIndex, switchListByIndex, switchListById } =
     useListSwitching(lists);
 
-  const fetchNodes = useCallback(async (currentInitialSelection: string[] = initialSelection) => {
+  const fetchNodes = async () => {
     setLoading(true);
     try {
       const nodes = await filteredNodeTree(NodeTreeFilter.ALL);
       setAllNodes(nodes);
 
-      if (viewMode === "list") {
-        // Filter nodes accessed in the last 2 weeks
-        const twoWeeksAgo = new Date();
-        twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-        
-        const recentNodes = nodes.filter(node => {
-          if (!node.lastAccessed) return false;
-          const lastAccessed = new Date(node.lastAccessed);
-          return lastAccessed >= twoWeeksAgo;
-        });
-
-        const formatNodes = async (nodeList: Node[]) => {
-          return await Promise.all(
-            nodeList.map(async (node) => {
-              const hierarchyPath = await formatNodeWithHierarchy(node, nodes);
-              return {
-                id: node.nodeId,
-                display: hierarchyPath,
-                data: node,
-                selected: currentInitialSelection.includes(node.nodeId),
-              };
-            })
-          );
-        };
-
-        const formattedRecentNodes = await formatNodes(recentNodes);
-        const formattedAllNodes = await formatNodes(nodes);
-
-        setLists([
-          {
-            id: "recent",
-            display: "Recent Nodes",
-            items: formattedRecentNodes,
-          },
-          {
-            id: "all",
-            display: "All Nodes",
-            items: formattedAllNodes,
-          },
-        ]);
-      } else {
-        // dag mode - start with root nodes
-        const rootNodes: Node[] = [];
-        for (const node of nodes) {
-          const parents = await getParentNodes(node.nodeId);
-          if (parents.length === 0) {
-            rootNodes.push(node);
-          }
+      // dag mode - start with root nodes
+      const rootNodes: Node[] = [];
+      for (const node of nodes) {
+        const parents = await getParentNodes(node.nodeId);
+        if (parents.length === 0) {
+          rootNodes.push(node);
         }
-        
-        setCurrentParentIds([]);
-        setInitialParentsSelected(false);
-        
-        const rootItems = rootNodes.map(node => ({
+      }
+
+      setCurrentParentIds([]);
+      setInitialParentsSelected(false);
+
+      setChildItems(
+        rootNodes.map((node) => ({
           id: node.nodeId,
           display: node.name,
           data: node,
-          selected: currentInitialSelection.includes(node.nodeId),
-        }));
-        
-        
-        setChildItems(rootItems);
-        
-        setLists([
-          {
-            id: "dag",
-            display: "Nodes",
-            items: [],
-          },
-        ]);
-      }
+          selected: initialSelection.includes(node.nodeId),
+        })),
+      );
+
+      setLists([
+        {
+          id: "dag",
+          display: "Nodes",
+          items: [],
+        },
+      ]);
     } catch (error) {
       logger.error("Error fetching nodes:", error);
     } finally {
       setLoading(false);
     }
-  }, [viewMode, initialSelection]);
+  };
 
   const getChildrenNodes = useCallback(async (parentIds: string[]) => {
     if (parentIds.length === 0) {
@@ -153,15 +117,12 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     setCurrentParentIds(selectedParentIds);
     setInitialParentsSelected(true);
     
-    const childItems = children.map(node => ({
+    setChildItems(children.map(node => ({
       id: node.nodeId,
       display: node.name,
       data: node,
       selected: initialSelection.includes(node.nodeId),
-    }));
-    
-    
-    setChildItems(childItems);
+    })));
   }, [getChildrenNodes, initialSelection]);
 
   const navigateUp = useCallback(async () => {
@@ -190,15 +151,12 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
       setCurrentParentIds([]);
       setInitialParentsSelected(false);
       
-      const rootItems = rootNodes.map(node => ({
+      setChildItems(rootNodes.map(node => ({
         id: node.nodeId,
         display: node.name,
         data: node,
         selected: initialSelection.includes(node.nodeId),
-      }));
-      
-      
-      setChildItems(rootItems);
+      })));
     } else {
       await navigateToChildren(uniqueGrandParentIds);
     }
@@ -206,26 +164,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
 
   useEffect(() => {
     fetchNodes();
-  }, [fetchNodes]);
-
-  // Update selections when initialSelection changes
-  useEffect(() => {
-    if (viewMode === "dag" && childItems.length > 0) {
-      // Check if any selections need to be updated
-      const needsUpdate = childItems.some(item => 
-        item.selected !== initialSelection.includes(item.id)
-      );
-      
-      if (needsUpdate) {
-        const updatedItems = childItems.map(item => ({
-          ...item,
-          selected: initialSelection.includes(item.id),
-        }));
-        
-        setChildItems(updatedItems);
-      }
-    }
-  }, [initialSelection, viewMode]);
+  }, []);
 
   // keymapping
   const { keymap } = useContext(KeysContext);
@@ -238,66 +177,39 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
         description: "Toggle List/Items",
         name: "toggle-list-or-items",
         handler: () => {
-          setMode(prevMode => prevMode === "lists" ? "items" : "lists");
+          setMode((prevMode) => (prevMode === "lists" ? "items" : "lists"));
         },
         hidden: true,
       },
+      {
+        sequence: [key("u")],
+        description: "Navigate up",
+        name: "navigate-up",
+        handler: navigateUp,
+      },
+      {
+        sequence: [key("'")],
+        description: "Toggle navigate/select mode",
+        name: "toggle-dag-mode",
+        handler: () => {
+          setDagMode((prev) => (prev === "navigate" ? "select" : "navigate"));
+        },
+      },
     ];
-
-    if (viewMode === "list") {
-      keymapConfig.push(
-        {
-          sequence: [key("{")],
-          description: "Previous list",
-          name: "prevList",
-          handler: () => {
-            switchListByIndex(currentListIndex - 1);
-          },
-        },
-        {
-          sequence: [key("}")],
-          description: "Next list",
-          name: "nextList",
-          handler: () => {
-            switchListByIndex(currentListIndex + 1);
-          },
-        }
-      );
-    } else {
-      // dag mode keybindings
-      keymapConfig.push(
-        {
-          sequence: [key("u")],
-          description: "Navigate up",
-          name: "navigate-up",
-          handler: navigateUp,
-        },
-        {
-          sequence: [key("'")],
-          description: "Toggle navigate/select mode",
-          name: "toggle-dag-mode",
-          handler: () => {
-            setDagMode(prev => prev === "navigate" ? "select" : "navigate");
-          },
-        },
-      );
-    }
-
 
     keymap.pushKeymap(keymapConfig);
 
     return () => {
       keymap.popKeymap();
     };
-  }, [viewMode, keymap, setMode]);
+  }, [keymap, setMode, navigateUp, setDagMode]);
 
   return (
     <Box borderStyle="single" borderColor="gray">
       {loading ? (
         <Text>Loading nodes...</Text>
-      ) : viewMode === "dag" && mode === "items" ? (
+      ) : mode === "items" ? (
         <CoreList
-          key={`dag-${initialSelection.join(',')}`}
           items={childItems}
           multiple={dagMode === "select" ? multiple : false}
           initialMode="select"
@@ -320,33 +232,6 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
                 }
               }
             }
-          }}
-        />
-      ) : viewMode === "dag" && mode === "lists" ? (
-        <CoreList
-          items={lists}
-          onSelected={(selectedLists: List[]) => {
-            if (selectedLists.length > 0) {
-              const selectedList = selectedLists[0];
-              switchListById(selectedList.id);
-              setMode("items");
-            }
-          }}
-          multiple={false}
-          initialMode="select"
-          confirm={true}
-        />
-      ) : mode === "items" ? (
-        <CoreList
-          key={`list-${initialSelection.join(',')}`}
-          items={currentListItems}
-          multiple={multiple}
-          initialMode="select"
-          onSelected={async (selectedItems: ListItem[]) => {
-            const nodeIds = selectedItems.map(
-              (item) => (item.data as Node).nodeId,
-            );
-            onSelected(nodeIds);
           }}
         />
       ) : (
