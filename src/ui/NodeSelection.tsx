@@ -32,6 +32,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
   const [currentParentIds, setCurrentParentIds] = useState<string[]>([]);
   const [dagMode, setDagMode] = useState<DagModes>("select");
   const [childItems, setChildItems] = useState<ListItem[]>([]);
+  const [currentFilter, setCurrentFilter] = useState<NodeTreeFilter>(NodeTreeFilter.ALL);
   const navigateUpRef = useRef<() => Promise<void>>();
 
   // Debug logging for state changes
@@ -46,7 +47,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
   }, [mode, dagMode, currentParentIds, childItems.length, lists.length]);
 
   const { currentListItems, currentListIndex, switchListByIndex, switchListById } =
-    useListSwitching(lists);
+    useListSwitching(lists, 0); // Default to first list (all)
 
   const fetchNodes = async () => {
     setLoading(true);
@@ -54,19 +55,12 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
       const nodes = await filteredNodeTree(NodeTreeFilter.ALL);
       setAllNodes(nodes);
 
-      // dag mode - start with root nodes
-      const rootNodes: Node[] = [];
-      for (const node of nodes) {
-        const parents = await getParentNodes(node.nodeId);
-        if (parents.length === 0) {
-          rootNodes.push(node);
-        }
-      }
-
+      // Initialize with all nodes
       setCurrentParentIds([]);
+      setCurrentFilter(NodeTreeFilter.ALL);
 
       setChildItems(
-        rootNodes.map((node) => ({
+        nodes.map((node) => ({
           id: node.nodeId,
           display: node.name,
           data: node,
@@ -75,8 +69,38 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
 
       setLists([
         {
-          id: "dag",
-          display: "Nodes",
+          id: "all",
+          display: "All",
+          items: [],
+        },
+        {
+          id: "main",
+          display: "Main",
+          items: [],
+        },
+        {
+          id: "projects",
+          display: "Projects",
+          items: [],
+        },
+        {
+          id: "trails",
+          display: "Trails",
+          items: [],
+        },
+        {
+          id: "topics",
+          display: "Topics",
+          items: [],
+        },
+        {
+          id: "modes",
+          display: "Modes",
+          items: [],
+        },
+        {
+          id: "tags",
+          display: "Tags",
           items: [],
         },
       ]);
@@ -237,11 +261,56 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
       ) : (
         <CoreList
           items={lists}
-          onSelected={(selectedLists: List[]) => {
+          onSelected={async (selectedLists: List[]) => {
             if (selectedLists.length > 0) {
               const selectedList = selectedLists[0];
-              switchListById(selectedList.id);
-              setMode("items");
+              
+              // Map list ID to NodeTreeFilter
+              let filter: NodeTreeFilter;
+              switch (selectedList.id) {
+                case "main":
+                  filter = NodeTreeFilter.MAIN;
+                  break;
+                case "projects":
+                  filter = NodeTreeFilter.PROJECTS;
+                  break;
+                case "trails":
+                  filter = NodeTreeFilter.TRAILS;
+                  break;
+                case "topics":
+                  filter = NodeTreeFilter.TOPICS;
+                  break;
+                case "modes":
+                  filter = NodeTreeFilter.MODES;
+                  break;
+                case "tags":
+                  filter = NodeTreeFilter.TAGS;
+                  break;
+                case "all":
+                default:
+                  filter = NodeTreeFilter.ALL;
+                  break;
+              }
+              
+              // Fetch filtered nodes and update childItems
+              try {
+                const filteredNodes = await filteredNodeTree(filter);
+                setCurrentFilter(filter);
+                setCurrentParentIds([]);
+                
+                setChildItems(
+                  filteredNodes.map((node) => ({
+                    id: node.nodeId,
+                    display: node.name,
+                    data: node,
+                  })),
+                );
+                
+                switchListById(selectedList.id);
+                setMode("items");
+              } catch (error) {
+                logger.error("Error fetching filtered nodes:", error);
+              }
             }
           }}
           multiple={false}

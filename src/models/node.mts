@@ -15,6 +15,7 @@ export enum NodeTreeFilter {
   RECENT = "recent",
   TEMP = "temp",
   CONTEXT = "context",
+  MAIN = "main",
   PROJECTS = "projects",
   TRAILS = "trails",
   TOPICS = "topics",
@@ -721,6 +722,8 @@ export async function nodeTree(
     } else if (filter === NodeTreeFilter.TEMP) {
       // Only temporary nodes
       filterCondition = "AND temp = true";
+    } else if (filter === NodeTreeFilter.MAIN) {
+      nodeIdForType = "zydKL5p5RuJM50pQLHMM7";
     } else if (filter === NodeTreeFilter.PROJECTS) {
       nodeIdForType = "z-bJhwlUaeUhEsO2Ts_VC";
     } else if (filter === NodeTreeFilter.TRAILS) {
