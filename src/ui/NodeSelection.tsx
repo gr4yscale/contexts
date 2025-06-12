@@ -33,6 +33,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
   const [dagMode, setDagMode] = useState<DagModes>("select");
   const [childItems, setChildItems] = useState<ListItem[]>([]);
   const [currentFilter, setCurrentFilter] = useState<NodeTreeFilter>(NodeTreeFilter.MAIN);
+  const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>(initialSelection);
   const navigateUpRef = useRef<() => Promise<void>>();
 
   // Debug logging for state changes
@@ -144,7 +145,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
       display: node.name,
       data: node,
     })));
-  }, [getChildrenNodes, initialSelection]);
+  }, [getChildrenNodes]);
 
   const navigateUp = useCallback(async () => {
     if (currentParentIds.length === 0) return;
@@ -179,7 +180,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     } else {
       await navigateToChildren(uniqueGrandParentIds);
     }
-  }, [currentParentIds, allNodes, navigateToChildren, initialSelection]);
+  }, [currentParentIds, allNodes, navigateToChildren]);
 
   // Update the ref whenever navigateUp changes
   useEffect(() => {
@@ -238,15 +239,17 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
           multiple={dagMode === "select" ? multiple : false}
           initialMode="select"
           reservedKeys={[":"]}
-          statusText={dagMode === "navigate" ? "#N" : "#S"}
+          statusText={dagMode === "navigate" ? "navigate" : "select"}
           confirm={dagMode === "select"}
-          initialSelection={initialSelection}
+          initialSelection={selectedNodeIds}
           onSelected={async (selectedItems: ListItem[]) => {
+            const nodeIds = selectedItems.map(
+              (item) => (item.data as Node).nodeId,
+            );
+            
+            setSelectedNodeIds(nodeIds);
             if (dagMode === "select") {
               // In selection mode, call the parent callback
-              const nodeIds = selectedItems.map(
-                (item) => (item.data as Node).nodeId,
-              );
               onSelected(nodeIds);
             } else {
               const selectedNode = selectedItems[0]?.data as Node;
@@ -307,6 +310,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
                   })),
                 );
                 
+                setSelectedNodeIds([]);
                 switchListById(selectedList.id);
                 setMode("items");
               } catch (error) {
