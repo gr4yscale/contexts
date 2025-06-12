@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext, useCallback, useRef } from "rea
 import { Box, Text } from "ink";
 
 import { Node } from "../types.mts";
-import { filteredNodeTree, NodeTreeFilter, formatNodeWithHierarchy, getChildNodes, getParentNodes } from "../models/node.mts";
+import { filteredNodeTree, NodeTreeFilter, formatNodeWithHierarchy, getChildNodes, getParentNodes, getFilteredRootNodes } from "../models/node.mts";
 import * as logger from "../logger.mts";
 
 import { KeymapConfig, key } from "./common/Keymapping.mts";
@@ -56,7 +56,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
       setAllNodes(allNodes);
 
       // Initialize with main filter
-      const nodes = await filteredNodeTree(NodeTreeFilter.MAIN);
+      const nodes = await getFilteredRootNodes(NodeTreeFilter.MAIN);
       setCurrentParentIds([]);
       setCurrentFilter(NodeTreeFilter.MAIN);
 
@@ -295,7 +295,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
               
               // Fetch filtered nodes and update childItems
               try {
-                const filteredNodes = await filteredNodeTree(filter);
+                const filteredNodes = await getFilteredRootNodes(filter);
                 setCurrentFilter(filter);
                 setCurrentParentIds([]);
                 

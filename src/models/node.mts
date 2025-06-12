@@ -531,6 +531,77 @@ export async function getParentNodeIds(
 }
 
 /**
+ * Gets the root-level children for a given NodeTreeFilter
+ * @param filter - The filter to apply to get the starting nodes
+ * @returns Array of nodes that are the top-level items for the filter
+ */
+export async function getFilteredRootNodes(
+  filter: NodeTreeFilter = NodeTreeFilter.ALL,
+): Promise<Node[]> {
+  try {
+    const client = await getConnection();
+
+    let nodeIdForType = "";
+    let filterCondition = "";
+    
+    if (filter === NodeTreeFilter.RECENT) {
+      // Nodes from the last 7 days
+      filterCondition =
+        "AND lastaccessed > (CURRENT_TIMESTAMP - INTERVAL '7 days')";
+    } else if (filter === NodeTreeFilter.TEMP) {
+      // Only temporary nodes
+      filterCondition = "AND temp = true";
+    } else if (filter === NodeTreeFilter.MAIN) {
+      nodeIdForType = "zydKL5p5RuJM50pQLHMM7";
+    } else if (filter === NodeTreeFilter.PROJECTS) {
+      nodeIdForType = "z-bJhwlUaeUhEsO2Ts_VC";
+    } else if (filter === NodeTreeFilter.TRAILS) {
+      nodeIdForType = "Ud_NiOMjCZiXBAxi8pBID";
+    } else if (filter === NodeTreeFilter.TOPICS) {
+      nodeIdForType = "8mAFMg8bCzELMcBCcF3Xg";
+    } else if (filter === NodeTreeFilter.MODES) {
+      nodeIdForType = "UZENv7LTTolbL0sa5RVL1";
+    } else if (filter === NodeTreeFilter.TAGS) {
+      nodeIdForType = "1nGe7HBcOdnHwdw8Eg_Kl";
+    }
+
+    let result;
+    
+    if (nodeIdForType) {
+      // For specific node filters, return the children of the specific node
+      result = await client.query(`
+        SELECT n.nodeid, n.name, n.created, n.lastaccessed, n.temp
+        FROM nodes n
+        JOIN node_relationships nr ON n.nodeid = nr.child_node_id
+        WHERE nr.parent_node_id = $1
+        ORDER BY n.lastaccessed DESC;
+      `, [nodeIdForType]);
+    } else {
+      // For other filters, return root nodes (nodes with no parents)
+      result = await client.query(`
+        SELECT n.nodeid, n.name, n.created, n.lastaccessed, n.temp
+        FROM nodes n
+        WHERE NOT EXISTS (
+          SELECT 1 FROM node_relationships nr WHERE nr.child_node_id = n.nodeid
+        ) ${filterCondition}
+        ORDER BY n.lastaccessed DESC;
+      `);
+    }
+
+    return result.rows.map((row: any) => ({
+      nodeId: row.nodeid,
+      name: row.name,
+      created: new Date(row.created),
+      lastAccessed: new Date(row.lastaccessed),
+      temp: row.temp,
+    }));
+  } catch (error) {
+    logger.error("Error getting filtered root nodes:", error);
+    throw error;
+  }
+}
+
+/**
  * Checks if adding a relationship between two nodes would create a cycle
  * @param parentNodeId The ID of the parent node
  * @param childNodeId The ID of the child node
