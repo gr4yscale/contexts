@@ -4,6 +4,7 @@ interface UseSelectionStateOptions<T> {
   items: T[];
   multiple?: boolean;
   onSelected?: (selectedItems: T[]) => void;
+  onSelectionChange?: (selectedItems: T[]) => void;
   initialSelection?: string[];
 }
 
@@ -26,6 +27,7 @@ export default function useSelectionState<
   items,
   multiple = false,
   onSelected,
+  onSelectionChange,
   initialSelection = [],
 }: UseSelectionStateOptions<T>): UseSelectionStateReturn<T> {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -51,18 +53,28 @@ export default function useSelectionState<
   const toggleSelection = useCallback(
     (id: string) => {
       setSelectedIds((prev) => {
+        let newSelection: string[];
+        
         // For single selection mode, replace the selection
         if (!multiple) {
-          return prev.includes(id) ? [] : [id];
+          newSelection = prev.includes(id) ? [] : [id];
+        } else {
+          // For multiple selection mode, toggle the selection
+          newSelection = prev.includes(id)
+            ? prev.filter((selectedId) => selectedId !== id)
+            : [...prev, id];
         }
-
-        // For multiple selection mode, toggle the selection
-        return prev.includes(id)
-          ? prev.filter((selectedId) => selectedId !== id)
-          : [...prev, id];
+        
+        // Call onSelectionChange with the new selection
+        if (onSelectionChange) {
+          const selectedItems = items.filter((item) => newSelection.includes(item.id));
+          onSelectionChange(selectedItems);
+        }
+        
+        return newSelection;
       });
     },
-    [multiple],
+    [multiple, items, onSelectionChange],
   );
 
   // Check if an item is selected

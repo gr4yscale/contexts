@@ -242,12 +242,18 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
           statusText={dagMode === "navigate" ? "navigate" : "select"}
           confirm={dagMode === "select"}
           initialSelection={selectedNodeIds}
+          onSelectionChange={(selectedItems: ListItem[]) => {
+            // Update our internal selection state on every selection change
+            const nodeIds = selectedItems.map(
+              (item) => (item.data as Node).nodeId,
+            );
+            setSelectedNodeIds(nodeIds);
+          }}
           onSelected={async (selectedItems: ListItem[]) => {
             const nodeIds = selectedItems.map(
               (item) => (item.data as Node).nodeId,
             );
             
-            setSelectedNodeIds(nodeIds);
             if (dagMode === "select") {
               // In selection mode, call the parent callback
               onSelected(nodeIds);

@@ -26,6 +26,7 @@ interface CoreListProps {
   items: ListItem[];
   multiple?: boolean;
   onSelected?: (selectedItems: any[]) => void;
+  onSelectionChange?: (selectedItems: any[]) => void;
   initialMode?: Modes;
   reservedKeys?: string[];
   statusText?: string;
@@ -40,6 +41,7 @@ const CoreList: React.FC<CoreListProps> = ({
   items = [],
   multiple = false,
   onSelected,
+  onSelectionChange,
   initialMode = "search",
   reservedKeys = [],
   statusText,
@@ -75,6 +77,7 @@ const CoreList: React.FC<CoreListProps> = ({
     items,
     multiple,
     onSelected: confirm ? undefined : onSelected,
+    onSelectionChange,
     initialSelection,
   });
 
