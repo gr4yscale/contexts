@@ -349,8 +349,6 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
                   })),
                 );
                 
-                // Clear selection when switching filters
-                setSelectedNodeIds([]);
                 
                 switchListById(selectedList.id);
                 setMode("items");
