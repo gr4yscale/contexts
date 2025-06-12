@@ -227,7 +227,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
         description: "Confirm selection",
         name: "confirm-selection",
         handler: () => {
-          if (dagMode === "select" && selectedNodeIds.length > 0) {
+          if (selectedNodeIds.length > 0) {
             setShowConfirmation(true);
           }
         },
