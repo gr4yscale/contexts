@@ -244,10 +244,18 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
           initialSelection={selectedNodeIds}
           onSelectionChange={(selectedItems: ListItem[]) => {
             // Update our internal selection state on every selection change
-            const nodeIds = selectedItems.map(
+            const currentViewNodeIds = selectedItems.map(
               (item) => (item.data as Node).nodeId,
             );
-            setSelectedNodeIds(nodeIds);
+            
+            // Get the IDs of nodes currently visible in this view
+            const currentViewAllNodeIds = childItems.map(item => (item.data as Node).nodeId);
+            
+            // Preserve selections from nodes not in current view, update selections for current view
+            setSelectedNodeIds(prevSelected => {
+              const notInCurrentView = prevSelected.filter(id => !currentViewAllNodeIds.includes(id));
+              return [...notInCurrentView, ...currentViewNodeIds];
+            });
           }}
           onSelected={async (selectedItems: ListItem[]) => {
             const nodeIds = selectedItems.map(
