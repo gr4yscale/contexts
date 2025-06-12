@@ -32,7 +32,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
   const [currentParentIds, setCurrentParentIds] = useState<string[]>([]);
   const [dagMode, setDagMode] = useState<DagModes>("select");
   const [childItems, setChildItems] = useState<ListItem[]>([]);
-  const [currentFilter, setCurrentFilter] = useState<NodeTreeFilter>(NodeTreeFilter.ALL);
+  const [currentFilter, setCurrentFilter] = useState<NodeTreeFilter>(NodeTreeFilter.MAIN);
   const navigateUpRef = useRef<() => Promise<void>>();
 
   // Debug logging for state changes
@@ -47,17 +47,18 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
   }, [mode, dagMode, currentParentIds, childItems.length, lists.length]);
 
   const { currentListItems, currentListIndex, switchListByIndex, switchListById } =
-    useListSwitching(lists, 0); // Default to first list (all)
+    useListSwitching(lists, 1); // Default to second list (main)
 
   const fetchNodes = async () => {
     setLoading(true);
     try {
-      const nodes = await filteredNodeTree(NodeTreeFilter.ALL);
-      setAllNodes(nodes);
+      const allNodes = await filteredNodeTree(NodeTreeFilter.ALL);
+      setAllNodes(allNodes);
 
-      // Initialize with all nodes
+      // Initialize with main filter
+      const nodes = await filteredNodeTree(NodeTreeFilter.MAIN);
       setCurrentParentIds([]);
-      setCurrentFilter(NodeTreeFilter.ALL);
+      setCurrentFilter(NodeTreeFilter.MAIN);
 
       setChildItems(
         nodes.map((node) => ({
