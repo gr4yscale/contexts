@@ -15,6 +15,11 @@ export enum NodeTreeFilter {
   RECENT = "recent",
   TEMP = "temp",
   CONTEXT = "context",
+  PROJECTS = "projects",
+  TRAILS = "trails",
+  TOPICS = "topics",
+  MODES = "modes",
+  TAGS = "tags",
 }
 
 // Define NodeCreate type as a partial of Node with required fields
@@ -707,6 +712,8 @@ export async function nodeTree(
 
     // Build the filter condition for the base case
     let filterCondition = "";
+    let nodeIdForType = "";
+    
     if (filter === NodeTreeFilter.RECENT) {
       // Nodes from the last 7 days
       filterCondition =
@@ -714,60 +721,122 @@ export async function nodeTree(
     } else if (filter === NodeTreeFilter.TEMP) {
       // Only temporary nodes
       filterCondition = "AND temp = true";
+    } else if (filter === NodeTreeFilter.PROJECTS) {
+      nodeIdForType = "z-bJhwlUaeUhEsO2Ts_VC";
+    } else if (filter === NodeTreeFilter.TRAILS) {
+      nodeIdForType = "Ud_NiOMjCZiXBAxi8pBID";
+    } else if (filter === NodeTreeFilter.TOPICS) {
+      nodeIdForType = "8mAFMg8bCzELMcBCcF3Xg";
+    } else if (filter === NodeTreeFilter.MODES) {
+      nodeIdForType = "UZENv7LTTolbL0sa5RVL1";
+    } else if (filter === NodeTreeFilter.TAGS) {
+      nodeIdForType = "1nGe7HBcOdnHwdw8Eg_Kl";
     }
 
     // This recursive CTE query for DAG:
     // 1. Starts with root nodes (no parents in node_relationships) that match the filter
     // 2. Recursively joins to find children up to depth 3
     // 3. Orders results so parents come before children
-    const result = await client.query(`
-      WITH RECURSIVE node_tree AS (
-        -- Base case: select root nodes (no parents in relationships table) with filter applied
-        SELECT 
-          n.nodeid, 
-          n.name, 
-          n.created, 
-          n.lastaccessed, 
-          n.temp,
-          0 AS depth,
-          ARRAY[n.nodeid] AS path
-        FROM nodes n
-        WHERE NOT EXISTS (
-          SELECT 1 FROM node_relationships nr WHERE nr.child_node_id = n.nodeid
-        ) ${filterCondition}
+    let result;
+    
+    if (nodeIdForType) {
+      // For specific node filters, start from the specific node and get its children
+      result = await client.query(`
+        WITH RECURSIVE node_tree AS (
+          -- Base case: select the specific node
+          SELECT 
+            n.nodeid, 
+            n.name, 
+            n.created, 
+            n.lastaccessed, 
+            n.temp,
+            0 AS depth,
+            ARRAY[n.nodeid] AS path
+          FROM nodes n
+          WHERE n.nodeid = $1
+          
+          UNION ALL
+          
+          -- Recursive case: select children and increment depth
+          SELECT 
+            n.nodeid, 
+            n.name, 
+            n.created, 
+            n.lastaccessed,
+            n.temp,
+            nt.depth + 1 AS depth,
+            nt.path || n.nodeid AS path
+          FROM nodes n
+          JOIN node_relationships nr ON n.nodeid = nr.child_node_id
+          JOIN node_tree nt ON nr.parent_node_id = nt.nodeid
+          WHERE nt.depth < 3  -- Limit recursion to depth 3
+          AND NOT (n.nodeid = ANY(nt.path))  -- Prevent cycles
+        )
         
-        UNION ALL
+        SELECT DISTINCT
+          nodeid, 
+          name, 
+          created, 
+          lastaccessed,
+          temp,
+          MIN(depth) as depth  -- Use minimum depth if node appears multiple times
+        FROM node_tree
+        GROUP BY nodeid, name, created, lastaccessed, temp
+        ORDER BY 
+          depth,  -- Order by depth first
+          lastaccessed DESC;  -- Then by last accessed
+      `, [nodeIdForType]);
+    } else {
+      // For other filters, use the original query
+      result = await client.query(`
+        WITH RECURSIVE node_tree AS (
+          -- Base case: select root nodes (no parents in relationships table) with filter applied
+          SELECT 
+            n.nodeid, 
+            n.name, 
+            n.created, 
+            n.lastaccessed, 
+            n.temp,
+            0 AS depth,
+            ARRAY[n.nodeid] AS path
+          FROM nodes n
+          WHERE NOT EXISTS (
+            SELECT 1 FROM node_relationships nr WHERE nr.child_node_id = n.nodeid
+          ) ${filterCondition}
+          
+          UNION ALL
+          
+          -- Recursive case: select children and increment depth
+          SELECT 
+            n.nodeid, 
+            n.name, 
+            n.created, 
+            n.lastaccessed,
+            n.temp,
+            nt.depth + 1 AS depth,
+            nt.path || n.nodeid AS path
+          FROM nodes n
+          JOIN node_relationships nr ON n.nodeid = nr.child_node_id
+          JOIN node_tree nt ON nr.parent_node_id = nt.nodeid
+          WHERE nt.depth < 3  -- Limit recursion to depth 3
+          AND NOT (n.nodeid = ANY(nt.path))  -- Prevent cycles
+          ${filter === NodeTreeFilter.TEMP ? "AND n.temp = true" : ""}
+        )
         
-        -- Recursive case: select children and increment depth
-        SELECT 
-          n.nodeid, 
-          n.name, 
-          n.created, 
-          n.lastaccessed,
-          n.temp,
-          nt.depth + 1 AS depth,
-          nt.path || n.nodeid AS path
-        FROM nodes n
-        JOIN node_relationships nr ON n.nodeid = nr.child_node_id
-        JOIN node_tree nt ON nr.parent_node_id = nt.nodeid
-        WHERE nt.depth < 3  -- Limit recursion to depth 3
-        AND NOT (n.nodeid = ANY(nt.path))  -- Prevent cycles
-        ${filter === NodeTreeFilter.TEMP ? "AND n.temp = true" : ""}
-      )
-      
-      SELECT DISTINCT
-        nodeid, 
-        name, 
-        created, 
-        lastaccessed,
-        temp,
-        MIN(depth) as depth  -- Use minimum depth if node appears multiple times
-      FROM node_tree
-      GROUP BY nodeid, name, created, lastaccessed, temp
-      ORDER BY 
-        depth,  -- Order by depth first
-        lastaccessed DESC;  -- Then by last accessed
-    `);
+        SELECT DISTINCT
+          nodeid, 
+          name, 
+          created, 
+          lastaccessed,
+          temp,
+          MIN(depth) as depth  -- Use minimum depth if node appears multiple times
+        FROM node_tree
+        GROUP BY nodeid, name, created, lastaccessed, temp
+        ORDER BY 
+          depth,  -- Order by depth first
+          lastaccessed DESC;  -- Then by last accessed
+      `);
+    }
 
     if (result.rows.length === 0) {
       return [];
