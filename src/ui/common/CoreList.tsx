@@ -7,7 +7,7 @@ import usePaging from "./usePaging.mts";
 import useHotkeySelection from "./useHotkeySelection.mts";
 import useSelectionState from "./useSelectionState.mts";
 
-export type Modes = "search" | "select" | "confirm";
+export type Modes = "search" | "select";
 
 export type ListItem = {
   id: string;
@@ -30,7 +30,6 @@ interface CoreListProps {
   initialMode?: Modes;
   reservedKeys?: string[];
   statusText?: string;
-  confirm?: boolean;
   initialSelection?: string[];
 }
 
@@ -45,7 +44,6 @@ const CoreList: React.FC<CoreListProps> = ({
   initialMode = "search",
   reservedKeys = [],
   statusText,
-  confirm = true,
   initialSelection = [],
 }) => {
   const [mode, setMode] = useState<Modes>(initialMode);
@@ -76,7 +74,7 @@ const CoreList: React.FC<CoreListProps> = ({
   } = useSelectionState({
     items,
     multiple,
-    onSelected: confirm ? undefined : onSelected,
+    onSelected: multiple ? undefined : onSelected,
     onSelectionChange,
     initialSelection,
   });
@@ -105,7 +103,7 @@ const CoreList: React.FC<CoreListProps> = ({
     return () => {
       keymap.popKeymap();
     };
-  }, [confirm]);
+  }, []);
 
   // mode-specific keymap
   useEffect(() => {
@@ -179,19 +177,12 @@ const CoreList: React.FC<CoreListProps> = ({
             sequence: [key("\r", "return")],
             description: "commit / select",
             name: "commit/select",
-            handler: confirm ? () => {
-              setMode(prev => "confirm");
-            } : completeSelection,
+            handler: () => {
+              if (multiple && onSelected) {
+                onSelected(selectedItems);
+              }
+            },
             hidden: true,
-          },
-          {
-            sequence: [key(" ")],
-            description: "Enter confirmation mode",
-            name: "enter-confirmation",
-            handler: confirm ? () => {
-              setMode(prev => "confirm");
-            } : completeSelection,
-            hidden: !confirm,
           },
           {
             sequence: [key("[")],
@@ -218,30 +209,6 @@ const CoreList: React.FC<CoreListProps> = ({
         ];
         break;
 
-      case "confirm":
-        keymapConfig = [
-          {
-            sequence: [key("y")],
-            description: "Confirm selection",
-            name: "confirm-selection",
-            handler: () => {
-              if (onSelected) {
-                onSelected(selectedItems);
-              }
-              setMode(prev => "select");
-            },
-          },
-          {
-            sequence: [key("n")],
-            description: "Cancel selection",
-            name: "cancel-selection",
-            handler: () => {
-              clearSelection();
-              setMode("select");
-            },
-          },
-        ];
-        break;
     }
 
     keymap.pushKeymap(keymapConfig);
@@ -249,7 +216,7 @@ const CoreList: React.FC<CoreListProps> = ({
     return () => {
       keymap.popKeymap();
     };
-  }, [mode, confirm, completeSelection, clearSelection, selectedItems, onSelected, clearSearch, trimLastCharacter, prevPage, nextPage]);
+  }, [mode, multiple, completeSelection, clearSelection, selectedItems, onSelected, clearSearch, trimLastCharacter, prevPage, nextPage]);
 
   // handle character input in search mode
   useInput(
@@ -280,32 +247,22 @@ const CoreList: React.FC<CoreListProps> = ({
       paddingTop={1}
       paddingBottom={0}
     >
-      {mode === "confirm" ? (
-        <Box flexDirection="column">
-          <Text>Selected items:</Text>
-          {selectedItems.map((item, index) => (
-            <Text key={index}>• {item.display || item.id}</Text>
-          ))}
-          <Text>Confirm selection? (y/n)</Text>
-        </Box>
-      ) : (
-        <Box flexDirection="column">
-          {paginatedItems.map((item, index) => (
-            <Text key={index}>
-              {mode === "select" && (
-                <Text color="yellow">[{getItemHotkey(item.id)}] </Text>
-              )}
-              <Text
-                color={isSelected(item.id) ? "black" : "white"}
-                backgroundColor={isSelected(item.id) ? "cyan" : undefined}
-              >
-                {item.display || item.id || JSON.stringify(item)}
-              </Text>
-              {isSelected(item.id) && multiple && <Text color="cyan"> ✓</Text>}
+      <Box flexDirection="column">
+        {paginatedItems.map((item, index) => (
+          <Text key={index}>
+            {mode === "select" && (
+              <Text color="yellow">[{getItemHotkey(item.id)}] </Text>
+            )}
+            <Text
+              color={isSelected(item.id) ? "black" : "white"}
+              backgroundColor={isSelected(item.id) ? "cyan" : undefined}
+            >
+              {item.display || item.id || JSON.stringify(item)}
             </Text>
-          ))}
-        </Box>
-      )}
+            {isSelected(item.id) && multiple && <Text color="cyan"> ✓</Text>}
+          </Text>
+        ))}
+      </Box>
       <Box marginTop={1}>
         <Text color="blue">Mode: {mode}</Text>
         {totalPages > 1 && (
