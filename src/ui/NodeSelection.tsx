@@ -223,7 +223,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
         },
       },
       {
-        sequence: [key(" ")],
+        sequence: [key("\r", "return")],
         description: "Confirm selection",
         name: "confirm-selection",
         handler: () => {
