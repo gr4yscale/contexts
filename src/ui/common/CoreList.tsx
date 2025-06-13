@@ -31,6 +31,7 @@ interface CoreListProps {
   reservedKeys?: string[];
   statusText?: string;
   initialSelection?: string[];
+  showStatus?: boolean;
 }
 
 const ITEMS_PER_PAGE = 20;
@@ -45,6 +46,7 @@ const CoreList: React.FC<CoreListProps> = ({
   reservedKeys = [],
   statusText,
   initialSelection = [],
+  showStatus = true,
 }) => {
   const [mode, setMode] = useState<Modes>(initialMode);
 
@@ -263,38 +265,40 @@ const CoreList: React.FC<CoreListProps> = ({
           </Text>
         ))}
       </Box>
-      <Box marginTop={1}>
-        <Text color="blue">Mode: {mode}</Text>
-        {totalPages > 1 && (
-          <>
-            <Text> | </Text>
-            <Text color="blue">
-              Page: {currentPage + 1}/{totalPages}
-            </Text>
-          </>
-        )}
-        {selectedIds.length > 0 && (
-          <>
-            <Text> | </Text>
-            <Text color="blue">
-              Selected: {selectedIds.length} item
-              {selectedIds.length !== 1 ? "s" : ""}
-            </Text>
-          </>
-        )}
-        {searchString && (
-          <>
-            <Text> | </Text>
-            <Text color="blue">{`(filtered: "${searchString}")`}</Text>
-          </>
-        )}
-        {statusText && (
-          <>
-            <Text> | </Text>
-            <Text color="green">{statusText}</Text>
-          </>
-        )}
-      </Box>
+      {showStatus && (
+        <Box marginTop={1}>
+          <Text color="blue">Mode: {mode}</Text>
+          {totalPages > 1 && (
+            <>
+              <Text> | </Text>
+              <Text color="blue">
+                Page: {currentPage + 1}/{totalPages}
+              </Text>
+            </>
+          )}
+          {selectedIds.length > 0 && (
+            <>
+              <Text> | </Text>
+              <Text color="blue">
+                Selected: {selectedIds.length} item
+                {selectedIds.length !== 1 ? "s" : ""}
+              </Text>
+            </>
+          )}
+          {searchString && (
+            <>
+              <Text> | </Text>
+              <Text color="blue">{`(filtered: "${searchString}")`}</Text>
+            </>
+          )}
+          {statusText && (
+            <>
+              <Text> | </Text>
+              <Text color="green">{statusText}</Text>
+            </>
+          )}
+        </Box>
+      )}
     </Box>
   );
 };
