@@ -115,15 +115,6 @@ const CoreList: React.FC<CoreListProps> = ({
       case "search":
         keymapConfig = [
           {
-            sequence: [key("\r", "return")],
-            description: "Select mode",
-            name: "mode-select",
-            handler: () => {
-              setMode(prev => "select");
-            },
-            hidden: true,
-          },
-          {
             sequence: [key("", "delete")],
             description: "Clear search string",
             name: "clearSearch",
