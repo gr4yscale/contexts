@@ -284,57 +284,60 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
           }}
         />
       ) : mode === "items" ? (
-        <>
-          <CoreList
-            key={`${currentParentIds.join('-')}-${currentFilter}`}
-            items={childItems}
-            multiple={dagMode === "select" ? multiple : false}
-            initialMode="select"
-            reservedKeys={[":"]}
-            statusText={dagMode === "navigate" ? "navigate" : "select"}
-            initialSelection={selectedNodeIds.filter(id => 
-              childItems.some(item => (item.data as Node).nodeId === id)
-            )}
-            onSelectionChange={(selectedItems: ListItem[]) => {
-              // Update our internal selection state on every selection change
-              const currentViewNodeIds = selectedItems.map(
-                (item) => (item.data as Node).nodeId,
-              );
-              
-              // Get the IDs of nodes currently visible in this view
-              const currentViewAllNodeIds = childItems.map(item => (item.data as Node).nodeId);
-              
-              // Preserve selections from nodes not in current view, update selections for current view
-              setSelectedNodeIds(prevSelected => {
-                const notInCurrentView = prevSelected.filter(id => !currentViewAllNodeIds.includes(id));
-                return [...notInCurrentView, ...currentViewNodeIds];
-              });
-            }}
-            onSelected={async (selectedItems: ListItem[]) => {
-              if (dagMode === "select") {
-                // In selection mode, show confirmation
-                setShowConfirmation(true);
-              } else {
-                // In navigate mode, navigate to children if available
-                const selectedNode = selectedItems[0]?.data as Node;
-                if (selectedNode) {
-                  const children = await getChildrenNodes([selectedNode.nodeId]);
-                  if (children.length > 0) {
-                    await navigateToChildren([selectedNode.nodeId]);
+        <Box flexDirection="row" width="100%">
+          <Box width="60%">
+            <CoreList
+              key={`${currentParentIds.join('-')}-${currentFilter}`}
+              items={childItems}
+              multiple={dagMode === "select" ? multiple : false}
+              initialMode="select"
+              reservedKeys={[":"]}
+              showStatus={false}
+              statusText={dagMode === "navigate" ? "navigate" : "select"}
+              initialSelection={selectedNodeIds.filter(id => 
+                childItems.some(item => (item.data as Node).nodeId === id)
+              )}
+              onSelectionChange={(selectedItems: ListItem[]) => {
+                // Update our internal selection state on every selection change
+                const currentViewNodeIds = selectedItems.map(
+                  (item) => (item.data as Node).nodeId,
+                );
+                
+                // Get the IDs of nodes currently visible in this view
+                const currentViewAllNodeIds = childItems.map(item => (item.data as Node).nodeId);
+                
+                // Preserve selections from nodes not in current view, update selections for current view
+                setSelectedNodeIds(prevSelected => {
+                  const notInCurrentView = prevSelected.filter(id => !currentViewAllNodeIds.includes(id));
+                  return [...notInCurrentView, ...currentViewNodeIds];
+                });
+              }}
+              onSelected={async (selectedItems: ListItem[]) => {
+                if (dagMode === "select") {
+                  // In selection mode, show confirmation
+                  setShowConfirmation(true);
+                } else {
+                  // In navigate mode, navigate to children if available
+                  const selectedNode = selectedItems[0]?.data as Node;
+                  if (selectedNode) {
+                    const children = await getChildrenNodes([selectedNode.nodeId]);
+                    if (children.length > 0) {
+                      await navigateToChildren([selectedNode.nodeId]);
+                    }
                   }
                 }
-              }
-            }}
-          />
+              }}
+            />
+          </Box>
           {selectedNodeIds.length > 0 && (
-            <Box flexDirection="column" marginTop={1} borderStyle="single" borderColor="blue">
+            <Box width="50%" flexDirection="column">
               <Text color="blue" bold>Selected ({selectedNodeIds.length}):</Text>
               {selectedNodeHierarchies.map((hierarchy, index) => (
                 <Text key={index} color="cyan">• {hierarchy}</Text>
               ))}
             </Box>
           )}
-        </>
+        </Box>
       ) : (
         <CoreList
           items={lists}
