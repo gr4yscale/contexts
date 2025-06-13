@@ -35,8 +35,32 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
   const [childItems, setChildItems] = useState<ListItem[]>([]);
   const [currentFilter, setCurrentFilter] = useState<NodeTreeFilter>(NodeTreeFilter.MAIN);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>(initialSelection);
+  const [selectedNodeHierarchies, setSelectedNodeHierarchies] = useState<string[]>([]);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const navigateUpRef = useRef<() => Promise<void>>();
+
+  // Update hierarchy paths when selectedNodeIds changes
+  useEffect(() => {
+    const updateHierarchies = async () => {
+      if (selectedNodeIds.length === 0) {
+        setSelectedNodeHierarchies([]);
+        return;
+      }
+
+      const hierarchies: string[] = [];
+      for (const nodeId of selectedNodeIds) {
+        const node = allNodes.find(n => n.nodeId === nodeId);
+        if (node) {
+          const nodeTreeItem = { ...node, selected: false };
+          const hierarchy = await formatNodeWithHierarchy(nodeTreeItem, []);
+          hierarchies.push(hierarchy);
+        }
+      }
+      setSelectedNodeHierarchies(hierarchies);
+    };
+
+    updateHierarchies();
+  }, [selectedNodeIds, allNodes]);
 
   // Debug logging for state changes
   useEffect(() => {
@@ -260,47 +284,57 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
           }}
         />
       ) : mode === "items" ? (
-        <CoreList
-          key={`${currentParentIds.join('-')}-${currentFilter}`}
-          items={childItems}
-          multiple={dagMode === "select" ? multiple : false}
-          initialMode="select"
-          reservedKeys={[":"]}
-          statusText={dagMode === "navigate" ? "navigate" : "select"}
-          initialSelection={selectedNodeIds.filter(id => 
-            childItems.some(item => (item.data as Node).nodeId === id)
-          )}
-          onSelectionChange={(selectedItems: ListItem[]) => {
-            // Update our internal selection state on every selection change
-            const currentViewNodeIds = selectedItems.map(
-              (item) => (item.data as Node).nodeId,
-            );
-            
-            // Get the IDs of nodes currently visible in this view
-            const currentViewAllNodeIds = childItems.map(item => (item.data as Node).nodeId);
-            
-            // Preserve selections from nodes not in current view, update selections for current view
-            setSelectedNodeIds(prevSelected => {
-              const notInCurrentView = prevSelected.filter(id => !currentViewAllNodeIds.includes(id));
-              return [...notInCurrentView, ...currentViewNodeIds];
-            });
-          }}
-          onSelected={async (selectedItems: ListItem[]) => {
-            if (dagMode === "select") {
-              // In selection mode, show confirmation
-              setShowConfirmation(true);
-            } else {
-              // In navigate mode, navigate to children if available
-              const selectedNode = selectedItems[0]?.data as Node;
-              if (selectedNode) {
-                const children = await getChildrenNodes([selectedNode.nodeId]);
-                if (children.length > 0) {
-                  await navigateToChildren([selectedNode.nodeId]);
+        <>
+          <CoreList
+            key={`${currentParentIds.join('-')}-${currentFilter}`}
+            items={childItems}
+            multiple={dagMode === "select" ? multiple : false}
+            initialMode="select"
+            reservedKeys={[":"]}
+            statusText={dagMode === "navigate" ? "navigate" : "select"}
+            initialSelection={selectedNodeIds.filter(id => 
+              childItems.some(item => (item.data as Node).nodeId === id)
+            )}
+            onSelectionChange={(selectedItems: ListItem[]) => {
+              // Update our internal selection state on every selection change
+              const currentViewNodeIds = selectedItems.map(
+                (item) => (item.data as Node).nodeId,
+              );
+              
+              // Get the IDs of nodes currently visible in this view
+              const currentViewAllNodeIds = childItems.map(item => (item.data as Node).nodeId);
+              
+              // Preserve selections from nodes not in current view, update selections for current view
+              setSelectedNodeIds(prevSelected => {
+                const notInCurrentView = prevSelected.filter(id => !currentViewAllNodeIds.includes(id));
+                return [...notInCurrentView, ...currentViewNodeIds];
+              });
+            }}
+            onSelected={async (selectedItems: ListItem[]) => {
+              if (dagMode === "select") {
+                // In selection mode, show confirmation
+                setShowConfirmation(true);
+              } else {
+                // In navigate mode, navigate to children if available
+                const selectedNode = selectedItems[0]?.data as Node;
+                if (selectedNode) {
+                  const children = await getChildrenNodes([selectedNode.nodeId]);
+                  if (children.length > 0) {
+                    await navigateToChildren([selectedNode.nodeId]);
+                  }
                 }
               }
-            }
-          }}
-        />
+            }}
+          />
+          {selectedNodeIds.length > 0 && (
+            <Box flexDirection="column" marginTop={1} borderStyle="single" borderColor="blue">
+              <Text color="blue" bold>Selected ({selectedNodeIds.length}):</Text>
+              {selectedNodeHierarchies.map((hierarchy, index) => (
+                <Text key={index} color="cyan">• {hierarchy}</Text>
+              ))}
+            </Box>
+          )}
+        </>
       ) : (
         <CoreList
           items={lists}
