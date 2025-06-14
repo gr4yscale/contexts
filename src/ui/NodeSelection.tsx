@@ -31,7 +31,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
   const [loading, setLoading] = useState(true);
   const [allNodes, setAllNodes] = useState<Node[]>([]);
   const [currentParentIds, setCurrentParentIds] = useState<string[]>([]);
-  const [dagMode, setDagMode] = useState<DagModes>("select");
+  const [itemsMode, setDagMode] = useState<DagModes>("select");
   const [childItems, setChildItems] = useState<ListItem[]>([]);
   const [currentFilter, setCurrentFilter] = useState<NodeTreeFilter>(NodeTreeFilter.MAIN);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>(initialSelection);
@@ -66,12 +66,12 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
   useEffect(() => {
     logger.debug("NodeSelection state changed", {
       mode,
-      dagMode,
+      dagMode: itemsMode,
       currentParentIds,
       childItemsCount: childItems.length,
       listsCount: lists.length,
     });
-  }, [mode, dagMode, currentParentIds, childItems.length, lists.length]);
+  }, [mode, itemsMode, currentParentIds, childItems.length, lists.length]);
 
   const { currentListItems, currentListIndex, switchListByIndex, switchListById } =
     useListSwitching(lists, 1); // Default to second list (main)
@@ -300,11 +300,11 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
               <CoreList
                 key={`${currentParentIds.join('-')}-${currentFilter}`}
                 items={childItems}
-                multiple={dagMode === "select" ? multiple : false}
+                multiple={itemsMode === "select" ? multiple : false}
                 initialMode="select"
                 reservedKeys={[":"]}
                 showStatus={false}
-                statusText={dagMode === "navigate" ? "navigate" : "select"}
+                statusText={itemsMode === "navigate" ? "navigate" : "select"}
                 initialSelection={selectedNodeIds}
                 onSelectionChange={(selectedItems: ListItem[]) => {
                   // Update our internal selection state on every selection change
@@ -322,7 +322,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
                   });
                 }}
                 onSelected={async (selectedItems: ListItem[]) => {
-                  if (dagMode === "select") {
+                  if (itemsMode === "select") {
                     // In selection mode, show confirmation
                     setShowConfirmation(true);
                   } else {
@@ -349,7 +349,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
           <Box width="100%" marginTop={1} marginLeft={2} marginRight={1}>
             <Text color="blue">({selectedNodeIds.length})</Text>
             <Text> | </Text>
-            <Text color="blue">{dagMode}</Text>
+            <Text color="blue">{itemsMode}</Text>
           </Box>
         </Box>
       ) : (
