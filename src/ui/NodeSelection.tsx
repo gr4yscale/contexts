@@ -217,6 +217,13 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     fetchNodes();
   }, []);
 
+  // Ensure initial selection is set after nodes are loaded
+  useEffect(() => {
+    if (!loading && initialSelection.length > 0 && selectedNodeIds.length === 0) {
+      setSelectedNodeIds(initialSelection);
+    }
+  }, [loading, initialSelection]);
+
   // keymapping
   const { keymap } = useContext(KeysContext);
 
@@ -295,9 +302,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
                 reservedKeys={[":"]}
                 showStatus={false}
                 statusText={dagMode === "navigate" ? "navigate" : "select"}
-                initialSelection={selectedNodeIds.filter(id => 
-                  childItems.some(item => (item.data as Node).nodeId === id)
-                )}
+                initialSelection={selectedNodeIds}
                 onSelectionChange={(selectedItems: ListItem[]) => {
                   // Update our internal selection state on every selection change
                   const currentViewNodeIds = selectedItems.map(
