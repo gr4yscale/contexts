@@ -91,6 +91,7 @@ const CoreList: React.FC<CoreListProps> = ({
         } else {
           onSelected && onSelected([item]);
         }
+        clearSearch();
       },
       keys: "asdfghjkl;",
     });
