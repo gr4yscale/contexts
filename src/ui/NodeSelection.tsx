@@ -256,11 +256,14 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
       {
         sequence: [key("\r", "return")],
         description: "Confirm selection",
-        name: "confirm-selection",
+        name: "Confirm selection",
         handler: () => {
-          if (selectedNodeIds.length > 0) {
-            setShowConfirmation(true);
-          }
+          setSelectedNodeIds(current => {
+            if (current.length > 0) {
+              setShowConfirmation(true);
+            }
+            return current;
+          });
         },
       },
     ];
@@ -270,7 +273,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     return () => {
       keymap.popKeymap();
     };
-  }, [keymap, setMode, setDagMode]);
+  }, [keymap, setMode, setDagMode, selectedNodeIds]);
 
   return (
     <Box borderStyle="single" borderColor="gray">
