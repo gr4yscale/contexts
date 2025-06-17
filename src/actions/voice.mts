@@ -5,8 +5,28 @@ import * as os from "os";
 import { Action, ActionType, registerAction } from "../actions.mts";
 import * as logger from "../logger.mts";
 
-async function recordAndTranscribe(): Promise<void> {
+// Module state
+let isRecording = false;
+let isTranscribing = false;
+let recordingProcess: any = null;
+
+async function recordOrTranscribe(): Promise<void> {
   try {
+    if (isTranscribing) {
+      logger.debug("Currently transcribing, please wait...");
+      return;
+    }
+
+    if (isRecording) {
+      // Stop recording and start transcription
+      logger.debug("Stopping recording and starting transcription");
+      if (recordingProcess) {
+        recordingProcess.kill("SIGTERM");
+      }
+      return;
+    }
+
+    // Start recording
     const now = new Date();
     const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, -5); // Remove milliseconds and replace colons/dots
     const filename = `${timestamp}.txt`;
@@ -15,12 +35,13 @@ async function recordAndTranscribe(): Promise<void> {
 
     await fs.mkdir(directory, { recursive: true });
 
-    logger.debug("Starting voice recording and transcription", { filepath });
+    logger.debug("Starting voice recording", { filepath });
 
-    // Record audio for 5 seconds using parecord to a temp path
+    // Record audio using parecord to a temp path
     const tempAudioFile = path.join("/tmp", `voice-recording-${timestamp}.wav`);
 
-    const recordProcess = spawn("parecord", [
+    isRecording = true;
+    recordingProcess = spawn("parecord", [
       "--format=s16le",
       "--rate=16000",
       "--channels=1",
@@ -30,60 +51,75 @@ async function recordAndTranscribe(): Promise<void> {
       stdio: ["ignore", "pipe", "pipe"]
     });
 
-    // Stop recording after 5 seconds
-    setTimeout(() => {
-      recordProcess.kill("SIGTERM");
-    }, 5000);
-
     // Wait for recording to complete
     await new Promise<void>((resolve, reject) => {
-      recordProcess.on("close", (code) => {
+      recordingProcess.on("close", async (code) => {
+        isRecording = false;
+        recordingProcess = null;
+        
         if (code !== 0 && code !== null) {
           reject(new Error(`Recording process exited with code ${code}`));
         } else {
+          // Start transcription
+          isTranscribing = true;
+          logger.debug("Starting transcription with whisper-ctranslate2");
+          
+          const whisperProcess = spawn("whisper-ctranslate2", [
+            "--model", "small",
+            "--language", "en", 
+            "--output_format", "txt",
+            "--output_dir", "/tmp",
+            tempAudioFile
+          ], {
+            stdio: ["ignore", "pipe", "pipe"]
+          });
+
+          let transcription = "";
+          let errorOutput = "";
+
+          whisperProcess.stdout.on("data", (data) => {
+            transcription += data.toString();
+            logger.debug(`transcription: ${transcription}`);
+          });
+
+          whisperProcess.stderr.on("data", (data) => {
+            errorOutput += data.toString();
+          });
+
+          whisperProcess.on("close", async (whisperExitCode) => {
+            isTranscribing = false;
+            if (whisperExitCode !== 0) {
+              logger.error("Transcription failed", { code: whisperExitCode, error: errorOutput });
+            } else {
+              logger.debug("Transcription completed");
+            }
+          });
+
           resolve();
         }
       });
 
-      recordProcess.on("error", (error) => {
+      recordingProcess.on("error", (error) => {
+        isRecording = false;
+        recordingProcess = null;
         reject(error);
       });
     });
 
-    // Now transcribe the recorded audio file using whisper-ctranslate2
-    const whisperProcess = spawn("whisper-ctranslate2", [
-      "--model", "small",
-      "--language", "en", 
-      "--output_format", "txt",
-      "--output_dir", "/tmp",
-      tempAudioFile
-    ], {
-      stdio: ["ignore", "pipe", "pipe"]
-    });
-
-    let transcription = "";
-    let errorOutput = "";
-
-    whisperProcess.stdout.on("data", (data) => {
-      transcription += data.toString();
-      logger.debug(transcription)
-    });
-
-    whisperProcess.stderr.on("data", (data) => {
-      errorOutput += data.toString();
-    });
-
   } catch (error) {
+    isRecording = false;
+    isTranscribing = false;
+    recordingProcess = null;
     logger.error("Voice recording and transcription failed", { error });
     throw error;
   }
 }
 
-export const voiceRecordAction: Action = {
-  id: "voiceRecord",
-  name: "Record Voice Snippet",
+export const transcribeWhisperAction: Action = {
+  id: "transcribeWhisper",
+  name: "Transcribe with Whisper",
   type: ActionType.BASE,
-  handler: recordAndTranscribe,
+  handler: recordOrTranscribe,
 };
 
-registerAction(voiceRecordAction);
+registerAction(transcribeWhisperAction);

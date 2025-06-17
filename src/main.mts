@@ -14,6 +14,7 @@ import "./actions/navigation.mts";
 import "./actions/currentNode.mts";
 import "./actions/resource.mts";
 import "./actions/node-bulk.mts";
+import "./actions/voice.mts";
 
 import { executeAction } from "./actions.mts";
 
