@@ -2,6 +2,7 @@ import { spawn } from "child_process";
 import { promises as fs } from "fs";
 import * as path from "path";
 import * as os from "os";
+import { $ } from "zx";
 import { Action, ActionType, registerAction } from "../actions.mts";
 import * as logger from "../logger.mts";
 
@@ -20,6 +21,7 @@ async function recordOrTranscribe(): Promise<void> {
     if (isRecording) {
       // Stop recording and start transcription
       logger.debug("Stopping recording and starting transcription");
+      await $`notify-send "Recording stopped"`;
       if (recordingProcess) {
         recordingProcess.kill("SIGTERM");
       }
@@ -41,6 +43,7 @@ async function recordOrTranscribe(): Promise<void> {
     const tempAudioFile = path.join("/tmp", `voice-recording-${timestamp}.wav`);
 
     isRecording = true;
+    await $`notify-send "Recording started"`;
     recordingProcess = spawn("parecord", [
       "--format=s16le",
       "--rate=16000",
@@ -63,6 +66,7 @@ async function recordOrTranscribe(): Promise<void> {
           // Start transcription
           isTranscribing = true;
           logger.debug("Starting transcription with whisper-ctranslate2");
+          await $`notify-send "Transcription started"`;
           
           const whisperProcess = spawn("whisper-ctranslate2", [
             "--model", "small",
@@ -90,8 +94,13 @@ async function recordOrTranscribe(): Promise<void> {
             isTranscribing = false;
             if (whisperExitCode !== 0) {
               logger.error("Transcription failed", { code: whisperExitCode, error: errorOutput });
+              await $`notify-send "Transcription failed"`;
             } else {
               logger.debug("Transcription completed");
+              await $`notify-send "Transcription completed"`;
+              if (transcription.trim()) {
+                await $`notify-send ${transcription.trim()}`;
+              }
             }
           });
 
