@@ -34,6 +34,8 @@ async function recordOrTranscribe(): Promise<void> {
       logger.debug("Stopping recording and starting transcription");
       // $`notify-send "Recording stopped"`;
       if (recordingProcess) {
+        // Give parecord time to flush buffers and finalize WAV file
+        await new Promise(resolve => setTimeout(resolve, 1500));
         recordingProcess.kill("SIGTERM");
       }
       return;
