@@ -98,8 +98,19 @@ async function recordOrTranscribe(): Promise<void> {
             } else {
               logger.debug("Transcription completed");
               await $`notify-send "Transcription completed"`;
-              if (transcription.trim()) {
-                await $`notify-send ${transcription.trim()}`;
+              
+              const transcriptionFile = path.join("/tmp", `voice-recording-${timestamp}.txt`);
+              try { 
+                await fs.copyFile(transcriptionFile, filepath);
+                await fs.unlink(transcriptionFile);
+                logger.debug("Transcription file moved", { from: transcriptionFile, to: filepath });
+
+                const transcriptionContent = await fs.readFile(filepath, 'utf-8');
+                if (transcriptionContent.trim()) {
+                  await $`notify-send ${transcriptionContent.trim()}`;
+                }
+              } catch (fileError) {
+                logger.error("Failed to read or move transcription file", { error: fileError, file: transcriptionFile });
               }
             }
           });
