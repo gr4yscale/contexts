@@ -6,27 +6,145 @@ import { $ } from "zx";
 import { Action, ActionType, registerAction } from "../actions.mts";
 import * as logger from "../logger.mts";
 
+const TRANSCRIPTIONS_DIR = path.join(os.homedir(), "contexts-data", "transcriptions");
+const TEMP_DIR = "/tmp";
+const RECORDING_DELAY_MS = 1500;
+const EMACS_DAEMON_NAME = "transcriptions";
+
 let isRecording = false;
 let isTranscribing = false;
 let recordingProcess: any = null;
 
+// Utility functions
+function generateTimestamp(): string {
+  return new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+}
+
+function generateFilePaths(timestamp: string) {
+  const filename = `${timestamp}.txt`;
+  const filepath = path.join(TRANSCRIPTIONS_DIR, filename);
+  const tempAudioFile = path.join(TEMP_DIR, `voice-recording-${timestamp}.wav`);
+  const tempTranscriptionFile = path.join(TEMP_DIR, `voice-recording-${timestamp}.txt`);
+  
+  return { filepath, tempAudioFile, tempTranscriptionFile };
+}
+
+async function startEmacsDaemon(): Promise<void> {
+  try {
+    await $`emacsclient -s ${EMACS_DAEMON_NAME} --eval "(message \\"daemon running\\")"`;
+  } catch (error) {
+    logger.debug("Starting Emacs daemon");
+    try {
+      const daemon = spawn("emacs", [`--daemon=${EMACS_DAEMON_NAME}`], {
+        detached: true,
+        stdio: "ignore",
+      });
+      daemon.unref();
+    } catch (spawnError) {
+      logger.error("Failed to start Emacs daemon", { error: spawnError });
+    }
+  }
+}
+
+async function openInEmacs(filepath: string): Promise<void> {
+  try {
+    await $`emacsclient -s ${EMACS_DAEMON_NAME} --eval "(message \\"daemon ready\\")"`;
+    const child = spawn(
+      "/usr/bin/emacsclient",
+      ["-c", "-s", EMACS_DAEMON_NAME, filepath],
+      { detached: true, stdio: "ignore" }
+    );
+    child.unref();
+  } catch (daemonError) {
+    logger.error("Emacs daemon not ready", { error: daemonError });
+    await $`notify-send "Emacs daemon not ready - transcription saved to ${filepath}"`;
+  }
+}
+
+async function stopRecording(): Promise<void> {
+  if (!recordingProcess) return;
+  
+  logger.debug("Stopping recording and starting transcription");
+  await new Promise(resolve => setTimeout(resolve, RECORDING_DELAY_MS));
+  recordingProcess.kill("SIGTERM");
+}
+
+async function startRecording(tempAudioFile: string): Promise<void> {
+  isRecording = true;
+  await $`notify-send "Recording"`;
+  
+  recordingProcess = spawn("parecord", [
+    "--format=s16le",
+    "--rate=16000",
+    "--channels=1",
+    "--file-format=wav",
+    tempAudioFile
+  ], {
+    stdio: ["ignore", "pipe", "pipe"]
+  });
+}
+
+async function transcribeAudio(tempAudioFile: string): Promise<void> {
+  isTranscribing = true;
+  logger.debug("Starting transcription with whisper-ctranslate2");
+  await $`notify-send "Transcribing"`;
+  
+  const whisperProcess = spawn("whisper-ctranslate2", [
+    "--model", "small",
+    "--language", "en", 
+    "--output_format", "txt",
+    "--output_dir", TEMP_DIR,
+    tempAudioFile
+  ], {
+    stdio: ["ignore", "pipe", "pipe"]
+  });
+
+  let transcription = "";
+  let errorOutput = "";
+
+  whisperProcess.stdout.on("data", (data) => {
+    transcription += data.toString();
+    logger.debug(`transcription: ${transcription}`);
+  });
+
+  whisperProcess.stderr.on("data", (data) => {
+    errorOutput += data.toString();
+  });
+
+  return new Promise((resolve, reject) => {
+    whisperProcess.on("close", (code) => {
+      isTranscribing = false;
+      if (code !== 0) {
+        logger.error("Transcription failed", { code, error: errorOutput });
+        $`notify-send "Transcription failed"`;
+        reject(new Error(`Transcription failed with code ${code}`));
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+async function handleTranscriptionResult(tempTranscriptionFile: string, filepath: string): Promise<void> {
+  try {
+    await fs.copyFile(tempTranscriptionFile, filepath);
+    await fs.unlink(tempTranscriptionFile);
+    logger.debug("Transcription file moved", { from: tempTranscriptionFile, to: filepath });
+
+    const transcriptionContent = await fs.readFile(filepath, 'utf-8');
+    if (transcriptionContent.trim()) {
+      await $`notify-send ${transcriptionContent.trim()}`;
+    }
+
+    await openInEmacs(filepath);
+  } catch (fileError) {
+    logger.error("Failed to read or move transcription file", { error: fileError, file: tempTranscriptionFile });
+  }
+}
+
 async function recordOrTranscribe(): Promise<void> {
   try {
-    // Check if transcriptions daemon is running, if not start it
-    try {
-      $`emacsclient -s transcriptions --eval "(message \\"daemon running\\")"`;
-    } catch (error) {
-      // Daemon not running, start it
-      try {
-        const daemon = spawn("emacs", ["--daemon=transcriptions"], {
-          detached: true,
-          stdio: "ignore",
-        });
-        daemon.unref();
-      } catch (spawnError) {
-        logger.error("Failed to start Emacs daemon", { error: spawnError });
-      }
-    }
+    await startEmacsDaemon();
 
     if (isTranscribing) {
       logger.debug("Currently transcribing, please wait...");
@@ -34,42 +152,18 @@ async function recordOrTranscribe(): Promise<void> {
     }
 
     if (isRecording) {
-      // Stop recording and start transcription
-      logger.debug("Stopping recording and starting transcription");
-      // $`notify-send "Recording stopped"`;
-      if (recordingProcess) {
-        // Give parecord time to flush buffers and finalize WAV file
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        recordingProcess.kill("SIGTERM");
-      }
+      await stopRecording();
       return;
     }
 
-    // Start recording
-    const now = new Date();
-    const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, -5); // Remove milliseconds and replace colons/dots
-    const filename = `${timestamp}.txt`;
-    const directory = path.join(os.homedir(), "contexts-data", "transcriptions");
-    const filepath = path.join(directory, filename);
+    // Start new recording if not transcribing or already recording
+    const timestamp = generateTimestamp();
+    const { filepath, tempAudioFile, tempTranscriptionFile } = generateFilePaths(timestamp);
 
-    await fs.mkdir(directory, { recursive: true });
-
+    await fs.mkdir(TRANSCRIPTIONS_DIR, { recursive: true });
     logger.debug("Starting voice recording", { filepath });
 
-    // Record audio using parecord to a temp path
-    const tempAudioFile = path.join("/tmp", `voice-recording-${timestamp}.wav`);
-
-    isRecording = true;
-    $`notify-send "Recording"`;
-    recordingProcess = spawn("parecord", [
-      "--format=s16le",
-      "--rate=16000",
-      "--channels=1",
-      "--file-format=wav",
-      tempAudioFile
-    ], {
-      stdio: ["ignore", "pipe", "pipe"]
-    });
+    await startRecording(tempAudioFile);
 
     // Wait for recording to complete
     await new Promise<void>((resolve, reject) => {
@@ -79,76 +173,15 @@ async function recordOrTranscribe(): Promise<void> {
         
         if (code !== 0 && code !== null) {
           reject(new Error(`Recording process exited with code ${code}`));
-        } else {
-          // Start transcription
-          isTranscribing = true;
-          logger.debug("Starting transcription with whisper-ctranslate2");
-          $`notify-send "Transcribing"`;
-          
-          const whisperProcess = spawn("whisper-ctranslate2", [
-            "--model", "small",
-            "--language", "en", 
-            "--output_format", "txt",
-            "--output_dir", "/tmp",
-            tempAudioFile
-          ], {
-            stdio: ["ignore", "pipe", "pipe"]
-          });
+          return;
+        }
 
-          let transcription = "";
-          let errorOutput = "";
-
-          whisperProcess.stdout.on("data", (data) => {
-            transcription += data.toString();
-            logger.debug(`transcription: ${transcription}`);
-          });
-
-          whisperProcess.stderr.on("data", (data) => {
-            errorOutput += data.toString();
-          });
-
-          whisperProcess.on("close", async (whisperExitCode) => {
-            isTranscribing = false;
-            if (whisperExitCode !== 0) {
-              logger.error("Transcription failed", { code: whisperExitCode, error: errorOutput });
-              $`notify-send "Transcription failed"`;
-            } else {
-              logger.debug("Transcription completed");
-              // $`notify-send "Transcription completed"`;
-              
-              const transcriptionFile = path.join("/tmp", `voice-recording-${timestamp}.txt`);
-              try { 
-                await fs.copyFile(transcriptionFile, filepath);
-                await fs.unlink(transcriptionFile);
-                logger.debug("Transcription file moved", { from: transcriptionFile, to: filepath });
-
-                const transcriptionContent = await fs.readFile(filepath, 'utf-8');
-                if (transcriptionContent.trim()) {
-                  $`notify-send ${transcriptionContent.trim()}`;
-                }
-
-                // Check if daemon is ready before opening file
-                try {
-                  await $`emacsclient -s transcriptions --eval "(message \\"daemon ready\\")"`;
-                  // Open the file in Emacs
-                  const child = spawn(
-                    "/usr/bin/emacsclient",
-                    ["-c", "-s", "transcriptions", filepath],
-                    { detached: true, stdio: "ignore" }
-                  );
-                  child.unref();
-                } catch (daemonError) {
-                  logger.error("Emacs daemon not ready", { error: daemonError });
-                  $`notify-send "Emacs daemon not ready - transcription saved to ${filepath}"`;
-                }
-
-              } catch (fileError) {
-                logger.error("Failed to read or move transcription file", { error: fileError, file: transcriptionFile });
-              }
-            }
-          });
-
+        try {
+          await transcribeAudio(tempAudioFile);
+          await handleTranscriptionResult(tempTranscriptionFile, filepath);
           resolve();
+        } catch (error) {
+          reject(error);
         }
       });
 
