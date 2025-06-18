@@ -17,11 +17,15 @@ async function recordOrTranscribe(): Promise<void> {
       $`emacsclient -s transcriptions --eval "(message \\"daemon running\\")"`;
     } catch (error) {
       // Daemon not running, start it
-      const daemon = spawn("emacs", ["--daemon=transcriptions"], {
-        detached: true,
-        stdio: "ignore",
-      });
-      daemon.unref();
+      try {
+        const daemon = spawn("emacs", ["--daemon=transcriptions"], {
+          detached: true,
+          stdio: "ignore",
+        });
+        daemon.unref();
+      } catch (spawnError) {
+        logger.error("Failed to start Emacs daemon", { error: spawnError });
+      }
     }
 
     if (isTranscribing) {
