@@ -33,7 +33,6 @@ async function startEmacsDaemon(): Promise<void> {
   try {
     await $`emacsclient -s ${EMACS_DAEMON_NAME} --eval "(message \\"daemon running\\")"`;
   } catch (error) {
-    logger.debug("Starting Emacs daemon");
     try {
       const daemon = spawn("emacs", [`--daemon=${EMACS_DAEMON_NAME}`], {
         detached: true,
@@ -64,7 +63,6 @@ async function openInEmacs(filepath: string): Promise<void> {
 async function stopRecording(): Promise<void> {
   if (!recordingProcess) return;
   
-  logger.debug("Stopping recording and starting transcription");
   await new Promise(resolve => setTimeout(resolve, RECORDING_DELAY_MS));
   recordingProcess.kill("SIGTERM");
 }
@@ -86,7 +84,6 @@ async function startRecording(tempAudioFile: string): Promise<void> {
 
 async function transcribeAudio(tempAudioFile: string): Promise<void> {
   isTranscribing = true;
-  logger.debug("Starting transcription with whisper-ctranslate2");
   await $`notify-send "Transcribing"`;
   
   const whisperProcess = spawn("whisper-ctranslate2", [
@@ -104,7 +101,6 @@ async function transcribeAudio(tempAudioFile: string): Promise<void> {
 
   whisperProcess.stdout.on("data", (data) => {
     transcription += data.toString();
-    logger.debug(`transcription: ${transcription}`);
   });
 
   whisperProcess.stderr.on("data", (data) => {
@@ -129,7 +125,6 @@ async function handleTranscriptionResult(tempTranscriptionFile: string, filepath
   try {
     await fs.copyFile(tempTranscriptionFile, filepath);
     await fs.unlink(tempTranscriptionFile);
-    logger.debug("Transcription file moved", { from: tempTranscriptionFile, to: filepath });
 
     const transcriptionContent = await fs.readFile(filepath, 'utf-8');
     if (transcriptionContent.trim()) {
@@ -147,7 +142,6 @@ async function recordOrTranscribe(): Promise<void> {
     await startEmacsDaemon();
 
     if (isTranscribing) {
-      logger.debug("Currently transcribing, please wait...");
       return;
     }
 
@@ -161,7 +155,6 @@ async function recordOrTranscribe(): Promise<void> {
     const { filepath, tempAudioFile, tempTranscriptionFile } = generateFilePaths(timestamp);
 
     await fs.mkdir(TRANSCRIPTIONS_DIR, { recursive: true });
-    logger.debug("Starting voice recording", { filepath });
 
     await startRecording(tempAudioFile);
 
