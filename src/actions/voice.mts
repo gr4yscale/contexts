@@ -14,7 +14,7 @@ async function recordOrTranscribe(): Promise<void> {
   try {
     // Check if transcriptions daemon is running, if not start it
     try {
-      await $`emacsclient -s transcriptions --eval "(message \\"daemon running\\")"`;
+      $`emacsclient -s transcriptions --eval "(message \\"daemon running\\")"`;
     } catch (error) {
       // Daemon not running, start it
       const daemon = spawn("emacs", ["--daemon=transcriptions"], {
@@ -32,7 +32,7 @@ async function recordOrTranscribe(): Promise<void> {
     if (isRecording) {
       // Stop recording and start transcription
       logger.debug("Stopping recording and starting transcription");
-      await $`notify-send "Recording stopped"`;
+      // $`notify-send "Recording stopped"`;
       if (recordingProcess) {
         recordingProcess.kill("SIGTERM");
       }
@@ -54,7 +54,7 @@ async function recordOrTranscribe(): Promise<void> {
     const tempAudioFile = path.join("/tmp", `voice-recording-${timestamp}.wav`);
 
     isRecording = true;
-    await $`notify-send "Recording started"`;
+    $`notify-send "Recording"`;
     recordingProcess = spawn("parecord", [
       "--format=s16le",
       "--rate=16000",
@@ -77,7 +77,7 @@ async function recordOrTranscribe(): Promise<void> {
           // Start transcription
           isTranscribing = true;
           logger.debug("Starting transcription with whisper-ctranslate2");
-          await $`notify-send "Transcription started"`;
+          $`notify-send "Transcribing"`;
           
           const whisperProcess = spawn("whisper-ctranslate2", [
             "--model", "small",
@@ -105,10 +105,10 @@ async function recordOrTranscribe(): Promise<void> {
             isTranscribing = false;
             if (whisperExitCode !== 0) {
               logger.error("Transcription failed", { code: whisperExitCode, error: errorOutput });
-              await $`notify-send "Transcription failed"`;
+              $`notify-send "Transcription failed"`;
             } else {
               logger.debug("Transcription completed");
-              await $`notify-send "Transcription completed"`;
+              // $`notify-send "Transcription completed"`;
               
               const transcriptionFile = path.join("/tmp", `voice-recording-${timestamp}.txt`);
               try { 
@@ -118,16 +118,23 @@ async function recordOrTranscribe(): Promise<void> {
 
                 const transcriptionContent = await fs.readFile(filepath, 'utf-8');
                 if (transcriptionContent.trim()) {
-                  await $`notify-send ${transcriptionContent.trim()}`;
+                  $`notify-send ${transcriptionContent.trim()}`;
                 }
 
-                // Open the file in Emacs
-                const child = spawn(
-                  "/usr/bin/emacsclient",
-                  ["-c", "-s", "transcriptions", filepath],
-                  { detached: true, stdio: "ignore" }
-                );
-                child.unref();
+                // Check if daemon is ready before opening file
+                try {
+                  await $`emacsclient -s transcriptions --eval "(message \\"daemon ready\\")"`;
+                  // Open the file in Emacs
+                  const child = spawn(
+                    "/usr/bin/emacsclient",
+                    ["-c", "-s", "transcriptions", filepath],
+                    { detached: true, stdio: "ignore" }
+                  );
+                  child.unref();
+                } catch (daemonError) {
+                  logger.error("Emacs daemon not ready", { error: daemonError });
+                  $`notify-send "Emacs daemon not ready - transcription saved to ${filepath}"`;
+                }
 
               } catch (fileError) {
                 logger.error("Failed to read or move transcription file", { error: fileError, file: transcriptionFile });
