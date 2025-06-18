@@ -6,13 +6,24 @@ import { $ } from "zx";
 import { Action, ActionType, registerAction } from "../actions.mts";
 import * as logger from "../logger.mts";
 
-// Module state
 let isRecording = false;
 let isTranscribing = false;
 let recordingProcess: any = null;
 
 async function recordOrTranscribe(): Promise<void> {
   try {
+    // Check if transcriptions daemon is running, if not start it
+    try {
+      await $`emacsclient -s transcriptions --eval "(message \\"daemon running\\")"`;
+    } catch (error) {
+      // Daemon not running, start it
+      const daemon = spawn("emacs", ["--daemon=transcriptions"], {
+        detached: true,
+        stdio: "ignore",
+      });
+      daemon.unref();
+    }
+
     if (isTranscribing) {
       logger.debug("Currently transcribing, please wait...");
       return;
@@ -109,6 +120,15 @@ async function recordOrTranscribe(): Promise<void> {
                 if (transcriptionContent.trim()) {
                   await $`notify-send ${transcriptionContent.trim()}`;
                 }
+
+                // Open the file in Emacs
+                const child = spawn(
+                  "/usr/bin/emacsclient",
+                  ["-c", "-s", "transcriptions", filepath],
+                  { detached: true, stdio: "ignore" }
+                );
+                child.unref();
+
               } catch (fileError) {
                 logger.error("Failed to read or move transcription file", { error: fileError, file: transcriptionFile });
               }
