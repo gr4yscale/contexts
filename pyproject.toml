@@ -1,0 +1,9 @@
+[project]
+name = "contexts"
+version = "0.1.0"
+description = "the everything orchestrator"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "whisper-ctranslate2>=0.5.3",
+]
