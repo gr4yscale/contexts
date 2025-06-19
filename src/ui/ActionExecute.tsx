@@ -23,7 +23,7 @@ import { navigateExaSearch, navigateCurrentNodeBrowserState, navigateResourceNav
 
 import { nodesPrune } from "../actions/node-bulk.mts";
 
-import { toggleVoiceCommandsAction } from "../actions/voice.mts";
+import { toggleVoiceCommandsAction, voiceCommandsHelpAction } from "../actions/voice.mts";
 
 import { Action, executeAction, ActionType } from "../actions.mts";
 
@@ -49,6 +49,7 @@ const ActionExecute: React.FC<Props> = ({ keys = "asdfghjkl;" }) => {
     currentNodeCreateRootNodeAction,
     currentNodeDestroyAction,
     toggleVoiceCommandsAction,
+    voiceCommandsHelpAction,
   ]);
 
   return (

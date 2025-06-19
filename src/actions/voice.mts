@@ -196,6 +196,15 @@ async function recordOrTranscribe(): Promise<void> {
   }
 }
 
+async function voiceCommandsHelp(): Promise<void> {
+  try {
+    await $`emacsclient -c -s voice-commands-help --eval '(easysession-switch-to "z-voice-cheat")'`;
+  } catch (error) {
+    logger.error("Voice commands help failed", { error });
+    throw error;
+  }
+}
+
 async function toggleVoiceCommands(): Promise<void> {
   try {
     if (isVoiceCommandsActive && voiceCommandsProcess) {
@@ -234,7 +243,6 @@ async function toggleVoiceCommands(): Promise<void> {
       logger.error("Voice commands process error", { error });
       $`notify-send "Voice commands error: ${error.message}"`;
     });
-    });
 
     logger.debug("Voice commands started");
     $`notify-send "Voice commands: active"`;
@@ -260,5 +268,13 @@ export const toggleVoiceCommandsAction: Action = {
   handler: toggleVoiceCommands,
 };
 
+export const voiceCommandsHelpAction: Action = {
+  id: "voiceCommandsHelp",
+  name: "Voice Commands Help",
+  type: ActionType.VOICE,
+  handler: voiceCommandsHelp,
+};
+
 registerAction(transcribeWhisperAction);
 registerAction(toggleVoiceCommandsAction);
+registerAction(voiceCommandsHelpAction);
