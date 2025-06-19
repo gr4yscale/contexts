@@ -213,7 +213,7 @@ async function toggleVoiceCommands(): Promise<void> {
     voiceCommandsProcess = spawn("numen", [
       "--mic", "pipewire",
       "--x11",
-      "--phraselog=/dev/stdout",
+      "--phraselog=/tmp/numen-phraselog",
       ...await $`ls ~/.config/numen/phrases/*.phrases`.then(result => result.stdout.trim().split('\n'))
     ], {
       stdio: ["ignore", "pipe", "pipe"]
