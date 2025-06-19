@@ -139,7 +139,7 @@ async function handleTranscriptionResult(tempTranscriptionFile: string, filepath
   }
 }
 
-async function recordOrTranscribe(): Promise<void> {
+async function voiceTranscribeToggle(): Promise<void> {
   try {
     await startEmacsDaemon();
 
@@ -205,14 +205,13 @@ async function voiceCommandsHelp(): Promise<void> {
   }
 }
 
-async function toggleVoiceCommands(): Promise<void> {
+async function voiceCommandsToggle(): Promise<void> {
   try {
     if (isVoiceCommandsActive && voiceCommandsProcess) {
       // Kill the existing numen process
       voiceCommandsProcess.kill("SIGTERM");
       isVoiceCommandsActive = false;
       voiceCommandsProcess = null;
-      logger.debug("Voice commands stopped");
       $`notify-send "Voice commands: inactive"`;
       return;
     }
@@ -231,7 +230,6 @@ async function toggleVoiceCommands(): Promise<void> {
     voiceCommandsProcess.on("close", (code) => {
       isVoiceCommandsActive = false;
       voiceCommandsProcess = null;
-      logger.debug("Voice commands process exited", { code });
       if (code !== 0 && code !== null) {
         $`notify-send "Voice commands exited with error code ${code}"`;
       }
@@ -244,7 +242,6 @@ async function toggleVoiceCommands(): Promise<void> {
       $`notify-send "Voice commands error: ${error.message}"`;
     });
 
-    logger.debug("Voice commands started");
     $`notify-send "Voice commands: active"`;
   } catch (error) {
     isVoiceCommandsActive = false;
@@ -254,18 +251,18 @@ async function toggleVoiceCommands(): Promise<void> {
   }
 }
 
-export const transcribeWhisperAction: Action = {
-  id: "transcribeWhisper",
-  name: "Transcribe with Whisper",
+export const voiceTranscribeWithWhisperAction: Action = {
+  id: "voiceTranscribeToggle",
+  name: "Voice Transcribe with Whisper",
   type: ActionType.VOICE,
-  handler: recordOrTranscribe,
+  handler: voiceTranscribeToggle,
 };
 
-export const toggleVoiceCommandsAction: Action = {
-  id: "toggleVoiceCommands",
-  name: "Toggle Voice Commands",
+export const voiceCommandsToggleAction: Action = {
+  id: "voiceCommandsToggle",
+  name: "Voice Commands Toggle",
   type: ActionType.VOICE,
-  handler: toggleVoiceCommands,
+  handler: voiceCommandsToggle,
 };
 
 export const voiceCommandsHelpAction: Action = {
@@ -275,6 +272,6 @@ export const voiceCommandsHelpAction: Action = {
   handler: voiceCommandsHelp,
 };
 
-registerAction(transcribeWhisperAction);
-registerAction(toggleVoiceCommandsAction);
+registerAction(voiceTranscribeWithWhisperAction);
+registerAction(voiceCommandsToggleAction);
 registerAction(voiceCommandsHelpAction);
