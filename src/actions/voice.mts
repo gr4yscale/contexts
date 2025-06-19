@@ -204,6 +204,7 @@ async function toggleVoiceCommands(): Promise<void> {
       isVoiceCommandsActive = false;
       voiceCommandsProcess = null;
       logger.debug("Voice commands stopped");
+      $`notify-send "Voice commands: inactive"`;
       return;
     }
 
@@ -222,15 +223,21 @@ async function toggleVoiceCommands(): Promise<void> {
       isVoiceCommandsActive = false;
       voiceCommandsProcess = null;
       logger.debug("Voice commands process exited", { code });
+      if (code !== 0 && code !== null) {
+        $`notify-send "Voice commands exited with error code ${code}"`;
+      }
     });
 
     voiceCommandsProcess.on("error", (error) => {
       isVoiceCommandsActive = false;
       voiceCommandsProcess = null;
       logger.error("Voice commands process error", { error });
+      $`notify-send "Voice commands error: ${error.message}"`;
+    });
     });
 
     logger.debug("Voice commands started");
+    $`notify-send "Voice commands: active"`;
   } catch (error) {
     isVoiceCommandsActive = false;
     voiceCommandsProcess = null;
