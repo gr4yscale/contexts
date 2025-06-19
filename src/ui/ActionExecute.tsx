@@ -9,6 +9,7 @@ import {
   runEmacsAction,
   runRangerAction,
 } from "../actions/base.mts";
+
 import {
   currentNodeRenameAction,
   currentNodeAssignToParentAction,
@@ -21,6 +22,8 @@ import {
 import { navigateExaSearch, navigateCurrentNodeBrowserState, navigateResourceNavigate } from "../actions/navigation.mts";
 
 import { nodesPrune } from "../actions/node-bulk.mts";
+
+import { toggleVoiceCommandsAction } from "../actions/voice.mts";
 
 import { Action, executeAction, ActionType } from "../actions.mts";
 
@@ -45,6 +48,7 @@ const ActionExecute: React.FC<Props> = ({ keys = "asdfghjkl;" }) => {
     currentNodeCreateSiblingNodeAction,
     currentNodeCreateRootNodeAction,
     currentNodeDestroyAction,
+    toggleVoiceCommandsAction,
   ]);
 
   return (

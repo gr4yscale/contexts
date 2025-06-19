@@ -6,6 +6,7 @@ export enum ActionType {
   RESOURCE = "resource",
   NAVIGATION = "navigation",
   NODE_BULK = "nodeBulk",
+  VOICE = "voice",
 }
 
 export interface Action {

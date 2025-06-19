@@ -14,6 +14,8 @@ const EMACS_DAEMON_NAME = "transcriptions";
 let isRecording = false;
 let isTranscribing = false;
 let recordingProcess: any = null;
+let isVoiceCommandsActive = false;
+let voiceCommandsProcess: any = null;
 
 // Utility functions
 function generateTimestamp(): string {
@@ -194,11 +196,62 @@ async function recordOrTranscribe(): Promise<void> {
   }
 }
 
+async function toggleVoiceCommands(): Promise<void> {
+  try {
+    if (isVoiceCommandsActive && voiceCommandsProcess) {
+      // Kill the existing numen process
+      voiceCommandsProcess.kill("SIGTERM");
+      isVoiceCommandsActive = false;
+      voiceCommandsProcess = null;
+      logger.debug("Voice commands stopped");
+      return;
+    }
+
+    // Start new numen process
+    isVoiceCommandsActive = true;
+    voiceCommandsProcess = spawn("numen", [
+      "--mic", "pipewire",
+      "--x11",
+      "--phraselog=/dev/stdout",
+      ...await $`ls ~/.config/numen/phrases/*.phrases`.then(result => result.stdout.trim().split('\n'))
+    ], {
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+
+    voiceCommandsProcess.on("close", (code) => {
+      isVoiceCommandsActive = false;
+      voiceCommandsProcess = null;
+      logger.debug("Voice commands process exited", { code });
+    });
+
+    voiceCommandsProcess.on("error", (error) => {
+      isVoiceCommandsActive = false;
+      voiceCommandsProcess = null;
+      logger.error("Voice commands process error", { error });
+    });
+
+    logger.debug("Voice commands started");
+  } catch (error) {
+    isVoiceCommandsActive = false;
+    voiceCommandsProcess = null;
+    logger.error("Voice commands failed", { error });
+    throw error;
+  }
+}
+
 export const transcribeWhisperAction: Action = {
   id: "transcribeWhisper",
   name: "Transcribe with Whisper",
-  type: ActionType.BASE,
+  type: ActionType.VOICE,
   handler: recordOrTranscribe,
 };
 
+export const toggleVoiceCommandsAction: Action = {
+  id: "toggleVoiceCommands",
+  name: "Toggle Voice Commands",
+  type: ActionType.VOICE,
+  handler: toggleVoiceCommands,
+};
+
 registerAction(transcribeWhisperAction);
+registerAction(toggleVoiceCommandsAction);
