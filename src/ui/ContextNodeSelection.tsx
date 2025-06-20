@@ -32,6 +32,7 @@ const ContextNodeSelection: React.FC = () => {
     <Box>
       <NodeSelection
         multiple={true}
+        skipConfirmation={true}
         initialSelection={initialSelection}
         onSelected={async (nodeIds: string[]) => {
           try {

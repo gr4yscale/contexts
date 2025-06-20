@@ -19,12 +19,14 @@ interface NodeSelectionProps {
   onSelected: (nodeIds: string[]) => void;
   multiple?: boolean;
   initialSelection?: string[];
+  skipConfirmation?: boolean;
 }
 
 const NodeSelection: React.FC<NodeSelectionProps> = ({
   onSelected,
   multiple = false,
   initialSelection = [],
+  skipConfirmation = false,
 }) => {
   const [mode, setMode] = useState<Modes>("items");
   const [lists, setLists] = useState<Array<List>>([]);
@@ -260,7 +262,11 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
         handler: () => {
           setSelectedNodeIds(current => {
             if (current.length > 0) {
-              setShowConfirmation(true);
+              if (skipConfirmation) {
+                onSelected(current);
+              } else {
+                setShowConfirmation(true);
+              }
             }
             return current;
           });
@@ -323,8 +329,13 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
                 }}
                 onSelected={async (selectedItems: ListItem[]) => {
                   if (itemsMode === "select") {
-                    // In selection mode, show confirmation
-                    setShowConfirmation(true);
+                    // In selection mode, show confirmation or call onSelected directly
+                    if (skipConfirmation) {
+                      const nodeIds = selectedItems.map(item => (item.data as Node).nodeId);
+                      onSelected(nodeIds);
+                    } else {
+                      setShowConfirmation(true);
+                    }
                   } else {
                     // In navigate mode, navigate to children if available
                     const selectedNode = selectedItems[0]?.data as Node;
