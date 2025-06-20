@@ -300,7 +300,7 @@ const SelectionList: React.FC<SelectionListProps> = ({
         setCurrentPage(0);
       }
     },
-    { isActive:  mode === "find"}, // Always active for testing
+    { isActive: mode === "find" }, // Always active for testing
   );
 
   return (

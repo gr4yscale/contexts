@@ -24,11 +24,11 @@ const useSearch = <T extends Item>(items: T[]) => {
   }, []);
 
   const appendToSearch = useCallback((char: string) => {
-    setSearchString(prev => prev + char);
+    setSearchString((prev) => prev + char);
   }, []);
 
   const trimLastCharacter = useCallback(() => {
-    setSearchString(prev => prev.slice(0, -1));
+    setSearchString((prev) => prev.slice(0, -1));
   }, []);
 
   return {

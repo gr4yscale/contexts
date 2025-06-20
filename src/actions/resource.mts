@@ -1,4 +1,9 @@
-import { Action, ActionType, registerAction as baseRegisterAction, executeAction as baseExecuteAction } from "../actions.mts";
+import {
+  Action,
+  ActionType,
+  registerAction as baseRegisterAction,
+  executeAction as baseExecuteAction,
+} from "../actions.mts";
 import { Resource, ResourceType, ResourceId } from "../models/resource.mts";
 import * as logger from "../logger.mts";
 // Import model functions if actions need to fetch resource details, e.g.:
@@ -18,7 +23,10 @@ export interface ResourceAction extends Action {
    * Action implementations should be prepared to handle either, potentially fetching
    * the full Resource object if only an ID is provided and the full object is needed.
    */
-  handler: (resourceOrId: Resource | ResourceId, ...args: any[]) => Promise<void> | void;
+  handler: (
+    resourceOrId: Resource | ResourceId,
+    ...args: any[]
+  ) => Promise<void> | void;
 }
 
 // Registry to store action IDs applicable to each resource type
@@ -52,10 +60,14 @@ export function registerResourceAction(action: ResourceAction): void {
         );
       }
       defaultResourceAction.set(rType, action.id);
-      logger.debug(`Action ${action.id} set as default for resource type ${rType}.`);
+      logger.debug(
+        `Action ${action.id} set as default for resource type ${rType}.`,
+      );
     }
   }
-  logger.debug(`Registered resource action: ${action.id} for type(s): ${applicableTypes.join(", ")}`);
+  logger.debug(
+    `Registered resource action: ${action.id} for type(s): ${applicableTypes.join(", ")}`,
+  );
 }
 
 /**
@@ -92,7 +104,10 @@ export async function executeResourceAction(
   resourceOrId: Resource | ResourceId,
   ...args: any[]
 ): Promise<void> {
-  logger.debug(`Attempting to execute resource action: ${actionId} on resource/ID:`, typeof resourceOrId === 'number' ? resourceOrId : resourceOrId.id);
+  logger.debug(
+    `Attempting to execute resource action: ${actionId} on resource/ID:`,
+    typeof resourceOrId === "number" ? resourceOrId : resourceOrId.id,
+  );
   // The baseExecuteAction will find the action by ID and call its handler.
   // The handler (defined in ResourceAction) is responsible for processing `resourceOrId`.
   return baseExecuteAction(actionId, resourceOrId, ...args);

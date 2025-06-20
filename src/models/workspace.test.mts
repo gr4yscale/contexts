@@ -196,18 +196,9 @@ testSuite("Workspace Model Integration Tests", () => {
 
   it("should handle creating multiple workspaces with unique IDs", async () => {
     // Create multiple workspaces
-    const workspace1 = await createWorkspaceForNode(
-      testNodeId1,
-      "Workspace 1",
-    );
-    const workspace2 = await createWorkspaceForNode(
-      testNodeId1,
-      "Workspace 2",
-    );
-    const workspace3 = await createWorkspaceForNode(
-      testNodeId2,
-      "Workspace 3",
-    );
+    const workspace1 = await createWorkspaceForNode(testNodeId1, "Workspace 1");
+    const workspace2 = await createWorkspaceForNode(testNodeId1, "Workspace 2");
+    const workspace3 = await createWorkspaceForNode(testNodeId2, "Workspace 3");
 
     // Verify each workspace has a unique ID
     expect(workspace1.id).not.toBe(workspace2.id);
@@ -223,23 +214,17 @@ testSuite("Workspace Model Integration Tests", () => {
 
   it("should allow reusing workspace IDs after deletion", async () => {
     // Create a workspace
-    const workspace1 = await createWorkspaceForNode(
-      testNodeId1,
-      "Workspace 1",
-    );
-    
+    const workspace1 = await createWorkspaceForNode(testNodeId1, "Workspace 1");
+
     // Delete the workspace
     await deleteWorkspaceById(workspace1.id);
-    
+
     // Create a new workspace - should reuse the ID
-    const workspace2 = await createWorkspaceForNode(
-      testNodeId2,
-      "Workspace 2",
-    );
-    
+    const workspace2 = await createWorkspaceForNode(testNodeId2, "Workspace 2");
+
     // Verify the ID was reused
     expect(workspace2.id).toBe(workspace1.id);
-    
+
     // Verify the new workspace has the correct properties
     expect(workspace2.nodeId).toBe(testNodeId2);
     expect(workspace2.name).toBe("Workspace 2");
@@ -248,19 +233,16 @@ testSuite("Workspace Model Integration Tests", () => {
   it("should throw an error when maximum workspaces (29) is reached", async () => {
     // Create 29 workspaces (maximum allowed)
     for (let i = 1; i <= 29; i++) {
-      await createWorkspaceForNode(
-        testNodeId1,
-        `Workspace ${i}`
-      );
+      await createWorkspaceForNode(testNodeId1, `Workspace ${i}`);
     }
-    
+
     // Verify we have 29 workspaces
     const workspaces = await getAllWorkspaces();
     expect(workspaces).toHaveLength(29);
-    
+
     // Try to create one more workspace - should throw an error
     await expect(
-      createWorkspaceForNode(testNodeId1, "One Too Many")
+      createWorkspaceForNode(testNodeId1, "One Too Many"),
     ).rejects.toThrow("Maximum number of workspaces (29) reached");
   });
 });

@@ -41,19 +41,18 @@ export const currentNodeCreateChildNodeAction: CurrentNodeAction = {
   },
 };
 
-export const currentNodeCreateSiblingNodeAction: CurrentNodeAction =
-  {
-    id: "currentNodeCreateSiblingNode",
-    name: "Create Sibling Node",
-    type: ActionType.CURRENT_NODE,
-    handler: async (node: Node) => {
-      const siblingNodeId = await createNode({
-        name: `Sibling of ${node.name}`,
-        parentNodeId: node.parentNodeId,
-      });
-      logger.info(`Created sibling node with ID: ${siblingNodeId}`);
-    },
-  };
+export const currentNodeCreateSiblingNodeAction: CurrentNodeAction = {
+  id: "currentNodeCreateSiblingNode",
+  name: "Create Sibling Node",
+  type: ActionType.CURRENT_NODE,
+  handler: async (node: Node) => {
+    const siblingNodeId = await createNode({
+      name: `Sibling of ${node.name}`,
+      parentNodeId: node.parentNodeId,
+    });
+    logger.info(`Created sibling node with ID: ${siblingNodeId}`);
+  },
+};
 
 export const currentNodeCreateRootNodeAction: CurrentNodeAction = {
   id: "currentNodeCreateRootNode",

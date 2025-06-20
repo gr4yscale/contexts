@@ -25,7 +25,6 @@ const findPrevWordStart = (text: string, fromPos: number): number => {
   return pos;
 };
 
-
 type TextInputProps = {
   callback: (text: string) => void;
   confirm?: boolean;

@@ -1,8 +1,4 @@
-import {
-  enabledTags,
-  availableTags,
-  toggleTagEnabled,
-} from "../nodeList.mts";
+import { enabledTags, availableTags, toggleTagEnabled } from "../nodeList.mts";
 
 export const menuTagsToggle = () => {
   const tags = Array.from(availableTags());

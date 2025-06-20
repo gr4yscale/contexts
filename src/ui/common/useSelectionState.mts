@@ -54,7 +54,7 @@ export default function useSelectionState<
     (id: string) => {
       setSelectedIds((prev) => {
         let newSelection: string[];
-        
+
         // For single selection mode, replace the selection
         if (!multiple) {
           newSelection = prev.includes(id) ? [] : [id];
@@ -64,13 +64,15 @@ export default function useSelectionState<
             ? prev.filter((selectedId) => selectedId !== id)
             : [...prev, id];
         }
-        
+
         // Call onSelectionChange with the new selection
         if (onSelectionChange) {
-          const selectedItems = items.filter((item) => newSelection.includes(item.id));
+          const selectedItems = items.filter((item) =>
+            newSelection.includes(item.id),
+          );
           onSelectionChange(selectedItems);
         }
-        
+
         return newSelection;
       });
     },

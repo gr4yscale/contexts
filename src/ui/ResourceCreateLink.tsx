@@ -4,21 +4,24 @@ import * as logger from "../logger.mts";
 import { KeymapConfig, key } from "./common/Keymapping.mts";
 import { KeysContext } from "./common/Context.mts";
 import { getActiveTabDetails, ActiveTabDetails } from "../browser.mts";
-import { createResource, ResourceType, addResourceNode } from "../models/resource.mts";
+import {
+  createResource,
+  ResourceType,
+  addResourceNode,
+} from "../models/resource.mts";
 import { getCurrentNode } from "../models/node.mts";
 import NodeSelection from "./NodeSelection.tsx";
 
-interface ResourceCreateLinkProps {
-}
+interface ResourceCreateLinkProps {}
 
-const ResourceCreateLink: React.FC<ResourceCreateLinkProps> = ({ }) => {
+const ResourceCreateLink: React.FC<ResourceCreateLinkProps> = ({}) => {
   const [tabDetails, setTabDetails] = useState<ActiveTabDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [created, setCreated] = useState(false);
   const [showNodeSelection, setShowNodeSelection] = useState(false);
   const [relatedNodeIds, setRelatedNodeIds] = useState<string[]>([]);
-  
+
   const { keymap } = useContext(KeysContext);
 
   useEffect(() => {
@@ -79,7 +82,7 @@ const ResourceCreateLink: React.FC<ResourceCreateLinkProps> = ({ }) => {
           handler: async () => {
             await handleCreateResource();
           },
-          description: "Create resource from current tab"
+          description: "Create resource from current tab",
         },
         {
           sequence: [key("+")],
@@ -87,8 +90,8 @@ const ResourceCreateLink: React.FC<ResourceCreateLinkProps> = ({ }) => {
           handler: () => {
             setShowNodeSelection(true);
           },
-          description: "Select related nodes"
-        }
+          description: "Select related nodes",
+        },
       ];
 
       keymap.pushKeymap(keymapConfig);
@@ -119,7 +122,9 @@ const ResourceCreateLink: React.FC<ResourceCreateLinkProps> = ({ }) => {
     return (
       <NodeSelection
         onSelected={(nodeIds: string[]) => {
-          logger.debug("ResourceCreateLink received selected nodeIds", { nodeIds });
+          logger.debug("ResourceCreateLink received selected nodeIds", {
+            nodeIds,
+          });
           setRelatedNodeIds(nodeIds);
           setShowNodeSelection(false);
         }}

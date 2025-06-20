@@ -32,9 +32,7 @@ export const nodesPrune: NodeBulkAction = {
 /**
  * Execute the pruning of selected nodes
  */
-export async function pruneNodes(
-  nodes: NodeDTO[],
-): Promise<void> {
+export async function pruneNodes(nodes: NodeDTO[]): Promise<void> {
   for (const node of nodes) {
     try {
       // Get all workspaces for this node
@@ -56,9 +54,7 @@ export async function pruneNodes(
 /**
  * Get nodes with their X11 client counts
  */
-export async function getNodesWithX11Counts(
-  nodes: Node[],
-): Promise<Node[]> {
+export async function getNodesWithX11Counts(nodes: Node[]): Promise<Node[]> {
   // First get all workspace IDs and their window counts
   const workspaceCountsMap = new Map<number, number>();
 

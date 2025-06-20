@@ -49,13 +49,15 @@ export async function createWorkspaceForNode(
   try {
     // First check if all IDs are in use
     const countResult = await client.query(
-      `SELECT COUNT(*) as count FROM workspaces`
+      `SELECT COUNT(*) as count FROM workspaces`,
     );
-    
+
     if (countResult.rows[0].count >= 29) {
-      throw new Error("Maximum number of workspaces (29) reached. Delete some workspaces before creating new ones.");
+      throw new Error(
+        "Maximum number of workspaces (29) reached. Delete some workspaces before creating new ones.",
+      );
     }
-    
+
     // This query:
     // 1. Generates a series of numbers from 1 to 29 (all possible workspace IDs)
     // 2. Finds which IDs are not currently in use

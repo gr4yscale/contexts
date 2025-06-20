@@ -163,7 +163,7 @@ const CoreList: React.FC<CoreListProps> = ({
             description: "Back to search mode",
             name: "search mode",
             handler: () => {
-              setMode(prev => "search");
+              setMode((prev) => "search");
             },
             hidden: true,
           },
@@ -202,7 +202,6 @@ const CoreList: React.FC<CoreListProps> = ({
           },
         ];
         break;
-
     }
 
     keymap.pushKeymap(keymapConfig);
@@ -210,12 +209,28 @@ const CoreList: React.FC<CoreListProps> = ({
     return () => {
       keymap.popKeymap();
     };
-  }, [mode, multiple, completeSelection, clearSelection, selectedItems, onSelected, clearSearch, trimLastCharacter, prevPage, nextPage]);
+  }, [
+    mode,
+    multiple,
+    completeSelection,
+    clearSelection,
+    selectedItems,
+    onSelected,
+    clearSearch,
+    trimLastCharacter,
+    prevPage,
+    nextPage,
+  ]);
 
   // handle character input in search mode
   useInput(
     (input, key) => {
-      if (!key.return && input !== "" && !specialKeys.includes(input) && !reservedKeys.includes(input)) {
+      if (
+        !key.return &&
+        input !== "" &&
+        !specialKeys.includes(input) &&
+        !reservedKeys.includes(input)
+      ) {
         appendToSearch(input);
       }
     },
@@ -225,7 +240,12 @@ const CoreList: React.FC<CoreListProps> = ({
   // handle hotkey input in select mode
   useInput(
     (input, key) => {
-      if (!key.return && input !== "" && !specialKeys.includes(input) && !reservedKeys.includes(input)) {
+      if (
+        !key.return &&
+        input !== "" &&
+        !specialKeys.includes(input) &&
+        !reservedKeys.includes(input)
+      ) {
         handleKeyPress(input);
       }
     },

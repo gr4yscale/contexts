@@ -20,8 +20,12 @@ const ResourceNavigate: React.FC = () => {
 
   const [lists, setLists] = useState<Array<List>>([]);
 
-  const { currentListItems, currentListIndex, switchListByIndex, switchListById } =
-    useListSwitching(lists);
+  const {
+    currentListItems,
+    currentListIndex,
+    switchListByIndex,
+    switchListById,
+  } = useListSwitching(lists);
 
   const [loading, setLoading] = useState(true);
   const { currentNode } = useCurrentNode();
@@ -35,15 +39,17 @@ const ResourceNavigate: React.FC = () => {
     try {
       const resources = await getNodeResources(currentNode.nodeId);
 
-      const linkResources = resources.filter(r => r.type === ResourceType.LINK);
-      const pdfResources = resources.filter(r => r.type === ResourceType.PDF);
+      const linkResources = resources.filter(
+        (r) => r.type === ResourceType.LINK,
+      );
+      const pdfResources = resources.filter((r) => r.type === ResourceType.PDF);
 
       const sortedLinkResources = [...linkResources].sort((a, b) =>
-        a.name.localeCompare(b.name)
+        a.name.localeCompare(b.name),
       );
 
       const sortedPdfResources = [...pdfResources].sort((a, b) =>
-        a.name.localeCompare(b.name)
+        a.name.localeCompare(b.name),
       );
 
       const formattedLinkResources = sortedLinkResources.map((resource) => ({
@@ -139,7 +145,7 @@ const ResourceNavigate: React.FC = () => {
               } else {
                 console.error(
                   "Selected item data is not a valid Resource:",
-                  selectedItem
+                  selectedItem,
                 );
               }
             }

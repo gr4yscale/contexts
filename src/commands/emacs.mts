@@ -20,9 +20,14 @@ export const viewEmacsWindowBookmark = (bookmark: EmacsBookmark) => {
 
 export const viewEmacsWindowBookmarks = async () => {
   const currentNode = await getCurrentNode();
-  if (!currentNode) {return;}
+  if (!currentNode) {
+    return;
+  }
 
-  if (!currentNode.emacsWindowBookmarks || !currentNode.emacsWindowBookmarks.length) {
+  if (
+    !currentNode.emacsWindowBookmarks ||
+    !currentNode.emacsWindowBookmarks.length
+  ) {
     $`notify-send "No Emacs bookmarks for current node."`;
     return;
   }

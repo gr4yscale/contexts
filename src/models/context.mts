@@ -152,10 +152,9 @@ export async function updateContext(
     // Update nodes if provided
     if (nodeIds !== undefined) {
       // First, remove all existing associations
-      await client.query(
-        `DELETE FROM context_nodes WHERE context_id = $1;`,
-        [contextId],
-      );
+      await client.query(`DELETE FROM context_nodes WHERE context_id = $1;`, [
+        contextId,
+      ]);
 
       // Then add the new ones
       for (const nodeId of nodeIds) {
@@ -195,9 +194,7 @@ export async function deleteContext(contextId: string): Promise<void> {
  * Adds an node to the latest context created
  * @param nodeId The ID of the node to add
  */
-export async function addNodeToLatestContext(
-  nodeId: string,
-): Promise<void> {
+export async function addNodeToLatestContext(nodeId: string): Promise<void> {
   try {
     const client = await getConnection();
 

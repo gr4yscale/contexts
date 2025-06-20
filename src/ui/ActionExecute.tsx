@@ -19,11 +19,18 @@ import {
   currentNodeDestroyAction,
 } from "../actions/currentNode.mts";
 
-import { navigateExaSearch, navigateCurrentNodeBrowserState, navigateResourceNavigate } from "../actions/navigation.mts";
+import {
+  navigateExaSearch,
+  navigateCurrentNodeBrowserState,
+  navigateResourceNavigate,
+} from "../actions/navigation.mts";
 
 import { nodesPrune } from "../actions/node-bulk.mts";
 
-import { voiceCommandsToggleAction, voiceCommandsHelpAction } from "../actions/voice.mts";
+import {
+  voiceCommandsToggleAction,
+  voiceCommandsHelpAction,
+} from "../actions/voice.mts";
 
 import { Action, executeAction, ActionType } from "../actions.mts";
 
@@ -66,10 +73,7 @@ const ActionExecute: React.FC<Props> = ({ keys = "asdfghjkl;" }) => {
             }))}
             onSelected={(selectedItems) => {
               const action = selectedItems[0];
-              if (
-                action.type === ActionType.CURRENT_NODE &&
-                currentNode
-              ) {
+              if (action.type === ActionType.CURRENT_NODE && currentNode) {
                 executeAction(action.id, currentNode);
               } else {
                 executeAction(action.id);

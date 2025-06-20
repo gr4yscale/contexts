@@ -18,7 +18,6 @@ const Confirmation: React.FC<ConfirmationProps> = ({
   confirmKey = "y",
   cancelKey = "n",
 }) => {
-
   const { keymap } = useContext(KeysContext);
 
   useEffect(() => {

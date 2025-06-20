@@ -23,7 +23,7 @@ const CurrentNodeRename: React.FC = () => {
               if (currentNode) {
                 updateNode({
                   nodeId: currentNode.nodeId,
-                  name: name
+                  name: name,
                 });
               }
               executeAction("nodeNavigate");

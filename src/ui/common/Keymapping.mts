@@ -66,7 +66,11 @@ export type KeymapInstance = {
   lastKeyPressed: string;
   lastCommandExecuted: string;
   registerListener: (listener: () => void) => void;
-  getCurrentState: () => { lastCommandExecuted: string; lastKeyPressed: string; keymap: KeymapConfig };
+  getCurrentState: () => {
+    lastCommandExecuted: string;
+    lastKeyPressed: string;
+    keymap: KeymapConfig;
+  };
 };
 
 export const Keymap = (initialConfig: KeymapConfig): KeymapInstance => {
@@ -108,7 +112,7 @@ export const Keymap = (initialConfig: KeymapConfig): KeymapInstance => {
     lastCommandExecuted = "";
     listeners = [];
   };
-  
+
   const registerListener = (listener: Function) => {
     listeners.push(listener);
   };

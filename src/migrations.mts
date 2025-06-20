@@ -23,7 +23,9 @@ export async function runMigrations(
   const direction = options.direction || "up";
   const connection = await getConnection();
 
-  logger.debug(`[DEBUG] Starting migrations with direction: ${direction}, target: ${options.target || 'none'}`);
+  logger.debug(
+    `[DEBUG] Starting migrations with direction: ${direction}, target: ${options.target || "none"}`,
+  );
 
   // Get applied migrations
   logger.debug(`[DEBUG] Querying applied migrations from database`);
@@ -33,7 +35,10 @@ export async function runMigrations(
   const appliedMigrations = new Map(
     result.rows.map((row: any) => [row.id, row.name]),
   );
-  logger.debug(`[DEBUG] Found ${appliedMigrations.size} applied migrations:`, Array.from(appliedMigrations.keys()));
+  logger.debug(
+    `[DEBUG] Found ${appliedMigrations.size} applied migrations:`,
+    Array.from(appliedMigrations.keys()),
+  );
 
   // Load migration files
   const migrationsDir = path.join(process.cwd(), "migrations");
@@ -41,7 +46,10 @@ export async function runMigrations(
   try {
     await fs.mkdir(migrationsDir, { recursive: true });
     const files = await fs.readdir(migrationsDir);
-    logger.debug(`[DEBUG] Found ${files.length} files in migrations directory:`, files);
+    logger.debug(
+      `[DEBUG] Found ${files.length} files in migrations directory:`,
+      files,
+    );
 
     // Parse migration files (expected format: 001_migration_name.sql)
     const migrations: Migration[] = [];
@@ -53,8 +61,10 @@ export async function runMigrations(
 
       const id = parseInt(match[1], 10);
       const name = match[2];
-      logger.debug(`[DEBUG] Parsing migration file: ${file} (ID: ${id}, Name: ${name})`);
-      
+      logger.debug(
+        `[DEBUG] Parsing migration file: ${file} (ID: ${id}, Name: ${name})`,
+      );
+
       const content = await fs.readFile(path.join(migrationsDir, file), "utf8");
       logger.debug(`[DEBUG] Read ${content.length} characters from ${file}`);
 
@@ -75,7 +85,10 @@ export async function runMigrations(
 
     // Sort migrations by ID
     migrations.sort((a, b) => a.id - b.id);
-    logger.debug(`[DEBUG] Loaded ${migrations.length} valid migrations:`, migrations.map(m => `${m.id}:${m.name}`));
+    logger.debug(
+      `[DEBUG] Loaded ${migrations.length} valid migrations:`,
+      migrations.map((m) => `${m.id}:${m.name}`),
+    );
 
     if (direction === "up") {
       logger.debug(`[DEBUG] Running UP migrations`);
@@ -91,31 +104,43 @@ export async function runMigrations(
               `Applying migration ${migration.id}: ${migration.name}`,
             );
           }
-          logger.debug(`[DEBUG] Executing UP migration ${migration.id} in transaction`);
+          logger.debug(
+            `[DEBUG] Executing UP migration ${migration.id} in transaction`,
+          );
 
           // Run the migration in a transaction
           await connection.query("BEGIN");
           try {
-            logger.debug(`[DEBUG] Executing UP SQL for migration ${migration.id}`);
+            logger.debug(
+              `[DEBUG] Executing UP SQL for migration ${migration.id}`,
+            );
             await connection.query(migration.upSql);
-            logger.debug(`[DEBUG] Recording migration ${migration.id} in migrations table`);
+            logger.debug(
+              `[DEBUG] Recording migration ${migration.id} in migrations table`,
+            );
             await connection.query(
               `INSERT INTO migrations (id, name) VALUES ($1, $2)`,
               [migration.id, migration.name],
             );
             await connection.query("COMMIT");
-            logger.debug(`[DEBUG] Transaction committed for migration ${migration.id}`);
+            logger.debug(
+              `[DEBUG] Transaction committed for migration ${migration.id}`,
+            );
             if (!isIntegrationTest) {
               logger.debug(`Migration ${migration.id} applied successfully`);
             }
           } catch (error) {
-            logger.debug(`[DEBUG] Rolling back transaction for migration ${migration.id} due to error`);
+            logger.debug(
+              `[DEBUG] Rolling back transaction for migration ${migration.id} due to error`,
+            );
             await connection.query("ROLLBACK");
             logger.error(`Error applying migration ${migration.id}:`, error);
             throw error;
           }
         } else {
-          logger.debug(`[DEBUG] Skipping already applied migration ${migration.id}`);
+          logger.debug(
+            `[DEBUG] Skipping already applied migration ${migration.id}`,
+          );
         }
       }
     } else {
@@ -125,12 +150,17 @@ export async function runMigrations(
       const appliedMigrationIds = Array.from(appliedMigrations.keys()).sort(
         (a, b) => b - a,
       );
-      logger.debug(`[DEBUG] Applied migrations in reverse order:`, appliedMigrationIds);
+      logger.debug(
+        `[DEBUG] Applied migrations in reverse order:`,
+        appliedMigrationIds,
+      );
 
       for (const id of appliedMigrationIds) {
         // If target is specified and we've reached or gone below it, stop
         if (options.target !== undefined && id <= options.target) {
-          logger.debug(`[DEBUG] Stopping at migration ${id} due to target ${options.target}`);
+          logger.debug(
+            `[DEBUG] Stopping at migration ${id} due to target ${options.target}`,
+          );
           break;
         }
 
@@ -149,13 +179,19 @@ export async function runMigrations(
         try {
           logger.debug(`[DEBUG] Executing DOWN SQL for migration ${id}`);
           await connection.query(migration.downSql);
-          logger.debug(`[DEBUG] Removing migration ${id} from migrations table`);
+          logger.debug(
+            `[DEBUG] Removing migration ${id} from migrations table`,
+          );
           await connection.query(`DELETE FROM migrations WHERE id = $1`, [id]);
           await connection.query("COMMIT");
-          logger.debug(`[DEBUG] Transaction committed for rollback of migration ${id}`);
+          logger.debug(
+            `[DEBUG] Transaction committed for rollback of migration ${id}`,
+          );
           logger.debug(`Migration ${id} rolled back successfully`);
         } catch (error) {
-          logger.debug(`[DEBUG] Rolling back transaction for migration ${id} due to error`);
+          logger.debug(
+            `[DEBUG] Rolling back transaction for migration ${id} due to error`,
+          );
           await connection.query("ROLLBACK");
           logger.error(`Error rolling back migration ${id}:`, error);
           throw error;

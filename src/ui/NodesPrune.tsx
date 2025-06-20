@@ -3,16 +3,10 @@ import { Box, Text } from "ink";
 import { Node } from "../types.mts";
 import CoreList, { ListItem } from "./common/CoreList.tsx";
 
-import {
-  filteredNodeTree,
-  NodeTreeFilter,
-} from "../models/node.mts";
+import { filteredNodeTree, NodeTreeFilter } from "../models/node.mts";
 import { getAllWorkspaces } from "../models/workspace.mts";
 import { executeAction } from "../actions.mts";
-import {
-  getNodesWithX11Counts,
-  pruneNodes,
-} from "../actions/node-bulk.mts";
+import { getNodesWithX11Counts, pruneNodes } from "../actions/node-bulk.mts";
 
 const NodesPrune: React.FC = () => {
   const [items, setItems] = useState<ListItem[]>([]);
@@ -29,9 +23,7 @@ const NodesPrune: React.FC = () => {
 
       // Get all workspaces and create a set of their nodeIds
       const workspaces = await getAllWorkspaces();
-      const workspaceNodeIds = new Set(
-        workspaces.map((ws) => ws.nodeId),
-      );
+      const workspaceNodeIds = new Set(workspaces.map((ws) => ws.nodeId));
 
       // Filter nodes to include only those with an associated workspace
       const nodesWithWorkspaces = nodesWithCounts.filter((node) =>
@@ -72,9 +64,7 @@ const NodesPrune: React.FC = () => {
             multiple={true}
             initialMode="select"
             onSelected={async (selectedItems: ListItem[]) => {
-              const nodes = selectedItems.map(
-                (item) => item.data as Node,
-              );
+              const nodes = selectedItems.map((item) => item.data as Node);
 
               try {
                 await pruneNodes(nodes);

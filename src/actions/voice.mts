@@ -6,7 +6,11 @@ import { $ } from "zx";
 import { Action, ActionType, registerAction } from "../actions.mts";
 import * as logger from "../logger.mts";
 
-const TRANSCRIPTIONS_DIR = path.join(os.homedir(), "contexts-data", "transcriptions");
+const TRANSCRIPTIONS_DIR = path.join(
+  os.homedir(),
+  "contexts-data",
+  "transcriptions",
+);
 const TEMP_DIR = "/tmp";
 const RECORDING_DELAY_MS = 1500;
 const EMACS_DAEMON_NAME = "transcriptions";
@@ -19,15 +23,18 @@ let voiceCommandsProcess: any = null;
 
 // Utility functions
 function generateTimestamp(): string {
-  return new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+  return new Date().toISOString().replace(/[:.]/g, "-").slice(0, -5);
 }
 
 function generateFilePaths(timestamp: string) {
   const filename = `${timestamp}.txt`;
   const filepath = path.join(TRANSCRIPTIONS_DIR, filename);
   const tempAudioFile = path.join(TEMP_DIR, `voice-recording-${timestamp}.wav`);
-  const tempTranscriptionFile = path.join(TEMP_DIR, `voice-recording-${timestamp}.txt`);
-  
+  const tempTranscriptionFile = path.join(
+    TEMP_DIR,
+    `voice-recording-${timestamp}.txt`,
+  );
+
   return { filepath, tempAudioFile, tempTranscriptionFile };
 }
 
@@ -53,7 +60,7 @@ async function openInEmacs(filepath: string): Promise<void> {
     const child = spawn(
       "/usr/bin/emacsclient",
       ["-c", "-s", EMACS_DAEMON_NAME, filepath],
-      { detached: true, stdio: "ignore" }
+      { detached: true, stdio: "ignore" },
     );
     child.unref();
   } catch (daemonError) {
@@ -64,39 +71,51 @@ async function openInEmacs(filepath: string): Promise<void> {
 
 async function stopRecording(): Promise<void> {
   if (!recordingProcess) return;
-  
-  await new Promise(resolve => setTimeout(resolve, RECORDING_DELAY_MS));
+
+  await new Promise((resolve) => setTimeout(resolve, RECORDING_DELAY_MS));
   recordingProcess.kill("SIGTERM");
 }
 
 async function startRecording(tempAudioFile: string): Promise<void> {
   isRecording = true;
   await $`notify-send "Recording"`;
-  
-  recordingProcess = spawn("parecord", [
-    "--format=s16le",
-    "--rate=16000",
-    "--channels=1",
-    "--file-format=wav",
-    tempAudioFile
-  ], {
-    stdio: ["ignore", "pipe", "pipe"]
-  });
+
+  recordingProcess = spawn(
+    "parecord",
+    [
+      "--format=s16le",
+      "--rate=16000",
+      "--channels=1",
+      "--file-format=wav",
+      tempAudioFile,
+    ],
+    {
+      stdio: ["ignore", "pipe", "pipe"],
+    },
+  );
 }
 
 async function transcribeAudio(tempAudioFile: string): Promise<void> {
   isTranscribing = true;
   await $`notify-send "Transcribing"`;
-  
-  const whisperProcess = spawn("whisper-ctranslate2", [
-    "--model", "small",
-    "--language", "en", 
-    "--output_format", "txt",
-    "--output_dir", TEMP_DIR,
-    tempAudioFile
-  ], {
-    stdio: ["ignore", "pipe", "pipe"]
-  });
+
+  const whisperProcess = spawn(
+    "whisper-ctranslate2",
+    [
+      "--model",
+      "small",
+      "--language",
+      "en",
+      "--output_format",
+      "txt",
+      "--output_dir",
+      TEMP_DIR,
+      tempAudioFile,
+    ],
+    {
+      stdio: ["ignore", "pipe", "pipe"],
+    },
+  );
 
   let transcription = "";
   let errorOutput = "";
@@ -123,19 +142,25 @@ async function transcribeAudio(tempAudioFile: string): Promise<void> {
   });
 }
 
-async function handleTranscriptionResult(tempTranscriptionFile: string, filepath: string): Promise<void> {
+async function handleTranscriptionResult(
+  tempTranscriptionFile: string,
+  filepath: string,
+): Promise<void> {
   try {
     await fs.copyFile(tempTranscriptionFile, filepath);
     await fs.unlink(tempTranscriptionFile);
 
-    const transcriptionContent = await fs.readFile(filepath, 'utf-8');
+    const transcriptionContent = await fs.readFile(filepath, "utf-8");
     if (transcriptionContent.trim()) {
       await $`notify-send ${transcriptionContent.trim()}`;
     }
 
     await openInEmacs(filepath);
   } catch (fileError) {
-    logger.error("Failed to read or move transcription file", { error: fileError, file: tempTranscriptionFile });
+    logger.error("Failed to read or move transcription file", {
+      error: fileError,
+      file: tempTranscriptionFile,
+    });
   }
 }
 
@@ -154,7 +179,8 @@ async function voiceTranscribeToggle(): Promise<void> {
 
     // Start new recording if not transcribing or already recording
     const timestamp = generateTimestamp();
-    const { filepath, tempAudioFile, tempTranscriptionFile } = generateFilePaths(timestamp);
+    const { filepath, tempAudioFile, tempTranscriptionFile } =
+      generateFilePaths(timestamp);
 
     await fs.mkdir(TRANSCRIPTIONS_DIR, { recursive: true });
 
@@ -165,7 +191,7 @@ async function voiceTranscribeToggle(): Promise<void> {
       recordingProcess.on("close", async (code) => {
         isRecording = false;
         recordingProcess = null;
-        
+
         if (code !== 0 && code !== null) {
           reject(new Error(`Recording process exited with code ${code}`));
           return;
@@ -186,7 +212,6 @@ async function voiceTranscribeToggle(): Promise<void> {
         reject(error);
       });
     });
-
   } catch (error) {
     isRecording = false;
     isTranscribing = false;
@@ -218,14 +243,21 @@ async function voiceCommandsToggle(): Promise<void> {
 
     // Start new numen process
     isVoiceCommandsActive = true;
-    voiceCommandsProcess = spawn("numen", [
-      "--mic", "pipewire",
-      "--x11",
-      "--phraselog=/tmp/numen-phraselog",
-      ...await $`ls ~/.config/numen/phrases/*.phrases`.then(result => result.stdout.trim().split('\n'))
-    ], {
-      stdio: ["ignore", "pipe", "pipe"]
-    });
+    voiceCommandsProcess = spawn(
+      "numen",
+      [
+        "--mic",
+        "pipewire",
+        "--x11",
+        "--phraselog=/tmp/numen-phraselog",
+        ...(await $`ls ~/.config/numen/phrases/*.phrases`.then((result) =>
+          result.stdout.trim().split("\n"),
+        )),
+      ],
+      {
+        stdio: ["ignore", "pipe", "pipe"],
+      },
+    );
 
     voiceCommandsProcess.on("close", (code) => {
       isVoiceCommandsActive = false;

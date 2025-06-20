@@ -44,10 +44,7 @@ export const activateNode = async (id: NodeId) => {
     await updateNode({ nodeId: id, lastAccessed: new Date() });
 
     const previousNode = await getCurrentNode();
-    await updateNodeHistory(
-      id,
-      previousNode ? previousNode.nodeId : "",
-    );
+    await updateNodeHistory(id, previousNode ? previousNode.nodeId : "");
 
     $`notify-send -a node -t 500 "${node.name}"`;
   } else {
@@ -78,10 +75,7 @@ export const sendWindowToAnotherNode = async () => {
   // Format nodes with hierarchy paths (TOFIX: cache)
   const formattedNodes = await Promise.all(
     unselected.map(async (node) => {
-      const hierarchyPath = await formatNodeWithHierarchy(
-        node,
-        unselected,
-      );
+      const hierarchyPath = await formatNodeWithHierarchy(node, unselected);
       return { ...node, name: hierarchyPath };
     }),
   );

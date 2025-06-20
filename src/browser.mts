@@ -62,7 +62,7 @@ const nodeByWorkspaceId = async (workspaceId: number) => {
   const workspace = await getWorkspaceById(workspaceId);
   if (workspace && workspace.nodeId) {
     const allNodes = await getAllNodes();
-    return allNodes.find(node => node.nodeId === workspace.nodeId);
+    return allNodes.find((node) => node.nodeId === workspace.nodeId);
   }
   return null;
 };
@@ -72,8 +72,9 @@ const mapWindowsToNodes = async (): Promise<Window[]> => {
   const windows = getWindowsAndTabs();
 
   for (const window of windows) {
-    const workspaceId = workspaceIdsAndTitles.find((t) => t.title === window.title)
-      ?.workspaceId;
+    const workspaceId = workspaceIdsAndTitles.find(
+      (t) => t.title === window.title,
+    )?.workspaceId;
     if (workspaceId) {
       //console.log(window);
       const node = await nodeByWorkspaceId(workspaceId);
@@ -86,14 +87,12 @@ const mapWindowsToNodes = async (): Promise<Window[]> => {
 };
 
 export const getBrowserStates = async () => {
-  const browserStates = []
+  const browserStates = [];
   const windows = await mapWindowsToNodes();
 
   const allNodes = await getAllNodes();
   for (const node of allNodes) {
-    const windowsForNode = windows.filter(
-      (w) => w.nodeId === node.nodeId,
-    );
+    const windowsForNode = windows.filter((w) => w.nodeId === node.nodeId);
     const browserState: BrowserState = {
       windows: windowsForNode, // windows and tabs
       created: new Date(),
@@ -103,34 +102,32 @@ export const getBrowserStates = async () => {
     // TOFIX: prune oldest browserState if > 10 stored
   }
 
-  console.log('****** browser states: ******')
-  console.log(browserStates)
+  console.log("****** browser states: ******");
+  console.log(browserStates);
 
-  return browserStates
+  return browserStates;
 };
 
+export const getBrowserStateForCurrentNode =
+  async (): Promise<BrowserState | null> => {
+    const currentNode = await getCurrentNode();
+    if (!currentNode) {
+      return null;
+    }
 
-export const getBrowserStateForCurrentNode = async (): Promise<BrowserState | null> => {
-  const currentNode = await getCurrentNode();
-  if (!currentNode) {
-    return null;
-  }
+    const windows = await mapWindowsToNodes();
+    const windowsForNode = windows.filter(
+      (w) => w.nodeId === currentNode.nodeId,
+    );
 
-  const windows = await mapWindowsToNodes();
-  const windowsForNode = windows.filter(
-    (w) => w.nodeId === currentNode.nodeId,
-  );
+    const browserState: BrowserState = {
+      windows: windowsForNode,
+      created: new Date(),
+      accessed: new Date(),
+    };
 
-  const browserState: BrowserState = {
-    windows: windowsForNode,
-    created: new Date(),
-    accessed: new Date(),
+    return browserState;
   };
-
-  return browserState;
-};
-
-
 
 const windowAlreadyOpen = (
   browserStateWindow: Window,
@@ -265,7 +262,7 @@ export const loadLastBrowserStateForActiveNodes = async () => {
 export const isTabActive = async (tab: Tab): Promise<boolean> => {
   try {
     const filepath = `/home/gr4yscale/TabFS/fs/mnt/tabs/last-focused/url.txt`;
-    const contents = await fs.readFile(filepath, 'utf8');
+    const contents = await fs.readFile(filepath, "utf8");
     return contents.trim() === tab.url;
   } catch (error) {
     // If file doesn't exist or can't be read, assume tab is not active
@@ -280,28 +277,29 @@ export type ActiveTabDetails = {
   body: string;
 };
 
-export const getActiveTabDetails = async (): Promise<ActiveTabDetails | null> => {
-  try {
-    const basePath = `/home/gr4yscale/TabFS/fs/mnt/tabs/last-focused`;
-    
-    const [url, text, title, body] = await Promise.all([
-      fs.readFile(`${basePath}/url.txt`, 'utf8'),
-      fs.readFile(`${basePath}/text.txt`, 'utf8'),
-      fs.readFile(`${basePath}/title.txt`, 'utf8'),
-      fs.readFile(`${basePath}/body.html`, 'utf8'),
-    ]);
+export const getActiveTabDetails =
+  async (): Promise<ActiveTabDetails | null> => {
+    try {
+      const basePath = `/home/gr4yscale/TabFS/fs/mnt/tabs/last-focused`;
 
-    return {
-      url: url.trim(),
-      text: text.trim(),
-      title: title.trim(),
-      body: body.trim(),
-    };
-  } catch (error) {
-    // If any file doesn't exist or can't be read, return null
-    return null;
-  }
-};
+      const [url, text, title, body] = await Promise.all([
+        fs.readFile(`${basePath}/url.txt`, "utf8"),
+        fs.readFile(`${basePath}/text.txt`, "utf8"),
+        fs.readFile(`${basePath}/title.txt`, "utf8"),
+        fs.readFile(`${basePath}/body.html`, "utf8"),
+      ]);
+
+      return {
+        url: url.trim(),
+        text: text.trim(),
+        title: title.trim(),
+        body: body.trim(),
+      };
+    } catch (error) {
+      // If any file doesn't exist or can't be read, return null
+      return null;
+    }
+  };
 
 // map Windows[].Links[] to workspaceIds[]
 

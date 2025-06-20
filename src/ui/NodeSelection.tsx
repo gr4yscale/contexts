@@ -1,8 +1,21 @@
-import React, { useEffect, useState, useContext, useCallback, useRef } from "react";
+import React, {
+  useEffect,
+  useState,
+  useContext,
+  useCallback,
+  useRef,
+} from "react";
 import { Box, Text } from "ink";
 
 import { Node } from "../types.mts";
-import { filteredNodeTree, NodeTreeFilter, formatNodeWithHierarchy, getChildNodes, getParentNodes, getFilteredRootNodes } from "../models/node.mts";
+import {
+  filteredNodeTree,
+  NodeTreeFilter,
+  formatNodeWithHierarchy,
+  getChildNodes,
+  getParentNodes,
+  getFilteredRootNodes,
+} from "../models/node.mts";
 import * as logger from "../logger.mts";
 
 import { KeymapConfig, key } from "./common/Keymapping.mts";
@@ -35,9 +48,14 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
   const [currentParentIds, setCurrentParentIds] = useState<string[]>([]);
   const [itemsMode, setDagMode] = useState<DagModes>("select");
   const [childItems, setChildItems] = useState<ListItem[]>([]);
-  const [currentFilter, setCurrentFilter] = useState<NodeTreeFilter>(NodeTreeFilter.MAIN);
-  const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>(initialSelection);
-  const [selectedNodeHierarchies, setSelectedNodeHierarchies] = useState<string[]>([]);
+  const [currentFilter, setCurrentFilter] = useState<NodeTreeFilter>(
+    NodeTreeFilter.MAIN,
+  );
+  const [selectedNodeIds, setSelectedNodeIds] =
+    useState<string[]>(initialSelection);
+  const [selectedNodeHierarchies, setSelectedNodeHierarchies] = useState<
+    string[]
+  >([]);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const navigateUpRef = useRef<() => Promise<void>>();
 
@@ -51,7 +69,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
 
       const hierarchies: string[] = [];
       for (const nodeId of selectedNodeIds) {
-        const node = allNodes.find(n => n.nodeId === nodeId);
+        const node = allNodes.find((n) => n.nodeId === nodeId);
         if (node) {
           const nodeTreeItem = { ...node, selected: false };
           const hierarchy = await formatNodeWithHierarchy(nodeTreeItem, []);
@@ -75,8 +93,12 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     });
   }, [mode, itemsMode, currentParentIds, childItems.length, lists.length]);
 
-  const { currentListItems, currentListIndex, switchListByIndex, switchListById } =
-    useListSwitching(lists, 1); // Default to second list (main)
+  const {
+    currentListItems,
+    currentListIndex,
+    switchListByIndex,
+    switchListById,
+  } = useListSwitching(lists, 1); // Default to second list (main)
 
   const fetchNodes = async () => {
     setLoading(true);
@@ -141,53 +163,61 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     }
   };
 
-  const getChildrenNodes = useCallback(async (parentIds: string[]) => {
-    if (parentIds.length === 0) {
-      // Return root nodes
-      const rootNodes: Node[] = [];
-      for (const node of allNodes) {
-        const parents = await getParentNodes(node.nodeId);
-        if (parents.length === 0) {
-          rootNodes.push(node);
+  const getChildrenNodes = useCallback(
+    async (parentIds: string[]) => {
+      if (parentIds.length === 0) {
+        // Return root nodes
+        const rootNodes: Node[] = [];
+        for (const node of allNodes) {
+          const parents = await getParentNodes(node.nodeId);
+          if (parents.length === 0) {
+            rootNodes.push(node);
+          }
         }
+        return rootNodes;
       }
-      return rootNodes;
-    }
-    
-    // Get children from database for each parent
-    const allChildren: Node[] = [];
-    for (const parentId of parentIds) {
-      const children = await getChildNodes(parentId);
-      allChildren.push(...children);
-    }
-    
-    return allChildren;
-  }, [allNodes]);
 
-  const navigateToChildren = useCallback(async (selectedParentIds: string[]) => {
-    const children = await getChildrenNodes(selectedParentIds);
-    setCurrentParentIds(selectedParentIds);
-    
-    setChildItems(children.map(node => ({
-      id: node.nodeId,
-      display: node.name,
-      data: node,
-    })));
-  }, [getChildrenNodes]);
+      // Get children from database for each parent
+      const allChildren: Node[] = [];
+      for (const parentId of parentIds) {
+        const children = await getChildNodes(parentId);
+        allChildren.push(...children);
+      }
+
+      return allChildren;
+    },
+    [allNodes],
+  );
+
+  const navigateToChildren = useCallback(
+    async (selectedParentIds: string[]) => {
+      const children = await getChildrenNodes(selectedParentIds);
+      setCurrentParentIds(selectedParentIds);
+
+      setChildItems(
+        children.map((node) => ({
+          id: node.nodeId,
+          display: node.name,
+          data: node,
+        })),
+      );
+    },
+    [getChildrenNodes],
+  );
 
   const navigateUp = useCallback(async () => {
     if (currentParentIds.length === 0) return;
-    
+
     // Find the parents of current parent nodes
     const grandParentIds: string[] = [];
     for (const parentId of currentParentIds) {
       const parents = await getParentNodes(parentId);
-      grandParentIds.push(...parents.map(p => p.nodeId));
+      grandParentIds.push(...parents.map((p) => p.nodeId));
     }
-    
+
     // Remove duplicates
     const uniqueGrandParentIds = [...new Set(grandParentIds)];
-    
+
     if (uniqueGrandParentIds.length === 0) {
       // Go back to root nodes
       const rootNodes: Node[] = [];
@@ -197,14 +227,16 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
           rootNodes.push(node);
         }
       }
-      
+
       setCurrentParentIds([]);
-      
-      setChildItems(rootNodes.map(node => ({
-        id: node.nodeId,
-        display: node.name,
-        data: node,
-      })));
+
+      setChildItems(
+        rootNodes.map((node) => ({
+          id: node.nodeId,
+          display: node.name,
+          data: node,
+        })),
+      );
     } else {
       await navigateToChildren(uniqueGrandParentIds);
     }
@@ -221,7 +253,11 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
 
   // Ensure initial selection is set after nodes are loaded
   useEffect(() => {
-    if (!loading && initialSelection.length > 0 && selectedNodeIds.length === 0) {
+    if (
+      !loading &&
+      initialSelection.length > 0 &&
+      selectedNodeIds.length === 0
+    ) {
       setSelectedNodeIds(initialSelection);
     }
   }, [loading, initialSelection]);
@@ -238,7 +274,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
         name: "toggle-list-or-items",
         handler: () => {
           setMode((prevMode) => (prevMode === "lists" ? "items" : "lists"));
-        }
+        },
       },
       {
         sequence: [key("u")],
@@ -259,7 +295,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
         description: skipConfirmation ? "Select" : "Confirm Selection",
         name: skipConfirmation ? "Select" : "Confirm Selection",
         handler: () => {
-          setSelectedNodeIds(current => {
+          setSelectedNodeIds((current) => {
             if (current.length > 0) {
               if (skipConfirmation) {
                 onSelected(current);
@@ -286,10 +322,12 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
         <Text>Loading nodes...</Text>
       ) : showConfirmation ? (
         <Confirmation
-          message={`Confirm selection of ${selectedNodeIds.length} node${selectedNodeIds.length !== 1 ? 's' : ''}:\n${selectedNodeIds.map(id => {
-            const node = allNodes.find(n => n.nodeId === id);
-            return `• ${node?.name || id}`;
-          }).join('\n')}`}
+          message={`Confirm selection of ${selectedNodeIds.length} node${selectedNodeIds.length !== 1 ? "s" : ""}:\n${selectedNodeIds
+            .map((id) => {
+              const node = allNodes.find((n) => n.nodeId === id);
+              return `• ${node?.name || id}`;
+            })
+            .join("\n")}`}
           onConfirm={() => {
             onSelected(selectedNodeIds);
             setShowConfirmation(false);
@@ -303,7 +341,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
           <Box flexDirection="row" width="100%">
             <Box width="60%">
               <CoreList
-                key={`${currentParentIds.join('-')}-${currentFilter}`}
+                key={`${currentParentIds.join("-")}-${currentFilter}`}
                 items={childItems}
                 multiple={itemsMode === "select" ? multiple : false}
                 initialMode="select"
@@ -316,13 +354,17 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
                   const currentViewNodeIds = selectedItems.map(
                     (item) => (item.data as Node).nodeId,
                   );
-                  
+
                   // Get the IDs of nodes currently visible in this view
-                  const currentViewAllNodeIds = childItems.map(item => (item.data as Node).nodeId);
-                  
+                  const currentViewAllNodeIds = childItems.map(
+                    (item) => (item.data as Node).nodeId,
+                  );
+
                   // Preserve selections from nodes not in current view, update selections for current view
-                  setSelectedNodeIds(prevSelected => {
-                    const notInCurrentView = prevSelected.filter(id => !currentViewAllNodeIds.includes(id));
+                  setSelectedNodeIds((prevSelected) => {
+                    const notInCurrentView = prevSelected.filter(
+                      (id) => !currentViewAllNodeIds.includes(id),
+                    );
                     return [...notInCurrentView, ...currentViewNodeIds];
                   });
                 }}
@@ -330,7 +372,9 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
                   if (itemsMode === "select") {
                     // In selection mode, show confirmation or call onSelected directly
                     if (skipConfirmation) {
-                      const nodeIds = selectedItems.map(item => (item.data as Node).nodeId);
+                      const nodeIds = selectedItems.map(
+                        (item) => (item.data as Node).nodeId,
+                      );
                       onSelected(nodeIds);
                     } else {
                       setShowConfirmation(true);
@@ -339,7 +383,9 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
                     // In navigate mode, navigate to children if available
                     const selectedNode = selectedItems[0]?.data as Node;
                     if (selectedNode) {
-                      const children = await getChildrenNodes([selectedNode.nodeId]);
+                      const children = await getChildrenNodes([
+                        selectedNode.nodeId,
+                      ]);
                       if (children.length > 0) {
                         await navigateToChildren([selectedNode.nodeId]);
                       }
@@ -349,9 +395,16 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
               />
             </Box>
             {selectedNodeIds.length > 0 && (
-              <Box width="40%" flexDirection="column" marginLeft={1} marginTop={1}>
+              <Box
+                width="40%"
+                flexDirection="column"
+                marginLeft={1}
+                marginTop={1}
+              >
                 {selectedNodeHierarchies.map((hierarchy, index) => (
-                  <Text key={index} color="cyan">• {hierarchy}</Text>
+                  <Text key={index} color="cyan">
+                    • {hierarchy}
+                  </Text>
                 ))}
               </Box>
             )}
@@ -368,7 +421,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
           onSelected={async (selectedLists: List[]) => {
             if (selectedLists.length > 0) {
               const selectedList = selectedLists[0];
-              
+
               // Map list ID to NodeTreeFilter
               let filter: NodeTreeFilter;
               switch (selectedList.id) {
@@ -395,13 +448,13 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
                   filter = NodeTreeFilter.ALL;
                   break;
               }
-              
+
               // Fetch filtered nodes and update childItems
               try {
                 const filteredNodes = await getFilteredRootNodes(filter);
                 setCurrentFilter(filter);
                 setCurrentParentIds([]);
-                
+
                 setChildItems(
                   filteredNodes.map((node) => ({
                     id: node.nodeId,
@@ -409,8 +462,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
                     data: node,
                   })),
                 );
-                
-                
+
                 switchListById(selectedList.id);
                 setMode("items");
               } catch (error) {

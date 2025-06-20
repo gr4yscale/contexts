@@ -59,7 +59,7 @@ export interface VideoResourceData {
   url: string;
 }
 
-export type ResourceData = 
+export type ResourceData =
   | LinkResourceData
   | WorkspaceResourceData
   | OrgDocResourceData
@@ -131,9 +131,10 @@ export async function getResourceById(
 ): Promise<Resource | null> {
   const client = await getConnection();
   try {
-    const result = await client.query("SELECT * FROM resources WHERE id = $1;", [
-      id,
-    ]);
+    const result = await client.query(
+      "SELECT * FROM resources WHERE id = $1;",
+      [id],
+    );
     if (result.rows.length === 0) {
       return null;
     }
@@ -202,13 +203,13 @@ export async function updateResource(
       if (key === "lastAccessed") {
         dbKey = "last_accessed";
       }
-      
+
       let value = resourceUpdate[key];
-      
+
       if (key === "lastAccessed" && value instanceof Date) {
         value = value.toISOString();
       }
-      
+
       fields.push(`${dbKey} = $${paramIndex}`);
       values.push(value);
       paramIndex++;
@@ -260,10 +261,9 @@ export async function deleteResource(id: ResourceId): Promise<boolean> {
   try {
     // TODO: Consider implications for related entities, e.g., node_resources links.
     // For now, it just deletes the resource itself.
-    const result = await client.query(
-      "DELETE FROM resources WHERE id = $1;",
-      [id],
-    );
+    const result = await client.query("DELETE FROM resources WHERE id = $1;", [
+      id,
+    ]);
     logger.debug(`Resource deleted with ID: ${id}, count: ${result.rowCount}`);
     return result.rowCount > 0;
   } catch (error) {
@@ -315,11 +315,14 @@ export async function addResourceNode(
       `INSERT INTO resource_nodes (resource_id, node_id)
        VALUES ($1, $2)
        ON CONFLICT (resource_id, node_id) DO NOTHING`,
-      [resourceId, nodeId]
+      [resourceId, nodeId],
     );
     logger.debug(`Added node ${nodeId} to resource ${resourceId}`);
   } catch (error) {
-    logger.error(`Error adding node ${nodeId} to resource ${resourceId}:`, error);
+    logger.error(
+      `Error adding node ${nodeId} to resource ${resourceId}:`,
+      error,
+    );
     throw error;
   }
 }
@@ -338,11 +341,14 @@ export async function removeResourceNode(
     await client.query(
       `DELETE FROM resource_nodes 
        WHERE resource_id = $1 AND node_id = $2`,
-      [resourceId, nodeId]
+      [resourceId, nodeId],
     );
     logger.debug(`Removed node ${nodeId} from resource ${resourceId}`);
   } catch (error) {
-    logger.error(`Error removing node ${nodeId} from resource ${resourceId}:`, error);
+    logger.error(
+      `Error removing node ${nodeId} from resource ${resourceId}:`,
+      error,
+    );
     throw error;
   }
 }
@@ -361,9 +367,9 @@ export async function getResourceNodes(
       `SELECT n.* FROM nodes n
        JOIN resource_nodes rn ON n.nodeid = rn.node_id
        WHERE rn.resource_id = $1`,
-      [resourceId]
+      [resourceId],
     );
-    
+
     return result.rows.map((row: any) => ({
       nodeId: row.nodeid,
       name: row.name,
@@ -384,9 +390,7 @@ export async function getResourceNodes(
  * @param nodeId The ID of the node
  * @returns Array of resources associated with the node
  */
-export async function getNodeResources(
-  nodeId: string,
-): Promise<Resource[]> {
+export async function getNodeResources(nodeId: string): Promise<Resource[]> {
   const client = await getConnection();
   try {
     const result = await client.query(
@@ -394,9 +398,9 @@ export async function getNodeResources(
        JOIN resource_nodes rn ON r.id = rn.resource_id
        WHERE rn.node_id = $1
        ORDER BY r.name`,
-      [nodeId]
+      [nodeId],
     );
-    
+
     return result.rows.map((row: any) => ({
       id: row.id as ResourceId,
       name: row.name,

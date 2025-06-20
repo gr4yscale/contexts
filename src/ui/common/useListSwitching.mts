@@ -15,7 +15,7 @@ const useListSwitching = (lists: Array<List>) => {
 
   const switchListById = useCallback(
     (id: string) => {
-      const index = lists.findIndex(list => list.id === id);
+      const index = lists.findIndex((list) => list.id === id);
       if (index !== -1) {
         setCurrentListIndex(index);
       }

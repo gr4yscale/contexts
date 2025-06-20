@@ -42,13 +42,16 @@ const NodeNavigate: React.FC = () => {
       // Format nodes with hierarchy paths
       const formattedNodes = await Promise.all(
         sortedNodes.map(async (node) => {
-          const hierarchyPath = await formatNodeWithHierarchy(node, sortedNodes);
+          const hierarchyPath = await formatNodeWithHierarchy(
+            node,
+            sortedNodes,
+          );
           return {
             id: node.nodeId,
             display: hierarchyPath,
             data: node,
           };
-        })
+        }),
       );
 
       const newItems: ListItem[] = formattedNodes;

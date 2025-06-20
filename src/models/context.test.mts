@@ -104,12 +104,8 @@ testSuite("Context Model Integration Tests", () => {
     // Verify the context was created with nodes
     expect(contextWithNodes).toBeDefined();
     expect(contextWithNodes.nodeIds).toHaveLength(2);
-    expect(contextWithNodes.nodeIds).toContain(
-      testNode1.nodeId,
-    );
-    expect(contextWithNodes.nodeIds).toContain(
-      testNode2.nodeId,
-    );
+    expect(contextWithNodes.nodeIds).toContain(testNode1.nodeId);
+    expect(contextWithNodes.nodeIds).toContain(testNode2.nodeId);
   });
 
   it("should get a context by ID", async () => {
@@ -272,9 +268,9 @@ testSuite("Context Model Integration Tests", () => {
     await createNode(testNode1);
 
     // Try to add the node to the latest context when no contexts exist
-    await expect(
-      addNodeToLatestContext(testNode1.nodeId),
-    ).rejects.toThrow("No contexts found");
+    await expect(addNodeToLatestContext(testNode1.nodeId)).rejects.toThrow(
+      "No contexts found",
+    );
   });
 
   it("should throw an error when removing node from latest context if no contexts exist", async () => {
@@ -282,9 +278,9 @@ testSuite("Context Model Integration Tests", () => {
     await createNode(testNode1);
 
     // Try to remove the node from the latest context when no contexts exist
-    await expect(
-      removeNodeFromLatestContext(testNode1.nodeId),
-    ).rejects.toThrow("No contexts found");
+    await expect(removeNodeFromLatestContext(testNode1.nodeId)).rejects.toThrow(
+      "No contexts found",
+    );
   });
 
   it("should get nodes for a context", async () => {
@@ -306,12 +302,8 @@ testSuite("Context Model Integration Tests", () => {
     expect(nodes).toHaveLength(2);
 
     // Find nodes by ID
-    const node1 = nodes?.find(
-      (a) => a.nodeId === testNode1.nodeId,
-    );
-    const node2 = nodes?.find(
-      (a) => a.nodeId === testNode2.nodeId,
-    );
+    const node1 = nodes?.find((a) => a.nodeId === testNode1.nodeId);
+    const node2 = nodes?.find((a) => a.nodeId === testNode2.nodeId);
 
     expect(node1).toBeDefined();
     expect(node1?.name).toBe(testNode1.name);
@@ -408,12 +400,8 @@ testSuite("Context Model Integration Tests", () => {
     expect(nodes).toHaveLength(2);
 
     // Find nodes by ID
-    const node1 = nodes.find(
-      (a) => a.nodeId === testNode1.nodeId,
-    );
-    const node2 = nodes.find(
-      (a) => a.nodeId === testNode2.nodeId,
-    );
+    const node1 = nodes.find((a) => a.nodeId === testNode1.nodeId);
+    const node2 = nodes.find((a) => a.nodeId === testNode2.nodeId);
 
     expect(node1).toBeDefined();
     expect(node1?.name).toBe(testNode1.name);

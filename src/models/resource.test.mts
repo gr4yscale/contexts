@@ -73,13 +73,13 @@ testSuite("Resource Model Integration Tests", () => {
     } catch (error) {
       // Table might not exist yet, ignore the error
     }
-    
+
     try {
       await client.query("DELETE FROM node_relationships");
     } catch (error) {
       // Table might not exist yet, ignore the error
     }
-    
+
     try {
       await client.query("DELETE FROM nodes");
     } catch (error) {
@@ -251,7 +251,7 @@ testSuite("Resource Model Integration Tests", () => {
 
       // Verify the relationship was created
       const nodes = await getResourceNodes(resourceId);
-      expect(nodes.map(n => n.nodeId)).toContain(nodeId);
+      expect(nodes.map((n) => n.nodeId)).toContain(nodeId);
       expect(nodes).toHaveLength(1);
     });
 
@@ -267,7 +267,7 @@ testSuite("Resource Model Integration Tests", () => {
 
       // Verify both relationships were created
       const nodes = await getResourceNodes(resourceId);
-      const nodeIds = nodes.map(n => n.nodeId);
+      const nodeIds = nodes.map((n) => n.nodeId);
       expect(nodeIds).toContain(nodeId1);
       expect(nodeIds).toContain(nodeId2);
       expect(nodes).toHaveLength(2);
@@ -284,7 +284,7 @@ testSuite("Resource Model Integration Tests", () => {
 
       // Verify only one relationship exists
       const nodes = await getResourceNodes(resourceId);
-      expect(nodes.map(n => n.nodeId)).toContain(nodeId);
+      expect(nodes.map((n) => n.nodeId)).toContain(nodeId);
       expect(nodes).toHaveLength(1);
     });
 
@@ -298,14 +298,14 @@ testSuite("Resource Model Integration Tests", () => {
 
       // Verify the relationship was created
       let nodes = await getResourceNodes(resourceId);
-      expect(nodes.map(n => n.nodeId)).toContain(nodeId);
+      expect(nodes.map((n) => n.nodeId)).toContain(nodeId);
 
       // Remove the node from the resource
       await removeResourceNode(resourceId, nodeId);
 
       // Verify the relationship was removed
       nodes = await getResourceNodes(resourceId);
-      expect(nodes.map(n => n.nodeId)).not.toContain(nodeId);
+      expect(nodes.map((n) => n.nodeId)).not.toContain(nodeId);
       expect(nodes).toHaveLength(0);
     });
 
@@ -324,7 +324,7 @@ testSuite("Resource Model Integration Tests", () => {
 
       // Verify only the first relationship was removed
       const nodes = await getResourceNodes(resourceId);
-      const nodeIds = nodes.map(n => n.nodeId);
+      const nodeIds = nodes.map((n) => n.nodeId);
       expect(nodeIds).not.toContain(nodeId1);
       expect(nodeIds).toContain(nodeId2);
       expect(nodes).toHaveLength(1);
@@ -471,8 +471,8 @@ testSuite("Resource Model Integration Tests", () => {
 
       // Verify the relationship is maintained
       const nodes = await getResourceNodes(resourceId);
-      expect(nodes.map(n => n.nodeId)).toContain(nodeId);
-      
+      expect(nodes.map((n) => n.nodeId)).toContain(nodeId);
+
       const updatedResource = await getResourceById(resourceId);
       expect(updatedResource?.name).toBe("Updated Resource Name");
 

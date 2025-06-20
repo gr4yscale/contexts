@@ -66,13 +66,13 @@ testSuite("Node Model Integration Tests", () => {
     } catch (error) {
       // Table might not exist yet, ignore the error
     }
-    
+
     try {
       await client.query("DELETE FROM nodes");
     } catch (error) {
       // Table might not exist yet, ignore the error
     }
-    
+
     try {
       await client.query("DELETE FROM node_history");
     } catch (error) {
@@ -182,7 +182,6 @@ testSuite("Node Model Integration Tests", () => {
     expect(node).toBeNull();
   });
 
-
   it("should handle empty results", async () => {
     // Get all nodes from empty table
     const nodes = await getAllNodes();
@@ -206,12 +205,12 @@ testSuite("Node Model Integration Tests", () => {
     // Verify the child node was created with correct parent reference
     const retrievedChild = await getNodeById(childId);
     expect(retrievedChild).toBeDefined();
-    
+
     // Verify the relationship exists in the database
     const client = await getConnection();
     const relationshipResult = await client.query(
       "SELECT * FROM node_relationships WHERE parent_node_id = $1 AND child_node_id = $2",
-      [parentId, childId]
+      [parentId, childId],
     );
     expect(relationshipResult.rows.length).toBe(1);
   });
@@ -269,7 +268,7 @@ testSuite("Node Model Integration Tests", () => {
     const client = await getConnection();
     const relationshipsBefore = await client.query(
       "SELECT * FROM node_relationships WHERE parent_node_id = $1",
-      [parentId]
+      [parentId],
     );
     expect(relationshipsBefore.rows.length).toBe(1);
 
@@ -297,7 +296,7 @@ testSuite("Node Model Integration Tests", () => {
     // Verify relationship still exists
     const relationshipsAfter = await client.query(
       "SELECT * FROM node_relationships WHERE parent_node_id = $1",
-      [parentId]
+      [parentId],
     );
     expect(relationshipsAfter.rows.length).toBe(1);
   });
@@ -393,18 +392,18 @@ testSuite("Node Model Integration Tests", () => {
 
     // Verify parent-child relationships exist in database
     const client = await getConnection();
-    
+
     // Root should have no parents
     const rootParents = await client.query(
       "SELECT * FROM node_relationships WHERE child_node_id = $1",
-      [rootId]
+      [rootId],
     );
     expect(rootParents.rows.length).toBe(0);
 
     // Child1 should have root as parent
     const child1Parents = await client.query(
       "SELECT * FROM node_relationships WHERE child_node_id = $1",
-      [child1Id]
+      [child1Id],
     );
     expect(child1Parents.rows.length).toBe(1);
     expect(child1Parents.rows[0].parent_node_id).toBe(rootId);
@@ -412,7 +411,7 @@ testSuite("Node Model Integration Tests", () => {
     // Child2 should have root as parent
     const child2Parents = await client.query(
       "SELECT * FROM node_relationships WHERE child_node_id = $1",
-      [child2Id]
+      [child2Id],
     );
     expect(child2Parents.rows.length).toBe(1);
     expect(child2Parents.rows[0].parent_node_id).toBe(rootId);
@@ -420,7 +419,7 @@ testSuite("Node Model Integration Tests", () => {
     // Grandchild should have child1 as parent
     const grandchildParents = await client.query(
       "SELECT * FROM node_relationships WHERE child_node_id = $1",
-      [grandchildId]
+      [grandchildId],
     );
     expect(grandchildParents.rows.length).toBe(1);
     expect(grandchildParents.rows[0].parent_node_id).toBe(child1Id);
@@ -429,9 +428,7 @@ testSuite("Node Model Integration Tests", () => {
     const rootIndex = tree.findIndex((a) => a.nodeId === rootId);
     const child1Index = tree.findIndex((a) => a.nodeId === child1Id);
     const child2Index = tree.findIndex((a) => a.nodeId === child2Id);
-    const grandchildIndex = tree.findIndex(
-      (a) => a.nodeId === grandchildId,
-    );
+    const grandchildIndex = tree.findIndex((a) => a.nodeId === grandchildId);
 
     expect(rootIndex).toBeLessThan(child1Index);
     expect(rootIndex).toBeLessThan(child2Index);
@@ -658,9 +655,7 @@ testSuite("Node Model Integration Tests", () => {
       });
 
       // Get filtered nodes with TEMP filter
-      const tempNodes = await filteredNodeTree(
-        NodeTreeFilter.TEMP,
-      );
+      const tempNodes = await filteredNodeTree(NodeTreeFilter.TEMP);
 
       // Should only include temp nodes
       const nodeIds = tempNodes.map((a) => a.nodeId);
@@ -691,9 +686,7 @@ testSuite("Node Model Integration Tests", () => {
       });
 
       // Get filtered nodes with RECENT filter
-      const recentNodes = await filteredNodeTree(
-        NodeTreeFilter.RECENT,
-      );
+      const recentNodes = await filteredNodeTree(NodeTreeFilter.RECENT);
 
       // Should only include recent nodes
       const nodeIds = recentNodes.map((a) => a.nodeId);
@@ -722,9 +715,7 @@ testSuite("Node Model Integration Tests", () => {
       });
 
       // Get filtered nodes with CONTEXT filter
-      const contextNodes = await filteredNodeTree(
-        NodeTreeFilter.CONTEXT,
-      );
+      const contextNodes = await filteredNodeTree(NodeTreeFilter.CONTEXT);
 
       // All nodes should be included
       const nodeIds = contextNodes.map((a) => a.nodeId);
@@ -733,15 +724,9 @@ testSuite("Node Model Integration Tests", () => {
       expect(nodeIds).toContain(node3);
 
       // Check selected state
-      const node1InResult = contextNodes.find(
-        (a) => a.nodeId === node1,
-      );
-      const node2InResult = contextNodes.find(
-        (a) => a.nodeId === node2,
-      );
-      const node3InResult = contextNodes.find(
-        (a) => a.nodeId === node3,
-      );
+      const node1InResult = contextNodes.find((a) => a.nodeId === node1);
+      const node2InResult = contextNodes.find((a) => a.nodeId === node2);
+      const node3InResult = contextNodes.find((a) => a.nodeId === node3);
 
       expect(node1InResult?.selected).toBe(true);
       expect(node2InResult?.selected).toBe(false);
@@ -765,9 +750,7 @@ testSuite("Node Model Integration Tests", () => {
       });
 
       // Get filtered nodes with CONTEXT filter
-      const contextNodes = await filteredNodeTree(
-        NodeTreeFilter.CONTEXT,
-      );
+      const contextNodes = await filteredNodeTree(NodeTreeFilter.CONTEXT);
 
       // All nodes should be included but none selected
       const nodeIds = contextNodes.map((a) => a.nodeId);
@@ -783,13 +766,13 @@ testSuite("Node Model Integration Tests", () => {
       // Parent1   Parent2
       //    \       /
       //     Child
-      
+
       const parent1Id = await createNode({
         name: "Parent 1",
       });
 
       const parent2Id = await createNode({
-        name: "Parent 2", 
+        name: "Parent 2",
       });
 
       // Create child with multiple parents
@@ -802,19 +785,19 @@ testSuite("Node Model Integration Tests", () => {
       const client = await getConnection();
       const relationships = await client.query(
         "SELECT * FROM node_relationships WHERE child_node_id = $1",
-        [childId]
+        [childId],
       );
 
       expect(relationships.rows.length).toBe(2);
-      const parentIds = relationships.rows.map(r => r.parent_node_id);
+      const parentIds = relationships.rows.map((r) => r.parent_node_id);
       expect(parentIds).toContain(parent1Id);
       expect(parentIds).toContain(parent2Id);
 
       // Verify getParentNodes returns both parents
       const parents = await getParentNodes(childId);
       expect(parents.length).toBe(2);
-      expect(parents.map(p => p.nodeId)).toContain(parent1Id);
-      expect(parents.map(p => p.nodeId)).toContain(parent2Id);
+      expect(parents.map((p) => p.nodeId)).toContain(parent1Id);
+      expect(parents.map((p) => p.nodeId)).toContain(parent2Id);
 
       // Verify getChildNodes works for both parents
       const children1 = await getChildNodes(parent1Id);
@@ -842,7 +825,7 @@ testSuite("Node Model Integration Tests", () => {
       const client = await getConnection();
       const relationships = await client.query(
         "SELECT * FROM node_relationships WHERE parent_node_id = $1 AND child_node_id = $2",
-        [parentId, childId]
+        [parentId, childId],
       );
       expect(relationships.rows.length).toBe(1);
 
@@ -852,7 +835,7 @@ testSuite("Node Model Integration Tests", () => {
       // Verify relationship is removed
       const relationshipsAfter = await client.query(
         "SELECT * FROM node_relationships WHERE parent_node_id = $1 AND child_node_id = $2",
-        [parentId, childId]
+        [parentId, childId],
       );
       expect(relationshipsAfter.rows.length).toBe(0);
     });
@@ -900,7 +883,9 @@ testSuite("Node Model Integration Tests", () => {
       }
 
       expect(error).toBeDefined();
-      expect(error.message).toContain("Parent node with ID non-existent-parent does not exist");
+      expect(error.message).toContain(
+        "Parent node with ID non-existent-parent does not exist",
+      );
 
       // Try to add relationship with non-existent child
       try {
@@ -911,7 +896,9 @@ testSuite("Node Model Integration Tests", () => {
       }
 
       expect(error).toBeDefined();
-      expect(error.message).toContain("Child node with ID non-existent-child does not exist");
+      expect(error.message).toContain(
+        "Child node with ID non-existent-child does not exist",
+      );
     });
   });
 });

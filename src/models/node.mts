@@ -33,9 +33,7 @@ export type NodeCreate = {
   workspaceId?: string;
 };
 
-export async function createNode(
-  node: NodeCreate,
-): Promise<string> {
+export async function createNode(node: NodeCreate): Promise<string> {
   const client = await getConnection();
   const { name, parentNodeIds } = node;
 
@@ -51,9 +49,7 @@ export async function createNode(
         );
 
         if (parentExists.rows.length === 0) {
-          throw new Error(
-            `Parent node with ID ${parentId} does not exist`,
-          );
+          throw new Error(`Parent node with ID ${parentId} does not exist`);
         }
       }
     }
@@ -68,11 +64,7 @@ export async function createNode(
               ) VALUES 
               ($1, $2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, $3);
           `,
-      [
-        nodeId,
-        name,
-        temp,
-      ],
+      [nodeId, name, temp],
     );
 
     // Insert parent-child relationships if parentNodeIds are provided
@@ -104,9 +96,7 @@ export async function filteredNodeTree(
 ): Promise<NodeTreeItem[]> {
   try {
     // Get nodes filtered by the specified filter (except for CONTEXT which needs special handling)
-    const filteredNodes = await nodeTree(
-      filter ? filter : NodeTreeFilter.ALL,
-    );
+    const filteredNodes = await nodeTree(filter ? filter : NodeTreeFilter.ALL);
 
     const currentContext = await getCurrentContext();
     // Handle null context case
@@ -150,9 +140,7 @@ export async function filteredNodeTree(
   }
 }
 
-export async function getNodeById(
-  nodeId: string,
-): Promise<Node | null> {
+export async function getNodeById(nodeId: string): Promise<Node | null> {
   try {
     const client = await getConnection();
     const result = await client.query(
@@ -200,21 +188,13 @@ export async function getAllNodes(): Promise<Node[]> {
   }
 }
 
-export async function updateNode(
-  node: Partial<Node>,
-): Promise<void> {
+export async function updateNode(node: Partial<Node>): Promise<void> {
   try {
     const client = await getConnection();
     const fields: string[] = [];
     const values: any[] = [];
 
-    const {
-      name,
-      lastAccessed,
-      nodeId,
-      temp,
-      workspaceId,
-    } = node;
+    const { name, lastAccessed, nodeId, temp, workspaceId } = node;
 
     const fieldMappings: [string, any][] = [
       ["name", name],
@@ -271,21 +251,18 @@ export async function deleteNode(
       const childNodes = await getChildNodes(nodeId);
       if (childNodes.length > 0) {
         throw new Error(
-          `Cannot delete node ${nodeId}: node has ${childNodes.length} child node(s). Use cascade=true to delete children as well.`
+          `Cannot delete node ${nodeId}: node has ${childNodes.length} child node(s). Use cascade=true to delete children as well.`,
         );
       }
     }
 
     // Now delete the node itself
-    await client.query("DELETE FROM nodes WHERE nodeId = $1;", [
-      nodeId,
-    ]);
+    await client.query("DELETE FROM nodes WHERE nodeId = $1;", [nodeId]);
   } catch (error) {
     logger.error("Error deleting node:", error);
     throw error;
   }
 }
-
 
 export async function updateNodeHistory(
   currentNodeId: string,
@@ -366,10 +343,7 @@ export async function getPreviousNode(): Promise<Node | null> {
        ORDER BY timestamp DESC LIMIT 1`,
     );
 
-    if (
-      result.rows.length === 0 ||
-      result.rows[0].previous_node_id === null
-    ) {
+    if (result.rows.length === 0 || result.rows[0].previous_node_id === null) {
       return null;
     }
 
@@ -386,9 +360,7 @@ export async function getPreviousNode(): Promise<Node | null> {
  * @param parentNodeId The ID of the parent node
  * @returns Array of child nodes
  */
-export async function getChildNodes(
-  parentNodeId: string,
-): Promise<Node[]> {
+export async function getChildNodes(parentNodeId: string): Promise<Node[]> {
   try {
     const client = await getConnection();
     const result = await client.query(
@@ -449,7 +421,7 @@ export async function formatNodeWithHierarchy(
 ): Promise<string> {
   // Get the parent nodes for this node
   const parentNodes = await getParentNodes(node.nodeId);
-  
+
   // If it's a root node (no parents), just return the name
   if (parentNodes.length === 0) {
     return node.name;
@@ -458,7 +430,7 @@ export async function formatNodeWithHierarchy(
   // For simplicity, use the first parent to build hierarchy path
   // In a DAG, a node could have multiple parents, but we'll show one path
   const firstParent = parentNodes[0];
-  
+
   // Build the hierarchy path by recursively getting parent names
   const buildPath = async (nodeId: string): Promise<string[]> => {
     const parents = await getParentNodes(nodeId);
@@ -466,7 +438,7 @@ export async function formatNodeWithHierarchy(
       const currentNode = await getNodeById(nodeId);
       return currentNode ? [currentNode.name] : [];
     }
-    
+
     // Use first parent for path building
     const parentPath = await buildPath(parents[0].nodeId);
     const currentNode = await getNodeById(nodeId);
@@ -474,7 +446,7 @@ export async function formatNodeWithHierarchy(
   };
 
   const fullPath = await buildPath(node.nodeId);
-  
+
   // Join the path with "→"
   return fullPath.join(" → ");
 }
@@ -484,9 +456,7 @@ export async function formatNodeWithHierarchy(
  * @param childNodeId The ID of the child node
  * @returns Array of parent nodes
  */
-export async function getParentNodes(
-  childNodeId: string,
-): Promise<Node[]> {
+export async function getParentNodes(childNodeId: string): Promise<Node[]> {
   try {
     const client = await getConnection();
     const result = await client.query(
@@ -518,12 +488,10 @@ export async function getParentNodes(
  * @param childNodeId The ID of the child node
  * @returns Array of parent node IDs
  */
-export async function getParentNodeIds(
-  childNodeId: string,
-): Promise<string[]> {
+export async function getParentNodeIds(childNodeId: string): Promise<string[]> {
   try {
     const parentNodes = await getParentNodes(childNodeId);
-    return parentNodes.map(node => node.nodeId);
+    return parentNodes.map((node) => node.nodeId);
   } catch (error) {
     logger.error("Error getting parent node IDs:", error);
     throw error;
@@ -543,7 +511,7 @@ export async function getFilteredRootNodes(
 
     let nodeIdForType = "";
     let filterCondition = "";
-    
+
     if (filter === NodeTreeFilter.RECENT) {
       // Nodes from the last 7 days
       filterCondition =
@@ -566,16 +534,19 @@ export async function getFilteredRootNodes(
     }
 
     let result;
-    
+
     if (nodeIdForType) {
       // For specific node filters, return the children of the specific node
-      result = await client.query(`
+      result = await client.query(
+        `
         SELECT n.nodeid, n.name, n.created, n.lastaccessed, n.temp
         FROM nodes n
         JOIN node_relationships nr ON n.nodeid = nr.child_node_id
         WHERE nr.parent_node_id = $1
         ORDER BY n.lastaccessed DESC;
-      `, [nodeIdForType]);
+      `,
+        [nodeIdForType],
+      );
     } else {
       // For other filters, return root nodes (nodes with no parents)
       result = await client.query(`
@@ -613,9 +584,10 @@ async function detectCycle(
 ): Promise<boolean> {
   try {
     const client = await getConnection();
-    
+
     // Check if there's already a path from childNodeId to parentNodeId
-    const result = await client.query(`
+    const result = await client.query(
+      `
       WITH RECURSIVE path_check AS (
         -- Base case: start from the child node
         SELECT child_node_id AS current_node, ARRAY[child_node_id] AS path
@@ -632,7 +604,9 @@ async function detectCycle(
         AND array_length(pc.path, 1) < 100  -- Safety limit
       )
       SELECT 1 FROM path_check WHERE current_node = $2
-    `, [childNodeId, parentNodeId]);
+    `,
+      [childNodeId, parentNodeId],
+    );
 
     return result.rows.length > 0;
   } catch (error) {
@@ -652,7 +626,7 @@ export async function addNodeRelationship(
 ): Promise<void> {
   try {
     const client = await getConnection();
-    
+
     // Check if both nodes exist
     const parentExists = await client.query(
       "SELECT 1 FROM nodes WHERE nodeId = $1",
@@ -676,13 +650,17 @@ export async function addNodeRelationship(
     );
 
     if (relationshipExists.rows.length > 0) {
-      throw new Error(`Relationship already exists between ${parentNodeId} and ${childNodeId}`);
+      throw new Error(
+        `Relationship already exists between ${parentNodeId} and ${childNodeId}`,
+      );
     }
 
     if (await detectCycle(parentNodeId, childNodeId)) {
-      throw new Error(`Cannot add relationship: would create a cycle between ${parentNodeId} and ${childNodeId}`);
+      throw new Error(
+        `Cannot add relationship: would create a cycle between ${parentNodeId} and ${childNodeId}`,
+      );
     }
-    
+
     await client.query(
       `INSERT INTO node_relationships (parent_node_id, child_node_id) 
        VALUES ($1, $2)`,
@@ -705,7 +683,7 @@ export async function setNodeParents(
 ): Promise<void> {
   try {
     const client = await getConnection();
-    
+
     // Check if child node exists
     const childExists = await client.query(
       "SELECT 1 FROM nodes WHERE nodeId = $1",
@@ -729,7 +707,9 @@ export async function setNodeParents(
 
       // Check for cycles
       if (await detectCycle(parentNodeId, childNodeId)) {
-        throw new Error(`Cannot add relationship: would create a cycle between ${parentNodeId} and ${childNodeId}`);
+        throw new Error(
+          `Cannot add relationship: would create a cycle between ${parentNodeId} and ${childNodeId}`,
+        );
       }
     }
 
@@ -764,7 +744,7 @@ export async function removeNodeRelationship(
 ): Promise<void> {
   try {
     const client = await getConnection();
-    
+
     await client.query(
       `DELETE FROM node_relationships 
        WHERE parent_node_id = $1 AND child_node_id = $2`,
@@ -785,7 +765,7 @@ export async function nodeTree(
     // Build the filter condition for the base case
     let filterCondition = "";
     let nodeIdForType = "";
-    
+
     if (filter === NodeTreeFilter.RECENT) {
       // Nodes from the last 7 days
       filterCondition =
@@ -812,10 +792,11 @@ export async function nodeTree(
     // 2. Recursively joins to find children up to depth 3
     // 3. Orders results so parents come before children
     let result;
-    
+
     if (nodeIdForType) {
       // For specific node filters, start from the specific node and get its children
-      result = await client.query(`
+      result = await client.query(
+        `
         WITH RECURSIVE node_tree AS (
           -- Base case: select the specific node
           SELECT 
@@ -859,7 +840,9 @@ export async function nodeTree(
         ORDER BY 
           depth,  -- Order by depth first
           lastaccessed DESC;  -- Then by last accessed
-      `, [nodeIdForType]);
+      `,
+        [nodeIdForType],
+      );
     } else {
       // For other filters, use the original query
       result = await client.query(`

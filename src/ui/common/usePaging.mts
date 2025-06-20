@@ -11,9 +11,10 @@ export type Item = {
 const usePaging = (items: Item[], itemsPerPage: number) => {
   const [currentPage, setCurrentPage] = useState(0);
 
-  const totalPages = useMemo(() => 
-    Math.ceil(items.length / itemsPerPage),
-  [items.length, itemsPerPage]);
+  const totalPages = useMemo(
+    () => Math.ceil(items.length / itemsPerPage),
+    [items.length, itemsPerPage],
+  );
 
   const paginatedItems = useMemo(() => {
     const start = currentPage * itemsPerPage;
@@ -22,11 +23,11 @@ const usePaging = (items: Item[], itemsPerPage: number) => {
   }, [items, currentPage, itemsPerPage]);
 
   const nextPage = useCallback(() => {
-    setCurrentPage(prev => Math.min(prev + 1, totalPages - 1));
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1));
   }, [totalPages]);
 
   const prevPage = useCallback(() => {
-    setCurrentPage(prev => Math.max(prev - 1, 0));
+    setCurrentPage((prev) => Math.max(prev - 1, 0));
   }, []);
 
   return {

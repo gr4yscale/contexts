@@ -1,6 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // Get the directory name of the current module
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -16,7 +16,7 @@ export enum LogLevel {
 // Default configuration
 const DEFAULT_CONFIG = {
   level: LogLevel.INFO,
-  logFile: path.join(__dirname, '../logs/app.log'),
+  logFile: path.join(__dirname, "../logs/app.log"),
   console: true,
 };
 
@@ -40,7 +40,7 @@ function formatLogMessage(level: string, message: string): string {
 // Write to log file
 function writeToLogFile(message: string): void {
   ensureLogDirectoryExists();
-  fs.appendFileSync(config.logFile, message + '\n');
+  fs.appendFileSync(config.logFile, message + "\n");
 }
 
 // Configure logger
@@ -52,32 +52,40 @@ export function configureLogger(options: Partial<typeof DEFAULT_CONFIG>): void {
 // Log functions
 export function error(message: string, ...args: any[]): void {
   if (config.level >= LogLevel.ERROR) {
-    const formattedMessage = formatLogMessage('ERROR', message);
+    const formattedMessage = formatLogMessage("ERROR", message);
     if (config.console) console.error(formattedMessage, ...args);
-    writeToLogFile(formattedMessage + (args.length ? ' ' + JSON.stringify(args) : ''));
+    writeToLogFile(
+      formattedMessage + (args.length ? " " + JSON.stringify(args) : ""),
+    );
   }
 }
 
 export function warn(message: string, ...args: any[]): void {
   if (config.level >= LogLevel.WARN) {
-    const formattedMessage = formatLogMessage('WARN', message);
+    const formattedMessage = formatLogMessage("WARN", message);
     if (config.console) console.warn(formattedMessage, ...args);
-    writeToLogFile(formattedMessage + (args.length ? ' ' + JSON.stringify(args) : ''));
+    writeToLogFile(
+      formattedMessage + (args.length ? " " + JSON.stringify(args) : ""),
+    );
   }
 }
 
 export function info(message: string, ...args: any[]): void {
   if (config.level >= LogLevel.INFO) {
-    const formattedMessage = formatLogMessage('INFO', message);
+    const formattedMessage = formatLogMessage("INFO", message);
     if (config.console) console.info(formattedMessage, ...args);
-    writeToLogFile(formattedMessage + (args.length ? ' ' + JSON.stringify(args) : ''));
+    writeToLogFile(
+      formattedMessage + (args.length ? " " + JSON.stringify(args) : ""),
+    );
   }
 }
 
 export function debug(message: string, ...args: any[]): void {
   if (config.level >= LogLevel.DEBUG) {
-    const formattedMessage = formatLogMessage('DEBUG', message);
+    const formattedMessage = formatLogMessage("DEBUG", message);
     if (config.console) console.debug(formattedMessage, ...args);
-    writeToLogFile(formattedMessage + (args.length ? ' ' + JSON.stringify(args) : ''));
+    writeToLogFile(
+      formattedMessage + (args.length ? " " + JSON.stringify(args) : ""),
+    );
   }
 }

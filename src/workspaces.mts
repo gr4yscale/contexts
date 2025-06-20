@@ -40,11 +40,8 @@ export async function viewWorkspaceForNode(node: Node) {
   if (!workspaces || workspaces.length === 0) {
     try {
       // TOFIX: return a Promise without null here; throw an error if it failed
-      workspace = await createWorkspaceForNode(
-        node.nodeId,
-        node.name,
-      );
-      
+      workspace = await createWorkspaceForNode(node.nodeId, node.name);
+
       if (workspace) {
         await $`dwmc viewex ${workspace.id}`;
         return true;

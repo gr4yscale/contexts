@@ -38,10 +38,14 @@ const CurrentNodeAssignToParent: React.FC = () => {
     }
 
     // Filter out the current node to prevent self-assignment
-    const validParentIds = nodeIds.filter(nodeId => nodeId !== currentNode.nodeId);
-    
+    const validParentIds = nodeIds.filter(
+      (nodeId) => nodeId !== currentNode.nodeId,
+    );
+
     if (validParentIds.length !== nodeIds.length) {
-      logger.warn("Removed current node from parent selection to prevent self-assignment.");
+      logger.warn(
+        "Removed current node from parent selection to prevent self-assignment.",
+      );
     }
 
     try {

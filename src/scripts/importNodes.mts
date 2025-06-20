@@ -29,14 +29,9 @@ async function importNodes() {
         };
 
         await createNode(nodeDTO);
-        console.log(
-          `Imported node: ${node.name} (${node.nodeId})`,
-        );
+        console.log(`Imported node: ${node.name} (${node.nodeId})`);
       } catch (error) {
-        console.error(
-          `Error importing node ${node.nodeId}:`,
-          error,
-        );
+        console.error(`Error importing node ${node.nodeId}:`, error);
         // Continue with next node even if one fails
       }
     }

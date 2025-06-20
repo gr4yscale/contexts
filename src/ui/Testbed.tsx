@@ -9,7 +9,7 @@ const Testbed: React.FC = () => {
       <NodeSelection
         multiple={true}
         onSelected={(nodeIds) => {
-          $`notify-send "Selected node IDs: ${nodeIds.join(', ')}"`;
+          $`notify-send "Selected node IDs: ${nodeIds.join(", ")}"`;
         }}
       />
     </Box>
