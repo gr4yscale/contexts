@@ -234,12 +234,11 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     const keymapConfig: KeymapConfig = [
       {
         sequence: [key("`")],
-        description: "Toggle List/Items",
+        description: "List / Items",
         name: "toggle-list-or-items",
         handler: () => {
           setMode((prevMode) => (prevMode === "lists" ? "items" : "lists"));
-        },
-        hidden: true,
+        }
       },
       {
         sequence: [key("u")],
@@ -257,8 +256,8 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
       },
       {
         sequence: [key("\r", "return")],
-        description: "Confirm selection",
-        name: "Confirm selection",
+        description: skipConfirmation ? "Select" : "Confirm Selection",
+        name: skipConfirmation ? "Select" : "Confirm Selection",
         handler: () => {
           setSelectedNodeIds(current => {
             if (current.length > 0) {
