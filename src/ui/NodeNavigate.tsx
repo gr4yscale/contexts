@@ -111,7 +111,7 @@ const NodeNavigate: React.FC = () => {
     return () => {
       keymap.popKeymap();
     };
-  }, []);
+  }, [mode, currentListIndex, switchList]);
 
   return (
     <Box borderStyle="single" borderColor="gray">

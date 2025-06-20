@@ -279,7 +279,7 @@ const NodeSelection: React.FC<NodeSelectionProps> = ({
     return () => {
       keymap.popKeymap();
     };
-  }, [keymap, setMode, setDagMode, selectedNodeIds]);
+  }, [keymap, skipConfirmation, onSelected]);
 
   return (
     <Box borderStyle="single" borderColor="gray">
