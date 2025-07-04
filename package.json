@@ -1,70 +1,71 @@
 {
-    "name": "contexts",
-    "private": true,
-    "version": "1.0.0",
-    "description": "",
-    "main": "main.mts",
-    "type": "module",
-    "scripts": {
-        "start": "DEV=true tsx src/main.mts",
-        "test": "vitest run",
-        "test:watch": "vitest",
-        "test:coverage": "vitest run --coverage",
-        "test:integration:all": "RUN_INTEGRATION_TESTS=true vitest run",
-        "test:integration:db": "RUN_INTEGRATION_TESTS=true vitest run src/db.test.mts",
-        "test:integration:workspace": "RUN_INTEGRATION_TESTS=true vitest run src/models/workspace.test.mts",
-        "test:integration:node": "RUN_INTEGRATION_TESTS=true vitest run src/models/node.test.mts",
-        "test:integration:resource": "RUN_INTEGRATION_TESTS=true vitest run src/models/resource.test.mts",
-        "test:integration:context": "RUN_INTEGRATION_TESTS=true vitest run src/models/context.test.mts",
-        "test:ui:all": "vitest run src/ui/**/*.test.tsx",
-        "test:ui:keymapping": "yarn vitest run src/ui/examples/KeymapExample.test.tsx",
-        "test:ui:corelist": "vitest run src/ui/common/CoreList.test.tsx",
-        "migrate:up": "tsx src/scripts/migrate.mts up",
-        "migrate:down": "tsx src/scripts/migrate.mts down",
-        "create:activity-tree": "tsx src/scripts/createActivityTree.mts",
-        "assign:workspaces": "tsx src/scripts/assignWorkspacesToActivities.mts",
-        "build": "esbuild src/main.mts --bundle --platform=node --format=esm --packages=external --outfile=build.mjs"
+  "name": "contexts",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.mts",
+  "type": "module",
+  "scripts": {
+    "start": "DEV=true tsx src/main.mts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:integration:all": "RUN_INTEGRATION_TESTS=true vitest run",
+    "test:integration:db": "RUN_INTEGRATION_TESTS=true vitest run src/db.test.mts",
+    "test:integration:workspace": "RUN_INTEGRATION_TESTS=true vitest run src/models/workspace.test.mts",
+    "test:integration:node": "RUN_INTEGRATION_TESTS=true vitest run src/models/node.test.mts",
+    "test:integration:resource": "RUN_INTEGRATION_TESTS=true vitest run src/models/resource.test.mts",
+    "test:integration:context": "RUN_INTEGRATION_TESTS=true vitest run src/models/context.test.mts",
+    "test:ui:all": "vitest run src/ui/**/*.test.tsx",
+    "test:ui:keymapping": "yarn vitest run src/ui/examples/KeymapExample.test.tsx",
+    "test:ui:corelist": "vitest run src/ui/common/CoreList.test.tsx",
+    "migrate:up": "tsx src/scripts/migrate.mts up",
+    "migrate:down": "tsx src/scripts/migrate.mts down",
+    "create:activity-tree": "tsx src/scripts/createActivityTree.mts",
+    "assign:workspaces": "tsx src/scripts/assignWorkspacesToActivities.mts",
+    "build": "esbuild src/main.mts --bundle --platform=node --format=esm --packages=external --outfile=build.mjs",
+    "backup-db": "sudo docker exec postgres pg_dump -U postgres -d contexts -F c -f /tmp/backup.dump ; sudo docker cp postgres:/tmp/backup.dump ~/contexts/db-backup/$(date +%Y-%m-%d-%H-%M-%S-%N).dump"
+  },
+  "keywords": [],
+  "author": "gr4yscale",
+  "license": "Fair",
+  "devDependencies": {
+    "@types/ink": "^2.0.3",
+    "@types/react": "^19.0.8",
+    "@types/react-reconciler": "^0.28.2",
+    "@vitejs/plugin-react": "^4.2.1",
+    "esbuild": "0.19.8",
+    "ink-testing-library": "^4.0.0",
+    "jsdom": "^23.0.1",
+    "prettier": "^3.5.3",
+    "react-devtools-core": "^5.0.0",
+    "tsx": "^4.4.0",
+    "vitest": "^1.2.1",
+    "zx": "^7.2.3"
+  },
+  "dependencies": {
+    "@duckdb/node-api": "^1.2.0-alpha.14",
+    "clipboardy": "^4.0.0",
+    "date-fns": "^2.30.0",
+    "ink": "^5.1.0",
+    "nanoid": "^5.0.4",
+    "pg": "^8.13.3",
+    "react": "^18.0.0",
+    "react-reconciler": "^0.28.0",
+    "ts-retry-promise": "^0.8.1",
+    "exa-js": "^1.0.2"
+  },
+  "peerDependencies": {
+    "@types/react": ">=18.0.0",
+    "react": ">=18.0.0",
+    "react-devtools-core": "^4.19.1"
+  },
+  "peerDependenciesMeta": {
+    "@types/react": {
+      "optional": true
     },
-    "keywords": [],
-    "author": "gr4yscale",
-    "license": "Fair",
-    "devDependencies": {
-        "@types/ink": "^2.0.3",
-        "@types/react": "^19.0.8",
-        "@types/react-reconciler": "^0.28.2",
-        "@vitejs/plugin-react": "^4.2.1",
-        "esbuild": "0.19.8",
-        "ink-testing-library": "^4.0.0",
-        "jsdom": "^23.0.1",
-        "prettier": "^3.5.3",
-        "react-devtools-core": "^5.0.0",
-        "tsx": "^4.4.0",
-        "vitest": "^1.2.1",
-        "zx": "^7.2.3"
-    },
-    "dependencies": {
-        "@duckdb/node-api": "^1.2.0-alpha.14",
-        "clipboardy": "^4.0.0",
-        "date-fns": "^2.30.0",
-        "ink": "^5.1.0",
-        "nanoid": "^5.0.4",
-        "pg": "^8.13.3",
-        "react": "^18.0.0",
-        "react-reconciler": "^0.28.0",
-        "ts-retry-promise": "^0.8.1",
-        "exa-js": "^1.0.2"
-    },
-    "peerDependencies": {
-        "@types/react": ">=18.0.0",
-        "react": ">=18.0.0",
-        "react-devtools-core": "^4.19.1"
-    },
-    "peerDependenciesMeta": {
-        "@types/react": {
-            "optional": true
-        },
-        "react-devtools-core": {
-            "optional": true
-        }
+    "react-devtools-core": {
+      "optional": true
     }
+  }
 }
