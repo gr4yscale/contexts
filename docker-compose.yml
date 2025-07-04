@@ -1,4 +1,3 @@
-version: "3.8"
 name: "contexts"
 
 services:
@@ -13,6 +12,19 @@ services:
       - "1336:5432"
     volumes:
       - ./data/postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  postgres-age:
+    image: apache/age
+    container_name: postgres-age
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: contextsage
+    ports:
+      - "1337:5432"
+    volumes:
+      - ./data/postgres_age_data:/var/lib/postgresql/data
     restart: unless-stopped
 
   pgadmin:
